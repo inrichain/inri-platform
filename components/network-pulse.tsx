@@ -366,7 +366,11 @@ export function NetworkPulse() {
                         <Tooltip
                           cursor={{ stroke: 'rgba(19,164,255,0.25)' }}
                           contentStyle={{ background: '#081223', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', color: '#edf7ff' }}
-                          formatter={(value: number, name: string) => [`${value}${name === 'interval' ? 's' : ''}`, name === 'interval' ? 'Block interval' : 'Value']}
+                          formatter={(value, name) => {
+                            const numericValue = typeof value === 'number' ? value : Number(value ?? 0)
+                            const seriesName = String(name ?? '')
+                            return [`${numericValue}${seriesName === 'interval' ? 's' : ''}`, seriesName === 'interval' ? 'Block interval' : 'Value']
+                          }}
                         />
                         <Area type="monotone" dataKey="interval" stroke="#13a4ff" strokeWidth={2} fill="url(#intervalGradient)" />
                       </AreaChart>
