@@ -2,113 +2,121 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Blocks, Coins, Factory, Pickaxe, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
+import {
+  ArrowRight,
+  Blocks,
+  Coins,
+  Factory,
+  Pickaxe,
+  ShieldCheck,
+  Sparkles,
+  Wallet,
+} from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
-type Mode = 'wallet' | 'mining' | 'verify'
+type Mode = 'use' | 'mine' | 'verify'
 
 type HeroMode = {
   title: string
   text: string
-  stats: string[]
   primary: { label: string; href: string; external?: boolean }
   secondary: { label: string; href: string; external?: boolean }
-  bullets: Array<{ label: string; value: string }>
+  tiles: Array<{ label: string; value: string }>
 }
 
 const modes: Record<Mode, HeroMode> = {
-  wallet: {
-    title: 'Enter the network in one click.',
-    text: 'Open the wallet, add the chain and start using INRI without a confusing homepage.',
-    stats: ['Fast entry', 'Wallet first', 'Low friction'],
-    primary: { label: 'Open Wallet', href: 'https://wallet.inri.life', external: true },
+  use: {
+    title: 'Open the network and use it fast.',
+    text: 'Wallet, explorer, staking and token tools should feel immediate, not hidden behind a crowded homepage.',
+    primary: { label: 'Open INRI Wallet', href: 'https://wallet.inri.life', external: true },
     secondary: { label: 'View Wallets', href: '/wallets' },
-    bullets: [
-      { label: 'Main route', value: 'Official wallet' },
-      { label: 'Use case', value: 'Send, hold, connect' },
-      { label: 'Next step', value: 'Swap, stake, explore' },
+    tiles: [
+      { label: 'Wallet', value: 'Send, hold, connect' },
+      { label: 'Explorer', value: 'Check blocks and txs' },
+      { label: 'Staking', value: 'Longer-term utility' },
+      { label: 'Factory', value: 'Launch token routes' },
     ],
   },
-  mining: {
-    title: 'Make mining visible from the start.',
-    text: 'INRI is Proof-of-Work. The homepage should make that feel alive, useful and easy to start.',
-    stats: ['Windows', 'Ubuntu', 'Pool'],
+  mine: {
+    title: 'Make Proof-of-Work visible and useful.',
+    text: 'Mining should feel like a live route on the homepage, with clear paths for Windows, Ubuntu and pool participation.',
     primary: { label: 'Start Mining', href: '/mining' },
     secondary: { label: 'Open Pool', href: '/pool' },
-    bullets: [
-      { label: 'Entry', value: 'Mining guides' },
-      { label: 'Access', value: 'Pool and solo path' },
-      { label: 'Signal', value: 'Real participation' },
+    tiles: [
+      { label: 'Windows', value: 'CPU setup route' },
+      { label: 'Ubuntu', value: 'Linux mining route' },
+      { label: 'Pool', value: 'Join active mining' },
+      { label: 'Explorer', value: 'Verify mined blocks' },
     ],
   },
   verify: {
     title: 'Show proof before promises.',
-    text: 'Blocks, fees and recent activity should be visible early so users can verify the network instantly.',
-    stats: ['Explorer', 'Blocks', 'Activity'],
+    text: 'Visitors should see live blocks, recent transactions and direct verification routes without leaving the site too early.',
     primary: { label: 'Open Explorer', href: 'https://explorer.inri.life', external: true },
     secondary: { label: 'Read Whitepaper', href: '/whitepaper' },
-    bullets: [
-      { label: 'Trust', value: 'Live chain data' },
-      { label: 'Proof', value: 'Recent blocks' },
-      { label: 'Context', value: 'Chain 3777' },
+    tiles: [
+      { label: 'Live blocks', value: 'Recent chain rhythm' },
+      { label: 'Transactions', value: 'Latest chain activity' },
+      { label: 'Search', value: 'Address, tx or block' },
+      { label: 'Chain', value: 'Proof-of-Work 3777' },
     ],
   },
 }
 
-const utilityCards = [
+const routeCards = [
   {
     title: 'Wallet',
-    text: 'Official route into INRI.',
+    text: 'Official wallet access for everyday use.',
     href: 'https://wallet.inri.life',
     external: true,
     icon: Wallet,
   },
   {
-    title: 'Mining',
-    text: 'Windows, Ubuntu and pool.',
-    href: '/mining',
-    icon: Pickaxe,
-  },
-  {
     title: 'Explorer',
-    text: 'Blocks, txs and addresses.',
+    text: 'Blocks, addresses, transactions and proof.',
     href: 'https://explorer.inri.life',
     external: true,
     icon: Blocks,
   },
   {
+    title: 'Mining',
+    text: 'Windows and Ubuntu routes for real participation.',
+    href: '/mining',
+    icon: Pickaxe,
+  },
+  {
+    title: 'Pool',
+    text: 'Follow miners, blocks and recent payments.',
+    href: '/pool',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Staking',
-    text: 'Longer-term network use.',
+    text: 'Keep utility inside the INRI ecosystem.',
     href: '/staking',
     icon: Coins,
   },
   {
     title: 'Factory',
-    text: 'Create and launch assets.',
+    text: 'Create and launch assets inside the network.',
     href: '/token-factory',
     icon: Factory,
   },
-  {
-    title: 'Security',
-    text: 'Transparent network routes.',
-    href: '/whitepaper',
-    icon: ShieldCheck,
-  },
 ]
 
-const valuePills = ['Low fees', 'Community mining', 'EVM compatible', 'Real network use']
+const valuePills = ['Low fees', 'Community mining', 'EVM compatible', 'Real utility']
 
 export function InriHomepage() {
-  const [mode, setMode] = useState<Mode>('wallet')
+  const [mode, setMode] = useState<Mode>('use')
   const active = modes[mode]
 
   return (
     <InriShell>
       <main>
         <section className="relative overflow-hidden border-b border-white/10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(19,164,255,0.18),transparent_30%),radial-gradient(circle_at_82%_14%,rgba(19,164,255,0.10),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.98))]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:56px_56px] opacity-[0.07]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(19,164,255,0.18),transparent_28%),radial-gradient(circle_at_88%_14%,rgba(19,164,255,0.10),transparent_24%),linear-gradient(180deg,rgba(0,0,0,0.94),rgba(0,0,0,1))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:58px_58px] opacity-[0.06]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
             <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
@@ -120,24 +128,21 @@ export function InriHomepage() {
               Chain 3777
             </div>
 
-            <div className="mt-8 grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+            <div className="mt-8 grid gap-8 xl:grid-cols-[1.02fr_0.98fr] xl:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   {valuePills.map((pill) => (
-                    <span
-                      key={pill}
-                      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/68"
-                    >
+                    <span key={pill} className="inri-chip">
                       {pill}
                     </span>
                   ))}
                 </div>
 
-                <h1 className="mt-8 max-w-4xl text-balance text-4xl font-bold leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-                  Real utility for a Proof-of-Work chain.
+                <h1 className="mt-8 max-w-4xl text-4xl font-bold leading-[0.96] text-white sm:text-6xl lg:text-7xl">
+                  Proof-of-Work with real utility.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
-                  A cleaner homepage for the things that matter: wallet, explorer, mining, pool, staking and real network activity.
+                  A cleaner INRI homepage focused on what users actually do: open the wallet, verify the chain, mine, join the pool, stake and build.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -154,11 +159,11 @@ export function InriHomepage() {
 
                 <div className="mt-10 grid gap-3 sm:grid-cols-3">
                   {[
-                    { label: 'Value', text: 'Use the chain, not just read about it.' },
-                    { label: 'Trust', text: 'Show live blocks and recent activity.' },
-                    { label: 'Direction', text: 'Lead people into useful routes fast.' },
+                    { label: 'Use', text: 'Wallet, staking, swap and token routes.' },
+                    { label: 'Verify', text: 'Live blocks, txs and direct proof.' },
+                    { label: 'Mine', text: 'Visible paths for real participation.' },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+                    <div key={item.label} className="inri-card p-5">
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{item.label}</p>
                       <p className="mt-3 text-sm leading-6 text-white/68">{item.text}</p>
                     </div>
@@ -167,33 +172,35 @@ export function InriHomepage() {
               </div>
 
               <div className="relative">
-                <div className="absolute -inset-6 rounded-[2.8rem] bg-[radial-gradient(circle,rgba(19,164,255,0.16),transparent_58%)] blur-3xl" />
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(4,8,13,0.98),rgba(2,6,12,0.98))] p-5 shadow-[0_28px_120px_rgba(0,0,0,0.48)] sm:p-6">
-                  <div className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-3">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Utility panel</p>
-                      <p className="mt-1 text-sm text-white/58">Shorter text. Clearer actions. Better translation behavior.</p>
+                <div className="absolute -inset-6 rounded-[2.8rem] bg-[radial-gradient(circle,rgba(19,164,255,0.14),transparent_58%)] blur-3xl" />
+                <div className="inri-panel-strong relative overflow-hidden p-5 sm:p-6">
+                  <div className="flex flex-col gap-4 rounded-[1.35rem] border border-white/10 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">INRI utility hub</p>
+                      <p className="mt-1 text-sm leading-6 text-white/58">
+                        Shorter text, stronger layout and cleaner translation behavior.
+                      </p>
                     </div>
-                    <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                      Live-ready
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                      Main routes
                     </span>
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     {(
                       [
-                        { key: 'wallet', label: 'Wallet' },
-                        { key: 'mining', label: 'Mining' },
+                        { key: 'use', label: 'Use' },
+                        { key: 'mine', label: 'Mine' },
                         { key: 'verify', label: 'Verify' },
                       ] as Array<{ key: Mode; label: string }>
                     ).map((item) => (
                       <button
                         key={item.key}
                         onClick={() => setMode(item.key)}
-                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                           mode === item.key
-                            ? 'border border-primary/40 bg-primary text-black'
-                            : 'border border-white/10 bg-white/[0.03] text-white/70 hover:border-primary/30 hover:bg-primary/10 hover:text-white'
+                            ? 'border-primary/40 bg-primary text-black'
+                            : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-primary/30 hover:bg-primary/10 hover:text-white'
                         }`}
                       >
                         {item.label}
@@ -201,19 +208,8 @@ export function InriHomepage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 rounded-[1.6rem] border border-white/10 bg-[#01050a] p-5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {active.stats.map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/62"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-
-                    <h2 className="mt-5 text-2xl font-bold text-white sm:text-[2rem]">{active.title}</h2>
+                  <div className="mt-5 rounded-[1.7rem] border border-white/10 bg-black/60 p-5 sm:p-6">
+                    <h2 className="max-w-xl text-2xl font-bold leading-tight text-white sm:text-[2rem]">{active.title}</h2>
                     <p className="mt-3 max-w-xl text-sm leading-7 text-white/64 sm:text-base">{active.text}</p>
 
                     <div className="mt-6 flex flex-wrap gap-3">
@@ -225,11 +221,11 @@ export function InriHomepage() {
                       </InriLinkButton>
                     </div>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                      {active.bullets.map((item) => (
-                        <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      {active.tiles.map((item) => (
+                        <div key={item.label} className="inri-card min-h-[112px] p-4">
                           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{item.label}</p>
-                          <p className="mt-3 text-sm font-semibold text-white">{item.value}</p>
+                          <p className="mt-3 text-sm font-semibold leading-6 text-white/88">{item.value}</p>
                         </div>
                       ))}
                     </div>
@@ -242,34 +238,34 @@ export function InriHomepage() {
 
         <NetworkPulse />
 
-        <section className="border-t border-white/10 bg-[linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,1))]">
+        <section className="border-t border-white/10 bg-[linear-gradient(180deg,rgba(0,0,0,0.98),rgba(0,0,0,1))]">
           <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8 lg:py-20">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Core routes</p>
-                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Give every visitor a clear next move.</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Everything in one place</p>
+                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Keep the user inside the INRI ecosystem.</h2>
               </div>
               <p className="max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
-                Real value comes from use: open the wallet, verify the chain, mine, join the pool, stake or build.
+                A strong homepage should not just look modern. It should guide people into real actions and make the network feel alive.
               </p>
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {utilityCards.map((item) => {
+              {routeCards.map((item) => {
                 const Icon = item.icon
                 return (
                   <Link
                     key={item.title}
                     href={item.href}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="group rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 transition hover:border-primary/35 hover:bg-[linear-gradient(180deg,rgba(19,164,255,0.10),rgba(255,255,255,0.02))]"
+                    className="group inri-card min-h-[176px] p-5 transition hover:border-primary/35 hover:bg-[linear-gradient(180deg,rgba(19,164,255,0.10),rgba(255,255,255,0.02))]"
                   >
                     <div className="inline-flex rounded-2xl border border-primary/18 bg-primary/10 p-3 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="mt-5 flex items-center justify-between gap-3">
                       <h3 className="text-xl font-bold text-white">{item.title}</h3>
-                      <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
+                      <ArrowRight className="h-4 w-4 shrink-0 text-primary transition group-hover:translate-x-1" />
                     </div>
                     <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
                   </Link>
@@ -281,29 +277,29 @@ export function InriHomepage() {
 
         <section className="border-t border-white/10 bg-black">
           <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8 lg:py-20">
-            <div className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(19,164,255,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-7 sm:p-10">
+            <div className="inri-panel p-7 sm:p-10">
               <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">
                     <Sparkles className="h-4 w-4" />
-                    Brand direction
+                    Visual direction
                   </p>
                   <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-                    Black, blue and cleaner visual hierarchy.
+                    Pure black, electric blue and cleaner hierarchy.
                   </h2>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
-                    The homepage should feel premium and modern without looking crowded. Fewer words, stronger contrast, better spacing and more useful actions.
+                    Bigger containers, calmer spacing and shorter labels keep the site cleaner across desktop, mobile and browser translation.
                   </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    'Pure black base with electric blue highlights',
                     'Shorter labels that survive translation better',
-                    'One strong hero instead of many competing cards',
-                    'Live data placed inside a cleaner visual system',
+                    'Larger containers with stronger alignment',
+                    'Live data inside one cleaner visual system',
+                    'More utility, less homepage noise',
                   ].map((item) => (
-                    <div key={item} className="rounded-[1.35rem] border border-white/10 bg-black/60 p-4 text-sm leading-7 text-white/72">
+                    <div key={item} className="inri-card p-4 text-sm leading-7 text-white/72">
                       {item}
                     </div>
                   ))}

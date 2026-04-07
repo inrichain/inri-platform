@@ -34,7 +34,7 @@ export function Logo({
         <p className="truncate text-sm font-bold uppercase tracking-[0.24em] text-primary sm:text-base">
           INRI CHAIN
         </p>
-        <p className="truncate text-[11px] text-white/56 sm:text-xs">PoW • Chain 3777</p>
+        <p className="truncate text-[11px] text-white/56 sm:text-xs">Proof-of-Work • Chain 3777</p>
       </div>
     </Link>
   )

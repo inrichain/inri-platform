@@ -7,17 +7,16 @@ type ProviderLike = {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
   isMetaMask?: boolean
   isOkxWallet?: boolean
-  providers?: ProviderLike[]
 }
 
 declare global {
   interface Window {
-    ethereum?: ProviderLike
+    ethereum?: ProviderLike & { providers?: ProviderLike[] }
   }
 }
 
-function shortAddress(address?: string) {
-  if (!address) return 'Wallet'
+function shortAddress(address: string) {
+  if (!address) return 'Connect wallet'
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
@@ -32,10 +31,10 @@ export function ConnectWalletButton() {
     if (!eth) return []
     const list = eth.providers?.length ? eth.providers : [eth]
     const unique = new Map<string, ProviderLike>()
-    list.forEach((p) => {
-      if (p.isMetaMask) unique.set('metamask', p)
-      else if (p.isOkxWallet) unique.set('okx', p)
-      else unique.set(`browser-${unique.size}`, p)
+    list.forEach((provider) => {
+      if (provider.isMetaMask) unique.set('metamask', provider)
+      else if (provider.isOkxWallet) unique.set('okx', provider)
+      else unique.set(`browser-${unique.size}`, provider)
     })
     return Array.from(unique.entries()).map(([key, provider]) => ({
       key,
@@ -59,8 +58,8 @@ export function ConnectWalletButton() {
         setAddress(first)
         setOpen(false)
       }
-    } catch (e: any) {
-      setError(e?.message || 'Failed to connect wallet.')
+    } catch (error: any) {
+      setError(error?.message || 'Failed to connect wallet.')
     } finally {
       setBusy(false)
     }
@@ -80,15 +79,15 @@ export function ConnectWalletButton() {
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-11 items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-4 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-4 py-3 text-sm font-semibold leading-tight text-white transition hover:border-primary/45 hover:bg-primary/10"
       >
         <Wallet className="h-4 w-4 text-primary" />
-        <span className="max-w-[8.5rem] truncate">{shortAddress(address)}</span>
+        <span className="max-w-[8.8rem] truncate">{shortAddress(address)}</span>
         <ChevronDown className="h-4 w-4 text-white/60" />
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#02060c]/98 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.58)] backdrop-blur-xl">
+        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] overflow-hidden rounded-[1.7rem] border border-white/10 bg-[#02060c]/98 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.58)] backdrop-blur-xl">
           {!address ? (
             <>
               <p className="text-xs font-bold uppercase tracking-[0.20em] text-primary">Connect wallet</p>
