@@ -87,11 +87,11 @@ export function InriLinkButton({
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#061120]/92 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[linear-gradient(180deg,rgba(5,12,20,0.96),rgba(6,14,24,0.92))] backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Logo showText size={64} />
 
-        <nav className="hidden xl:flex min-w-0 items-center gap-5 2xl:gap-6">
+        <nav className="hidden xl:flex min-w-0 items-center gap-5 rounded-full border border-white/8 bg-white/[0.03] px-5 py-3 2xl:gap-6">
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
@@ -143,7 +143,7 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[#040b14]">
+    <footer className="border-t border-white/10 bg-[linear-gradient(180deg,#050c15_0%,#040a12_100%)]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.9fr_0.9fr]">
           <div>
@@ -204,7 +204,7 @@ export function InriFooter() {
               </Link>
             </div>
 
-            <div className="mt-8 rounded-[1.5rem] border border-primary/15 bg-primary/10 p-5">
+            <div className="mt-8 rounded-[1.5rem] border border-primary/15 bg-[linear-gradient(180deg,rgba(19,164,255,0.12),rgba(19,164,255,0.05))] p-5">
               <p className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-primary">
                 <Shield className="h-4 w-4" />
                 Brand direction
@@ -227,7 +227,7 @@ export function InriFooter() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(17,95,174,0.30),transparent_35%),linear-gradient(180deg,#040d19_0%,#081425_35%,#07111e_100%)] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.20),transparent_26%),radial-gradient(circle_at_80%_0%,rgba(19,164,255,0.10),transparent_18%),linear-gradient(180deg,#040b14_0%,#07111d_42%,#050d17_100%)] text-white">
       <InriHeader />
       {children}
       <InriFooter />

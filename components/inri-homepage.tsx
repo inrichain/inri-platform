@@ -16,82 +16,147 @@ import {
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
-const productCards = [
-  { title: 'INRI Wallet', description: 'Official wallet access, ecosystem entry points and the first stop for new users.', href: '/inri-wallet', icon: Wallet },
-  { title: 'Wallets', description: 'A hub for wallets that support the INRI network, onboarding and future setup guides.', href: '/wallets', icon: Wallet },
-  { title: 'Swap', description: 'A clean destination for future swaps, liquidity access and ecosystem trading flows.', href: '/swap', icon: Shuffle },
-  { title: 'Token Factory', description: 'A dedicated creation hub for launching tokens directly inside the INRI ecosystem.', href: '/token-factory', icon: Factory },
-  { title: 'P2P', description: 'A future layer for peer-to-peer activity, discovery and direct community interaction.', href: '/p2p', icon: HandCoins },
-  { title: 'Whitepaper', description: 'Read the official project overview and understand the direction of INRI CHAIN.', href: '/whitepaper', icon: BookOpenText },
-]
+type RouteCard = {
+  title: string
+  description: string
+  href: string
+  icon: typeof Wallet
+  external?: boolean
+}
 
-const networkCards = [
-  { title: 'Mining Windows', description: 'Step-by-step Windows CPU mining route in the same visual standard as the new site.', href: '/mining/windows', icon: Hammer },
-  { title: 'Mining Ubuntu', description: 'Ubuntu mining path for Linux users joining the INRI network.', href: '/mining/ubuntu', icon: Pickaxe },
-  { title: 'Pool', description: 'Direct access to pool participation, mining information and ecosystem support.', href: '/pool', icon: Layers3 },
-  { title: 'Staking', description: 'A dedicated staking section in the same premium visual system.', href: '/staking', icon: Shield },
-  { title: 'Explorer', description: 'Inspect blocks, addresses, transactions and network activity.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
-]
-
-const quickStats = [
-  { value: '3777', label: 'Chain ID' },
-  { value: 'Proof-of-Work', label: 'Consensus' },
-  { value: 'Wallets', label: 'Ecosystem path' },
-  { value: 'Explorer', label: 'Live route' },
-]
-
-const benefits = [
+const ecosystemCards: RouteCard[] = [
   {
-    title: 'Clear mission first',
-    text: 'The homepage leads with a simple mission statement and fewer distractions, instead of feeling like a dense list of links.',
+    title: 'INRI Wallet',
+    description: 'The official entry point for users joining the INRI ecosystem.',
+    href: 'https://wallet.inri.life',
+    icon: Wallet,
+    external: true,
   },
   {
-    title: 'Products before clutter',
-    text: 'INRI Wallet, Swap, Token Factory and P2P are promoted as ecosystem products, not hidden behind scattered navigation.',
+    title: 'Swap',
+    description: 'A cleaner route for future liquidity and trading experiences.',
+    href: '/swap',
+    icon: Shuffle,
   },
   {
-    title: 'Network proof points',
-    text: 'Mining, pool, staking and explorer are grouped as network access routes so the site reads like a real chain platform.',
+    title: 'Token Factory',
+    description: 'A product page for launching tokens inside the INRI network.',
+    href: '/token-factory',
+    icon: Factory,
+  },
+  {
+    title: 'P2P',
+    description: 'A direct place for peer-to-peer activity and future social utility.',
+    href: '/p2p',
+    icon: HandCoins,
+  },
+  {
+    title: 'Explorer',
+    description: 'Search blocks, transactions and addresses on the live network.',
+    href: 'https://explorer.inri.life',
+    icon: Blocks,
+    external: true,
+  },
+  {
+    title: 'Whitepaper',
+    description: 'Read the official INRI CHAIN direction and core fundamentals.',
+    href: '/whitepaper',
+    icon: BookOpenText,
   },
 ]
 
-function SectionIntro({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+const miningRoutes: RouteCard[] = [
+  {
+    title: 'Mining Windows',
+    description: 'A dedicated onboarding route for Windows CPU miners.',
+    href: '/mining/windows',
+    icon: Hammer,
+  },
+  {
+    title: 'Mining Ubuntu',
+    description: 'A cleaner Linux route for joining the network with Ubuntu.',
+    href: '/mining/ubuntu',
+    icon: Pickaxe,
+  },
+  {
+    title: 'Pool',
+    description: 'A direct path to pool participation, stats and support.',
+    href: '/pool',
+    icon: Layers3,
+  },
+  {
+    title: 'Staking',
+    description: 'A future premium page for staking access and visibility.',
+    href: '/staking',
+    icon: Shield,
+  },
+]
+
+const routeHighlights = [
+  {
+    eyebrow: 'For users',
+    title: 'Simple access to wallets, swap and explorer',
+    text: 'The homepage should feel easy to enter, not technical before the user even begins.',
+    href: 'https://wallet.inri.life',
+    linkLabel: 'Open Wallet',
+  },
+  {
+    eyebrow: 'For miners',
+    title: 'A route that makes mining feel alive and accessible',
+    text: 'Mining needs to be visible as part of the identity of the network, not hidden deep in the site.',
+    href: '/mining/windows',
+    linkLabel: 'Start Mining',
+  },
+  {
+    eyebrow: 'For builders',
+    title: 'Products and docs grouped with more clarity',
+    text: 'Token creation, P2P, whitepaper and future tooling should read like an ecosystem, not loose pages.',
+    href: '/token-factory',
+    linkLabel: 'Explore Products',
+  },
+]
+
+function SectionHeading({
+  eyebrow,
+  title,
+  text,
+}: {
+  eyebrow: string
+  title: string
+  text: string
+}) {
   return (
-    <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div className="min-w-0">
-        <p className="text-sm font-bold uppercase tracking-[0.20em] text-primary/80 sm:tracking-[0.28em]">{eyebrow}</p>
-        <h2 className="mt-3 text-balance text-3xl font-bold sm:text-4xl lg:text-5xl">{title}</h2>
-      </div>
-      <p className="max-w-2xl text-sm leading-8 text-white/70 sm:text-base">{text}</p>
+    <div className="mb-10 max-w-3xl">
+      <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-primary/85">{eyebrow}</p>
+      <h2 className="mt-3 text-balance text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{title}</h2>
+      <p className="mt-4 text-sm leading-8 text-white/68 sm:text-base">{text}</p>
     </div>
   )
 }
 
-function HomeGrid({ cards }: { cards: Array<{ title: string; description: string; href: string; icon: any; external?: boolean }> }) {
+function RoutePanel({ card, variant = 'default' }: { card: RouteCard; variant?: 'default' | 'subtle' }) {
+  const Icon = card.icon
+
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {cards.map((card) => {
-        const Icon = card.icon
-        return (
-          <Link
-            key={card.title}
-            href={card.href}
-            {...(card.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-            className="group min-w-0 rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/[0.07]"
-          >
-            <div className="inline-flex rounded-2xl border border-primary/20 bg-primary/10 p-3 text-primary">
-              <Icon className="h-6 w-6" />
-            </div>
-            <h3 className="mt-6 break-words text-2xl font-bold text-white">{card.title}</h3>
-            <p className="mt-3 text-sm leading-7 text-white/70">{card.description}</p>
-            <div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary">
-              Open section
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </div>
-          </Link>
-        )
-      })}
-    </div>
+    <Link
+      href={card.href}
+      {...(card.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+      className={[
+        'group rounded-[1.75rem] border p-6 transition',
+        variant === 'default'
+          ? 'border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] hover:border-primary/30 hover:bg-primary/[0.06]'
+          : 'border-white/8 bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]',
+      ].join(' ')}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+          <Icon className="h-5 w-5" />
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-primary transition group-hover:translate-x-1" />
+      </div>
+      <h3 className="mt-5 text-xl font-bold text-white">{card.title}</h3>
+      <p className="mt-3 text-sm leading-7 text-white/66">{card.description}</p>
+    </Link>
   )
 }
 
@@ -100,78 +165,96 @@ export function InriHomepage() {
     <InriShell>
       <main>
         <section className="relative overflow-hidden border-b border-white/10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,173,255,0.18),transparent_20%),radial-gradient(circle_at_82%_12%,rgba(0,99,204,0.24),transparent_24%)]" />
-          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(19,164,255,0.20),transparent_24%),radial-gradient(circle_at_84%_14%,rgba(19,164,255,0.14),transparent_22%),linear-gradient(180deg,rgba(5,12,20,0.2),transparent_48%)]" />
+          <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8 lg:pb-24 lg:pt-20">
+            <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white/65">
+                  <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_18px_rgba(19,164,255,0.8)]" />
+                  INRI CHAIN
+                  <span className="text-white/30">•</span>
+                  <span>Proof-of-Work</span>
+                  <span className="text-white/30">•</span>
+                  <span>Chain ID 3777</span>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-white/55">
+                  <span className="rounded-full border border-white/10 bg-[#071321] px-3 py-1.5">Low fees</span>
+                  <span className="rounded-full border border-white/10 bg-[#071321] px-3 py-1.5">Community driven</span>
+                  <span className="rounded-full border border-white/10 bg-[#071321] px-3 py-1.5">Built for miners</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 grid gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.20em] text-cyan-200 sm:tracking-[0.24em]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.20em] text-primary">
                   <Zap className="h-4 w-4" />
-                  Fork on block 6000000
+                  Building the future of PoW
                 </div>
 
-                <h1 className="mt-6 max-w-5xl text-balance text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">
-                  A clearer, stronger front page for the INRI ecosystem.
+                <h1 className="mt-6 max-w-4xl text-balance text-4xl font-bold leading-[1.04] text-white sm:text-5xl lg:text-7xl">
+                  A cleaner, stronger and more futuristic home for INRI CHAIN.
                 </h1>
 
                 <p className="mt-6 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-                  INRI CHAIN is a community-driven Proof-of-Work Layer 1 focused on decentralization, low fees and practical ecosystem access. This version reorganizes the project into a cleaner experience inspired by how stronger networks present products, network routes and trust signals.
+                  The new direction is simple: less visual noise, more brand presence, better hierarchy and live proof of the network. The homepage should feel premium, technological and easy to navigate from the first second.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <InriLinkButton href="/inri-wallet">Open INRI Wallet</InriLinkButton>
-                  <InriLinkButton href="/wallets" variant="secondary">Wallets</InriLinkButton>
-                  <InriLinkButton href="/swap" variant="secondary">Swap</InriLinkButton>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-3">
                   <InriLinkButton href="https://wallet.inri.life" external>
-                    Official Wallet
+                    Open INRI Wallet
                   </InriLinkButton>
                   <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
-                    Explorer
+                    Open Explorer
+                  </InriLinkButton>
+                  <InriLinkButton href="/mining/windows" variant="secondary">
+                    Start Mining
                   </InriLinkButton>
                 </div>
 
-                <div className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  {quickStats.map((item) => (
-                    <div key={item.label} className="min-w-0 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm">
-                      <p className="break-words text-3xl font-bold text-white md:text-4xl">{item.value}</p>
-                      <p className="mt-2 text-sm text-white/60">{item.label}</p>
+                <div className="mt-10 grid gap-3 sm:grid-cols-3">
+                  {[
+                    { value: '3777', label: 'Chain ID' },
+                    { value: 'PoW', label: 'Consensus' },
+                    { value: 'Wallet + Mining', label: 'Main routes' },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4">
+                      <p className="text-2xl font-bold text-white">{item.value}</p>
+                      <p className="mt-2 text-sm text-white/58">{item.label}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="relative flex items-center justify-center">
-                <div className="absolute -inset-3 rounded-[2rem] bg-[radial-gradient(circle,rgba(0,128,255,0.18),transparent_70%)] blur-2xl" />
-                <div className="relative w-full max-w-xl rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+              <div className="relative">
+                <div className="absolute -inset-6 bg-[radial-gradient(circle,rgba(19,164,255,0.18),transparent_62%)] blur-3xl" />
+                <div className="relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-[0_35px_120px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:p-7">
                   <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold uppercase tracking-[0.20em] text-primary/90 sm:tracking-[0.24em]">INRI overview</p>
-                      <h2 className="mt-2 text-balance text-2xl font-bold">One cleaner control surface</h2>
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Visual direction</p>
+                      <h2 className="mt-2 text-2xl font-bold text-white">One hero. One live section. Clear routes.</h2>
                     </div>
-                    <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-primary sm:tracking-[0.18em]">
-                      live ready
-                    </div>
+                    <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                      INRI style
+                    </span>
                   </div>
+
                   <div className="mt-6 grid gap-4">
-                    {[
-                      ['Products', 'INRI Wallet, Swap, Token Factory, P2P'],
-                      ['Network', 'Mining, Pool, Staking, Explorer'],
-                      ['Wallet access', 'Connect and enter the ecosystem'],
-                      ['Docs', 'Whitepaper and support routes'],
-                    ].map(([title, subtitle]) => (
-                      <div key={title} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#081424] px-4 py-4">
-                        <div className="min-w-0">
-                          <p className="font-bold text-white">{title}</p>
-                          <p className="text-sm text-white/60">{subtitle}</p>
+                    {routeHighlights.map((item) => (
+                      <Link
+                        key={item.title}
+                        href={item.href}
+                        className="group rounded-[1.45rem] border border-white/10 bg-[#071321]/90 p-5 transition hover:border-primary/30 hover:bg-primary/[0.06]"
+                      >
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">{item.eyebrow}</p>
+                        <h3 className="mt-2 text-lg font-bold text-white">{item.title}</h3>
+                        <p className="mt-2 text-sm leading-7 text-white/64">{item.text}</p>
+                        <div className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">
+                          {item.linkLabel}
+                          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                         </div>
-                        <ArrowRight className="h-5 w-5 shrink-0 text-primary" />
-                      </div>
+                      </Link>
                     ))}
-                  </div>
-                  <div className="mt-6 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4 text-sm leading-7 text-cyan-50/90">
-                    Built to feel more like a serious chain platform and less like a crowded link list.
                   </div>
                 </div>
               </div>
@@ -179,41 +262,60 @@ export function InriHomepage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" id="products">
-          <SectionIntro
-            eyebrow="Products"
-            title="Product pages that make INRI feel like a bigger network."
-            text="The strongest chain sites usually separate products from infrastructure. This section gives INRI Wallet, Wallets, Swap, Token Factory and P2P their own visual weight instead of burying them in navigation."
-          />
-          <HomeGrid cards={productCards} />
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" id="network">
-          <SectionIntro
-            eyebrow="Network"
-            title="Core network routes presented like real platform entry points."
-            text="Mining, pool, staking and explorer now sit together as network access routes. That makes the site easier to scan and easier to trust for first-time visitors."
-          />
-          <HomeGrid cards={networkCards} />
-        </section>
-
         <NetworkPulse />
 
-        <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-          <SectionIntro
-            eyebrow="Why this works"
-            title="Less clutter, stronger hierarchy, better first impression."
-            text="The best network homepages tend to do three things well: explain the mission fast, organize products clearly, and back it up with visible network routes and proof points."
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Primary paths"
+            title="The homepage should guide people, not overwhelm them"
+            text="The strongest blockchain sites today separate the first experience into clear routes for users, miners or validators, and builders. The INRI home should do the same while keeping the official dark-blue identity consistent."
           />
-          <div className="grid gap-5 lg:grid-cols-3">
-            {benefits.map((item) => (
-              <div key={item.title} className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-6 backdrop-blur-sm">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/80">Highlight</p>
-                <h3 className="mt-4 break-words text-2xl font-bold text-white">{item.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-white/70">{item.text}</p>
-              </div>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {routeHighlights.map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="group rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-7 transition hover:border-primary/30 hover:bg-primary/[0.06]"
+              >
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">{item.eyebrow}</p>
+                <h3 className="mt-4 text-2xl font-bold text-white">{item.title}</h3>
+                <p className="mt-4 text-sm leading-8 text-white/68">{item.text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary">
+                  {item.linkLabel}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </div>
+              </Link>
             ))}
           </div>
+        </section>
+
+        <section className="border-y border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.03),rgba(255,255,255,0.015))]">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+            <SectionHeading
+              eyebrow="Ecosystem"
+              title="Products and utility should feel like part of one system"
+              text="Wallet, explorer, token creation and future products should be presented in one visual language. That is how the site begins to look like a real chain platform instead of a collection of disconnected pages."
+            />
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {ecosystemCards.map((card) => (
+                <RoutePanel key={card.title} card={card} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Mining routes"
+            title="Mining deserves a first-class visual position on the site"
+            text="INRI is not supposed to feel generic. Mining is part of the brand, so the homepage should naturally lead miners to the right place without making the page feel heavy or disorganized."
+          />
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {miningRoutes.map((card) => (
+                <RoutePanel key={card.title} card={card} variant="subtle" />
+              ))}
+            </div>
         </section>
       </main>
     </InriShell>
