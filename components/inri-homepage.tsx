@@ -35,7 +35,7 @@ const networkCards = [
 
 const quickStats = [
   { value: '3777', label: 'Chain ID' },
-  { value: 'PoW', label: 'Consensus' },
+  { value: 'Proof-of-Work', label: 'Consensus' },
   { value: 'Wallets', label: 'Ecosystem path' },
   { value: 'Explorer', label: 'Live route' },
 ]
@@ -43,7 +43,7 @@ const quickStats = [
 const benefits = [
   {
     title: 'Clear mission first',
-    text: 'The homepage now leads with a simple mission statement and fewer distractions, instead of feeling like a dense list of links.',
+    text: 'The homepage leads with a simple mission statement and fewer distractions, instead of feeling like a dense list of links.',
   },
   {
     title: 'Products before clutter',
@@ -58,9 +58,9 @@ const benefits = [
 function SectionIntro({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
   return (
     <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div>
-        <p className="text-sm font-bold uppercase tracking-[0.28em] text-primary/80">{eyebrow}</p>
-        <h2 className="mt-3 text-3xl font-bold sm:text-4xl lg:text-5xl">{title}</h2>
+      <div className="min-w-0">
+        <p className="text-sm font-bold uppercase tracking-[0.20em] text-primary/80 sm:tracking-[0.28em]">{eyebrow}</p>
+        <h2 className="mt-3 text-balance text-3xl font-bold sm:text-4xl lg:text-5xl">{title}</h2>
       </div>
       <p className="max-w-2xl text-sm leading-8 text-white/70 sm:text-base">{text}</p>
     </div>
@@ -77,12 +77,12 @@ function HomeGrid({ cards }: { cards: Array<{ title: string; description: string
             key={card.title}
             href={card.href}
             {...(card.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-            className="group rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/[0.07]"
+            className="group min-w-0 rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm transition hover:border-primary/40 hover:bg-white/[0.07]"
           >
             <div className="inline-flex rounded-2xl border border-primary/20 bg-primary/10 p-3 text-primary">
               <Icon className="h-6 w-6" />
             </div>
-            <h3 className="mt-6 text-2xl font-bold text-white">{card.title}</h3>
+            <h3 className="mt-6 break-words text-2xl font-bold text-white">{card.title}</h3>
             <p className="mt-3 text-sm leading-7 text-white/70">{card.description}</p>
             <div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary">
               Open section
@@ -103,13 +103,13 @@ export function InriHomepage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,173,255,0.18),transparent_20%),radial-gradient(circle_at_82%_12%,rgba(0,99,204,0.24),transparent_24%)]" />
           <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.20em] text-cyan-200 sm:tracking-[0.24em]">
                   <Zap className="h-4 w-4" />
                   Fork on block 6000000
                 </div>
 
-                <h1 className="mt-6 max-w-5xl text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">
+                <h1 className="mt-6 max-w-5xl text-balance text-4xl font-bold leading-tight sm:text-5xl lg:text-7xl">
                   A clearer, stronger front page for the INRI ecosystem.
                 </h1>
 
@@ -125,7 +125,7 @@ export function InriHomepage() {
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   <InriLinkButton href="https://wallet.inri.life" external>
-                    INRI Wallet
+                    Official Wallet
                   </InriLinkButton>
                   <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
                     Explorer
@@ -134,8 +134,8 @@ export function InriHomepage() {
 
                 <div className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                   {quickStats.map((item) => (
-                    <div key={item.label} className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm">
-                      <p className="text-3xl font-bold text-white">{item.value}</p>
+                    <div key={item.label} className="min-w-0 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+                      <p className="break-words text-3xl font-bold text-white md:text-4xl">{item.value}</p>
                       <p className="mt-2 text-sm text-white/60">{item.label}</p>
                     </div>
                   ))}
@@ -145,12 +145,12 @@ export function InriHomepage() {
               <div className="relative flex items-center justify-center">
                 <div className="absolute -inset-3 rounded-[2rem] bg-[radial-gradient(circle,rgba(0,128,255,0.18),transparent_70%)] blur-2xl" />
                 <div className="relative w-full max-w-xl rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-5">
-                    <div>
-                      <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary/90">INRI overview</p>
-                      <h2 className="mt-2 text-2xl font-bold">One cleaner control surface</h2>
+                  <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold uppercase tracking-[0.20em] text-primary/90 sm:tracking-[0.24em]">INRI overview</p>
+                      <h2 className="mt-2 text-balance text-2xl font-bold">One cleaner control surface</h2>
                     </div>
-                    <div className="rounded-2xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                    <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-primary sm:tracking-[0.18em]">
                       live ready
                     </div>
                   </div>
@@ -161,12 +161,12 @@ export function InriHomepage() {
                       ['Wallet access', 'Connect and enter the ecosystem'],
                       ['Docs', 'Whitepaper and support routes'],
                     ].map(([title, subtitle]) => (
-                      <div key={title} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#081424] px-4 py-4">
-                        <div>
+                      <div key={title} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#081424] px-4 py-4">
+                        <div className="min-w-0">
                           <p className="font-bold text-white">{title}</p>
                           <p className="text-sm text-white/60">{subtitle}</p>
                         </div>
-                        <ArrowRight className="h-5 w-5 text-primary" />
+                        <ArrowRight className="h-5 w-5 shrink-0 text-primary" />
                       </div>
                     ))}
                   </div>
@@ -209,7 +209,7 @@ export function InriHomepage() {
             {benefits.map((item) => (
               <div key={item.title} className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-6 backdrop-blur-sm">
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-primary/80">Highlight</p>
-                <h3 className="mt-4 text-2xl font-bold text-white">{item.title}</h3>
+                <h3 className="mt-4 break-words text-2xl font-bold text-white">{item.title}</h3>
                 <p className="mt-4 text-sm leading-7 text-white/70">{item.text}</p>
               </div>
             ))}

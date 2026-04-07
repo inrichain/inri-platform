@@ -1,16 +1,8 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import {
-  ExternalLink,
-  Github,
-  Instagram,
-  Mail,
-  MessageCircle,
-  Send,
-  Shield,
-  Youtube,
-} from 'lucide-react'
+import { Github, Instagram, Mail, Send, Shield, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
+import { ConnectWalletButton } from '@/components/connect-wallet-button'
 
 export type InriNavItem = {
   label: string
@@ -44,10 +36,10 @@ const footerPrimaryLinks = [
 ]
 
 const socialLinks = [
-  { label: 'X', href: 'https://x.com/inrichain', icon: MessageCircle },
+  { label: 'X', href: 'https://x.com/inrichain', text: 'X' },
   { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: Instagram },
   { label: 'Telegram', href: 'https://t.me/+MQyCO6GXZJtmOTJh', icon: Send },
-  { label: 'Discord', href: 'https://discord.com/invite/VuUCSTYJNe', icon: MessageCircle },
+  { label: 'Discord', href: 'https://discord.gg/VuUCSTYJNe', text: 'Discord' },
   { label: 'GitHub', href: 'https://github.com/inrichain', icon: Github },
   { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: Youtube },
 ]
@@ -89,18 +81,17 @@ export function InriLinkButton({
       className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all ${styles}`}
     >
       {children}
-      {external ? <ExternalLink className="h-4 w-4" /> : null}
     </Link>
   )
 }
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#061120]/88 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#061120]/92 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Logo showText />
+        <Logo showText size={64} />
 
-        <nav className="hidden xl:flex items-center gap-6">
+        <nav className="hidden xl:flex min-w-0 items-center gap-5 2xl:gap-6">
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
@@ -113,6 +104,7 @@ export function InriHeader() {
           <InriLinkButton href="https://wallet.inri.life" external>
             INRI Wallet
           </InriLinkButton>
+          <ConnectWalletButton />
         </div>
       </div>
 
@@ -121,6 +113,14 @@ export function InriHeader() {
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
+        </div>
+        <div className="mx-auto flex max-w-7xl gap-3 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8 md:hidden">
+          <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
+            Explorer
+          </InriLinkButton>
+          <InriLinkButton href="https://wallet.inri.life" external>
+            INRI Wallet
+          </InriLinkButton>
         </div>
       </div>
     </header>
@@ -134,7 +134,7 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80 transition hover:border-primary/40 hover:bg-primary/10 hover:text-white"
+      className="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-3 text-white/80 transition hover:border-primary/40 hover:bg-primary/10 hover:text-white"
     >
       {children}
     </Link>
@@ -147,7 +147,7 @@ export function InriFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.9fr_0.9fr]">
           <div>
-            <Logo showText />
+            <Logo showText size={58} />
             <p className="mt-5 max-w-xl text-sm leading-7 text-white/65">
               INRI CHAIN is a community-driven Proof-of-Work Layer 1 focused on low fees,
               sustainable mining, ecosystem access and a cleaner experience for real users.
@@ -158,7 +158,7 @@ export function InriFooter() {
                 const Icon = item.icon
                 return (
                   <FooterSocialIcon key={item.label} href={item.href} label={item.label}>
-                    {item.label === 'X' ? <span className="text-lg font-bold">X</span> : <Icon className="h-5 w-5" />}
+                    {item.text ? <span className="text-xs font-bold">{item.text}</span> : Icon ? <Icon className="h-5 w-5" /> : null}
                   </FooterSocialIcon>
                 )
               })}
@@ -227,7 +227,7 @@ export function InriFooter() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(17,95,174,0.26),transparent_35%),linear-gradient(180deg,#030914_0%,#071221_40%,#07111e_100%)] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(17,95,174,0.30),transparent_35%),linear-gradient(180deg,#040d19_0%,#081425_35%,#07111e_100%)] text-white">
       <InriHeader />
       {children}
       <InriFooter />

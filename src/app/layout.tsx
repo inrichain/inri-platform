@@ -14,9 +14,12 @@ export const metadata: Metadata = {
   description:
     'Official INRI CHAIN website with wallets, swap, token factory, mining, pool, staking, P2P, explorer and whitepaper access.',
   icons: {
-    icon: [{ url: withBasePath('/inri-logo.png'), type: 'image/png' }],
-    shortcut: [withBasePath('/inri-logo.png')],
-    apple: [withBasePath('/inri-logo.png')],
+    icon: [
+      { url: withBasePath('/icon.png'), sizes: '32x32', type: 'image/png' },
+      { url: withBasePath('/inri-logo.png'), sizes: '256x256', type: 'image/png' },
+    ],
+    shortcut: [withBasePath('/icon.png')],
+    apple: [withBasePath('/apple-icon.png')],
   },
 }
 

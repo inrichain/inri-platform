@@ -9,7 +9,7 @@ type LogoProps = {
 }
 
 export function Logo({
-  size = 44,
+  size = 56,
   className = '',
   href = '/',
   showText = false,
@@ -28,13 +28,13 @@ export function Logo({
   if (!showText) return icon
 
   return (
-    <Link href={href} className="flex items-center gap-3">
-      {icon}
-      <div className="hidden sm:block">
-        <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary">
+    <Link href={href} className="flex min-w-0 items-center gap-3 md:gap-4">
+      <span className="shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold uppercase tracking-[0.20em] text-primary sm:text-base sm:tracking-[0.28em]">
           INRI CHAIN
         </p>
-        <p className="text-xs text-white/60">Proof-of-Work for everyone</p>
+        <p className="truncate text-xs text-white/65 sm:text-sm">Proof-of-Work for everyone</p>
       </div>
     </Link>
   )
