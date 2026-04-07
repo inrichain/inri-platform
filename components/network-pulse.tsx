@@ -2,129 +2,115 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import {
-  Activity,
-  ArrowRight,
-  Blocks,
-  Cpu,
-  Gauge,
-  Globe2,
-  Pickaxe,
-  Radar,
-  Shield,
-  Sparkles,
-} from 'lucide-react'
-
-type RecentBlock = {
-  number: number
-  txCount: number
-  gasRatio: number
-  interval: number | null
-  ageLabel: string
-  baseFeeGwei: string
-  hash: string
-}
+import { Activity, ArrowUpRight, Blocks, Clock3, Flame, Gauge, Network, ShieldCheck, Wallet } from 'lucide-react'
 
 type PulseState = {
-  status: 'loading' | 'ok' | 'error'
-  updatedAt: string
   latestBlock: number | null
-  peerCount: number | null
-  difficultyLabel: string
-  hashrateLabel: string
-  avgBlockTime: number | null
-  recentBlocks: RecentBlock[]
+  peers: number | null
+  chainId: string
+  baseFee: string
+  gasUsedRatio: string
+  avgBlockTime: string
+  difficulty: string
+  hashrate: string
+  latestTxs: number
+  updatedAt: string
+  status: 'ok' | 'error' | 'loading'
 }
 
-const initialState: PulseState = {
-  status: 'loading',
-  updatedAt: '—',
-  latestBlock: null,
-  peerCount: null,
-  difficultyLabel: '—',
-  hashrateLabel: '—',
-  avgBlockTime: null,
-  recentBlocks: [],
+type RecentBlock = {
+  block: number
+  txs: number
+  gasUsedPct: number
+  interval: number
 }
 
 const RPC_URL = 'https://rpc.inri.life'
 const REFRESH_INTERVAL = 15000
 
-type ViewMode = 'overview' | 'blocks' | 'mining'
+const initialState: PulseState = {
+  latestBlock: null,
+  peers: null,
+  chainId: '-',
+  baseFee: '-',
+  gasUsedRatio: '-',
+  avgBlockTime: '-',
+  difficulty: '-',
+  hashrate: '-',
+  latestTxs: 0,
+  updatedAt: '—',
+  status: 'loading',
+}
 
-function formatCompactNumber(value: number | null) {
-  if (value === null || !Number.isFinite(value)) return '—'
+function formatShortNumber(value: number) {
+  if (!Number.isFinite(value)) return '-'
   if (value < 1000) return String(value)
+
   const units = ['', 'K', 'M', 'B', 'T']
   let current = value
-  let unitIndex = 0
-  while (current >= 1000 && unitIndex < units.length - 1) {
+  let index = 0
+
+  while (current >= 1000 && index < units.length - 1) {
     current /= 1000
-    unitIndex += 1
+    index += 1
   }
-  return `${current >= 10 ? current.toFixed(1) : current.toFixed(2)}${units[unitIndex]}`
+
+  return `${current >= 10 ? current.toFixed(1) : current.toFixed(2)}${units[index]}`
 }
 
-function formatBigIntShort(hex?: string) {
-  if (!hex) return '—'
+function formatBigHexShort(hex?: string) {
+  if (!hex) return '-'
+
   try {
     let value = BigInt(hex)
-    const units = ['', 'K', 'M', 'G', 'T', 'P']
-    let unitIndex = 0
-    while (value >= 1000n && unitIndex < units.length - 1) {
+    const units = ['', 'K', 'M', 'G', 'T', 'P', 'E']
+    let index = 0
+
+    while (value >= 1000n && index < units.length - 1) {
       value /= 1000n
-      unitIndex += 1
+      index += 1
     }
-    return `${value.toString()}${units[unitIndex]}`
+
+    return `${value.toString()}${units[index]}`
   } catch {
-    return '—'
+    return '-'
   }
 }
 
-function formatHashrate(value: number | null) {
-  if (value === null || !Number.isFinite(value) || value <= 0) return '—'
+function formatGwei(hex?: string) {
+  if (!hex) return '-'
+
+  try {
+    const gwei = Number(BigInt(hex)) / 1e9
+    if (!Number.isFinite(gwei)) return '-'
+    return gwei >= 1 ? `${gwei.toFixed(2)} gwei` : `${gwei.toFixed(4)} gwei`
+  } catch {
+    return '-'
+  }
+}
+
+function formatHashrate(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return '-'
+
   const units = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s']
   let current = value
-  let unitIndex = 0
-  while (current >= 1000 && unitIndex < units.length - 1) {
+  let index = 0
+
+  while (current >= 1000 && index < units.length - 1) {
     current /= 1000
-    unitIndex += 1
+    index += 1
   }
-  return `${current.toFixed(2)} ${units[unitIndex]}`
+
+  return `${current.toFixed(2)} ${units[index]}`
 }
 
-function formatAge(timestampHex?: string) {
-  if (!timestampHex) return '—'
-  try {
-    const timestamp = parseInt(timestampHex, 16) * 1000
-    const diffMs = Math.max(0, Date.now() - timestamp)
-    const diffSec = Math.floor(diffMs / 1000)
-    if (diffSec < 60) return `${diffSec}s ago`
-    const diffMin = Math.floor(diffSec / 60)
-    if (diffMin < 60) return `${diffMin}m ago`
-    const diffHour = Math.floor(diffMin / 60)
-    return `${diffHour}h ago`
-  } catch {
-    return '—'
-  }
+function hexToNumber(value?: string) {
+  if (!value) return 0
+  return Number.parseInt(value, 16)
 }
 
-function hexToNumber(hex?: string) {
-  if (!hex) return 0
-  return parseInt(hex, 16)
-}
-
-function hexToGweiString(hex?: string) {
-  if (!hex) return '—'
-  try {
-    const wei = BigInt(hex)
-    const gweiBase = 1_000_000_000n
-    const whole = wei / gweiBase
-    const fraction = (wei % gweiBase) / 10_000_000n
-    return `${whole.toString()}.${fraction.toString().padStart(2, '0')}`
-  } catch {
-    return '—'
-  }
+function numberToHex(value: number) {
+  return `0x${value.toString(16)}`
 }
 
 async function rpc(method: string, params: unknown[] = []) {
@@ -135,132 +121,104 @@ async function rpc(method: string, params: unknown[] = []) {
     cache: 'no-store',
   })
 
-  if (!response.ok) {
-    throw new Error(`RPC request failed for ${method}`)
-  }
-
+  if (!response.ok) throw new Error('RPC request failed')
   const data = await response.json()
-  if (data.error) {
-    throw new Error(data.error.message || `RPC error for ${method}`)
-  }
-
+  if (data.error) throw new Error(data.error.message || 'RPC error')
   return data.result
 }
 
-function SegmentButton({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        'rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] transition',
-        active
-          ? 'border-primary/40 bg-primary/12 text-primary shadow-[0_12px_30px_rgba(19,164,255,0.18)]'
-          : 'border-white/10 bg-white/[0.03] text-white/58 hover:border-white/20 hover:text-white',
-      ].join(' ')}
-    >
-      {label}
-    </button>
-  )
+function buildRecentBlocks(blocks: any[]): RecentBlock[] {
+  const ordered = [...blocks]
+    .filter(Boolean)
+    .sort((a, b) => hexToNumber(a?.number) - hexToNumber(b?.number))
+
+  return ordered.map((block, index) => {
+    const currentTimestamp = hexToNumber(block?.timestamp)
+    const previousTimestamp = index > 0 ? hexToNumber(ordered[index - 1]?.timestamp) : currentTimestamp
+    const gasUsed = hexToNumber(block?.gasUsed)
+    const gasLimit = Math.max(hexToNumber(block?.gasLimit), 1)
+
+    return {
+      block: hexToNumber(block?.number),
+      txs: Array.isArray(block?.transactions) ? block.transactions.length : 0,
+      gasUsedPct: Number(((gasUsed / gasLimit) * 100).toFixed(1)),
+      interval: index > 0 ? Math.max(currentTimestamp - previousTimestamp, 0) : 0,
+    }
+  })
 }
 
-function MetricPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
-    </div>
-  )
+function getAverageBlockTime(recentBlocks: any[]) {
+  const ordered = [...recentBlocks]
+    .filter(Boolean)
+    .sort((a, b) => hexToNumber(a?.number) - hexToNumber(b?.number))
+
+  if (ordered.length < 2) return 0
+
+  let total = 0
+  let count = 0
+
+  for (let index = 1; index < ordered.length; index += 1) {
+    const currentTimestamp = hexToNumber(ordered[index]?.timestamp)
+    const previousTimestamp = hexToNumber(ordered[index - 1]?.timestamp)
+    if (currentTimestamp > 0 && previousTimestamp > 0 && currentTimestamp >= previousTimestamp) {
+      total += currentTimestamp - previousTimestamp
+      count += 1
+    }
+  }
+
+  return count > 0 ? total / count : 0
 }
 
 export function NetworkPulse() {
   const [pulse, setPulse] = useState<PulseState>(initialState)
-  const [view, setView] = useState<ViewMode>('overview')
+  const [recentBlocks, setRecentBlocks] = useState<RecentBlock[]>([])
 
   useEffect(() => {
     let mounted = true
 
     async function load() {
       try {
-        const [blockHex, peerHex] = await Promise.all([rpc('eth_blockNumber'), rpc('net_peerCount')])
-        const latestBlockNumber = parseInt(blockHex, 16)
-        const peerCount = parseInt(peerHex, 16)
-        const depth = Math.min(7, Math.max(2, latestBlockNumber + 1))
-        const blockNumbers = Array.from({ length: depth }, (_, index) => latestBlockNumber - index)
+        const [blockHex, peerHex, chainIdHex, latestBlock] = await Promise.all([
+          rpc('eth_blockNumber'),
+          rpc('net_peerCount'),
+          rpc('eth_chainId'),
+          rpc('eth_getBlockByNumber', ['latest', true]),
+        ])
 
-        const blocks = await Promise.all(
-          blockNumbers.map((blockNumber) => rpc('eth_getBlockByNumber', [`0x${blockNumber.toString(16)}`, false]))
+        const latestBlockNumber = hexToNumber(blockHex)
+        const targets = Array.from({ length: 7 }, (_, index) => latestBlockNumber - (6 - index)).filter((value) => value >= 0)
+        const rawRecentBlocks = await Promise.all(
+          targets.map((blockNumber) => rpc('eth_getBlockByNumber', [numberToHex(blockNumber), true]))
         )
 
-        const latestBlock = blocks[0]
-        const intervals = blocks
-          .slice(0, -1)
-          .map((block, index) => {
-            const currentTs = hexToNumber(block?.timestamp)
-            const nextTs = hexToNumber(blocks[index + 1]?.timestamp)
-            return currentTs > 0 && nextTs > 0 ? Math.max(1, currentTs - nextTs) : null
-          })
-          .filter((value): value is number => value !== null)
-
-        const avgBlockTime = intervals.length
-          ? Number((intervals.reduce((sum, value) => sum + value, 0) / intervals.length).toFixed(1))
-          : null
-
-        const difficultyLabel = formatBigIntShort(latestBlock?.difficulty)
-        const difficultyNumber = latestBlock?.difficulty
-          ? Number(
-              BigInt(latestBlock.difficulty) > BigInt(Number.MAX_SAFE_INTEGER)
-                ? Number.MAX_SAFE_INTEGER
-                : Number(BigInt(latestBlock.difficulty))
-            )
-          : 0
-        const estimatedHashrate = avgBlockTime && avgBlockTime > 0 ? difficultyNumber / avgBlockTime : null
-
-        const recentBlocks: RecentBlock[] = blocks.slice(0, 6).map((block, index) => {
-          const gasUsed = hexToNumber(block?.gasUsed)
-          const gasLimit = Math.max(1, hexToNumber(block?.gasLimit))
-          const interval = index < blocks.length - 1
-            ? Math.max(1, hexToNumber(block?.timestamp) - hexToNumber(blocks[index + 1]?.timestamp))
-            : null
-
-          return {
-            number: hexToNumber(block?.number),
-            txCount: Array.isArray(block?.transactions) ? block.transactions.length : 0,
-            gasRatio: Math.max(6, Math.min(100, Math.round((gasUsed / gasLimit) * 100))),
-            interval,
-            ageLabel: formatAge(block?.timestamp),
-            baseFeeGwei: hexToGweiString(block?.baseFeePerGas),
-            hash: typeof block?.hash === 'string' ? block.hash.slice(0, 10) : '—',
-          }
-        })
+        const averageBlockTime = getAverageBlockTime(rawRecentBlocks)
+        const gasUsed = hexToNumber(latestBlock?.gasUsed)
+        const gasLimit = Math.max(hexToNumber(latestBlock?.gasLimit), 1)
+        const difficultyHex = latestBlock?.difficulty || '0x0'
+        const difficultyBig = BigInt(difficultyHex)
+        const safeDifficulty = Number(difficultyBig > BigInt(Number.MAX_SAFE_INTEGER) ? Number.MAX_SAFE_INTEGER : difficultyBig)
+        const estimatedHashrate = averageBlockTime > 0 ? safeDifficulty / averageBlockTime : 0
+        const latestTxs = Array.isArray(latestBlock?.transactions) ? latestBlock.transactions.length : 0
 
         if (!mounted) return
 
         setPulse({
-          status: 'ok',
-          updatedAt: new Date().toLocaleTimeString(),
           latestBlock: latestBlockNumber,
-          peerCount,
-          difficultyLabel,
-          hashrateLabel: formatHashrate(estimatedHashrate),
-          avgBlockTime,
-          recentBlocks,
+          peers: hexToNumber(peerHex),
+          chainId: String(hexToNumber(chainIdHex)),
+          baseFee: formatGwei(latestBlock?.baseFeePerGas),
+          gasUsedRatio: `${((gasUsed / gasLimit) * 100).toFixed(1)}%`,
+          avgBlockTime: averageBlockTime > 0 ? `${averageBlockTime.toFixed(1)}s` : '-',
+          difficulty: formatBigHexShort(difficultyHex),
+          hashrate: formatHashrate(estimatedHashrate),
+          latestTxs,
+          updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          status: 'ok',
         })
+        setRecentBlocks(buildRecentBlocks(rawRecentBlocks))
       } catch {
         if (!mounted) return
-        setPulse((current) => ({
-          ...current,
-          status: 'error',
-          updatedAt: 'offline',
-        }))
+        setPulse((current) => ({ ...current, status: 'error', updatedAt: 'offline' }))
       }
     }
 
@@ -273,295 +231,179 @@ export function NetworkPulse() {
     }
   }, [])
 
-  const metricItems = useMemo(
+  const quickStats = useMemo(
     () => [
-      { label: 'Latest block', value: formatCompactNumber(pulse.latestBlock) },
-      { label: 'Peers', value: formatCompactNumber(pulse.peerCount) },
-      { label: 'Difficulty', value: pulse.difficultyLabel },
-      { label: 'Hashrate', value: pulse.hashrateLabel },
-      { label: 'Avg block time', value: pulse.avgBlockTime ? `${pulse.avgBlockTime}s` : '—' },
-      { label: 'Updated', value: pulse.updatedAt },
+      { label: 'Latest block', value: pulse.latestBlock ? formatShortNumber(pulse.latestBlock) : '-' },
+      { label: 'Peers', value: pulse.peers !== null ? formatShortNumber(pulse.peers) : '-' },
+      { label: 'Base fee', value: pulse.baseFee },
+      { label: 'Avg block', value: pulse.avgBlockTime },
+      { label: 'Chain ID', value: pulse.chainId },
     ],
     [pulse]
   )
 
-  const intervalBars = useMemo(() => {
-    const values = pulse.recentBlocks
-      .map((block) => block.interval)
-      .filter((value): value is number => value !== null)
-    const maxValue = values.length ? Math.max(...values) : 1
-    return values.map((value, index) => ({
-      label: `B${index + 1}`,
-      value,
-      height: `${Math.max(18, Math.round((value / maxValue) * 100))}%`,
-    }))
-  }, [pulse.recentBlocks])
+  const detailStats = useMemo(
+    () => [
+      { label: 'Difficulty', value: pulse.difficulty, icon: ShieldCheck },
+      { label: 'Estimated hashrate', value: pulse.hashrate, icon: Gauge },
+      { label: 'Gas used', value: pulse.gasUsedRatio, icon: Flame },
+      { label: 'Latest tx count', value: formatShortNumber(pulse.latestTxs), icon: Blocks },
+    ],
+    [pulse]
+  )
+
+  const displayBlocks = [...recentBlocks].reverse().slice(0, 5)
+  const chartBlocks = recentBlocks.slice(1)
+  const maxInterval = Math.max(...chartBlocks.map((item) => item.interval), 1)
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(180deg,rgba(7,16,28,0.98),rgba(6,14,24,0.92))] shadow-[0_35px_120px_rgba(0,0,0,0.32)]">
-        <div className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(19,164,255,0.08),transparent_32%,rgba(19,164,255,0.06))] px-5 py-4 sm:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                <Activity className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary/85">Live network layer</p>
-                <h2 className="text-2xl font-bold text-white sm:text-3xl">A cleaner command center for INRI CHAIN</h2>
+      <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(11,23,39,0.96),rgba(7,15,27,0.96))] shadow-[0_32px_120px_rgba(0,0,0,0.32)]">
+        <div className="border-b border-white/10 px-6 py-6 sm:px-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary/85">Live network proof</p>
+              <h2 className="mt-3 max-w-3xl text-3xl font-bold text-white sm:text-4xl">
+                Show that INRI is alive, usable and worth entering.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/68 sm:text-base">
+                This section should feel like proof, not noise: the latest block, chain health, fees, recent activity and direct paths into the ecosystem.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/78">
+              <Activity className="h-4 w-4 text-primary" />
+              {pulse.status === 'ok' ? `Live · Updated ${pulse.updatedAt}` : pulse.status === 'loading' ? 'Loading live data' : 'Live feed offline'}
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-5">
+            {quickStats.map((item) => (
+              <div key={item.label} className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] px-4 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">{item.label}</p>
+                <p className="mt-2 text-lg font-bold text-white sm:text-xl">{item.value}</p>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <SegmentButton active={view === 'overview'} label="Overview" onClick={() => setView('overview')} />
-              <SegmentButton active={view === 'blocks'} label="Blocks" onClick={() => setView('blocks')} />
-              <SegmentButton active={view === 'mining'} label="Mining" onClick={() => setView('mining')} />
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-8 px-5 py-6 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:py-8">
-          <div className="min-w-0">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {metricItems.map((item) => (
-                <MetricPill key={item.label} label={item.label} value={item.value} />
-              ))}
-            </div>
-
-            <div className="mt-6 overflow-hidden rounded-[1.8rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.14),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 sm:p-6">
-              {view === 'overview' ? (
-                <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-                  <div className="rounded-[1.6rem] border border-white/10 bg-[#071321]/92 p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Network now</p>
-                        <h3 className="mt-2 text-xl font-bold text-white">A premium live panel without visual clutter</h3>
-                      </div>
-                      <span className={[
-                        'rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em]',
-                        pulse.status === 'ok'
-                          ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
-                          : pulse.status === 'loading'
-                            ? 'border-primary/20 bg-primary/10 text-primary'
-                            : 'border-rose-400/20 bg-rose-400/10 text-rose-300',
-                      ].join(' ')}>
-                        {pulse.status === 'ok' ? 'Live' : pulse.status === 'loading' ? 'Loading' : 'Offline'}
-                      </span>
-                    </div>
-
-                    <div className="mt-6 rounded-[1.4rem] border border-white/8 bg-[linear-gradient(180deg,rgba(5,11,20,0.76),rgba(7,16,28,0.94))] p-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[11px] uppercase tracking-[0.20em] text-white/45">Chain signal</p>
-                          <p className="mt-1 text-3xl font-bold text-white">{formatCompactNumber(pulse.latestBlock)}</p>
-                          <p className="mt-1 text-sm text-white/55">Latest block observed from the public RPC</p>
-                        </div>
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                          <Globe2 className="h-7 w-7" />
-                        </div>
-                      </div>
-
-                      <div className="mt-6 grid grid-cols-3 gap-3">
-                        {[28, 44, 36, 62, 48, 58, 32, 66, 41].map((value, index) => (
-                          <div key={index} className="flex items-end gap-2">
-                            <div className="h-20 w-full rounded-full bg-white/[0.04] p-1">
-                              <div className="w-full rounded-full bg-[linear-gradient(180deg,rgba(109,220,255,0.95),rgba(19,164,255,0.35))]" style={{ height: `${value}%`, marginTop: 'auto' }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4">
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Why this works better</p>
-                      <div className="mt-4 space-y-4">
-                        {[
-                          'One dominant live area instead of many competing cards.',
-                          'Official dark-blue INRI palette kept across the whole section.',
-                          'Live metrics remain visible without making the page feel crowded.',
-                        ].map((item) => (
-                          <div key={item} className="flex gap-3 text-sm leading-7 text-white/74">
-                            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                            <span>{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[1.5rem] border border-primary/15 bg-primary/10 p-5">
-                      <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-                        <Sparkles className="h-4 w-4" />
-                        Better homepage rhythm
-                      </p>
-                      <p className="mt-3 text-sm leading-7 text-white/78">
-                        The goal is to feel closer to a modern chain homepage: cleaner hero, clearer live proof, and fewer elements competing at the same time.
-                      </p>
-                    </div>
-                  </div>
+        <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+            <div className="rounded-[1.7rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.12),transparent_40%),linear-gradient(180deg,rgba(8,18,31,0.96),rgba(7,14,25,0.96))] p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">Recent block rhythm</p>
+                  <p className="mt-2 text-sm leading-7 text-white/64">A cleaner visual of recent intervals and utilization instead of a crowded dashboard.</p>
                 </div>
-              ) : null}
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/75">
+                  <Clock3 className="h-4 w-4 text-primary" />
+                  Avg {pulse.avgBlockTime}
+                </div>
+              </div>
 
-              {view === 'blocks' ? (
-                <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-                  <div className="rounded-[1.6rem] border border-white/10 bg-[#071321]/92 p-5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Recent block rhythm</p>
-                    <h3 className="mt-2 text-xl font-bold text-white">Recent intervals and activity</h3>
-                    <div className="mt-6 flex h-48 items-end gap-3 rounded-[1.3rem] border border-white/8 bg-[linear-gradient(180deg,rgba(4,10,18,0.88),rgba(7,14,24,0.96))] px-4 py-5">
-                      {intervalBars.length ? intervalBars.map((bar) => (
-                        <div key={`${bar.label}-${bar.value}`} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
-                          <span className="text-xs font-semibold text-white/80">{bar.value}s</span>
-                          <div className="flex h-full w-full items-end rounded-full bg-white/[0.04] p-1">
-                            <div
-                              className="w-full rounded-full bg-[linear-gradient(180deg,rgba(107,224,255,0.95),rgba(19,164,255,0.32))] shadow-[0_14px_24px_rgba(19,164,255,0.12)]"
-                              style={{ height: bar.height }}
-                            />
-                          </div>
-                          <span className="text-[10px] uppercase tracking-[0.18em] text-white/40">{bar.label}</span>
-                        </div>
-                      )) : (
-                        <div className="flex h-full w-full items-center justify-center text-sm text-white/55">Waiting for block data</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {pulse.recentBlocks.map((block) => (
-                      <div key={block.number} className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Block {block.number}</p>
-                            <p className="mt-1 text-sm text-white/56">{block.hash} • {block.ageLabel}</p>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full border border-white/10 bg-[#081524] px-3 py-1 text-xs font-semibold text-white/80">{block.txCount} tx</span>
-                            <span className="rounded-full border border-white/10 bg-[#081524] px-3 py-1 text-xs font-semibold text-white/80">{block.baseFeeGwei} gwei</span>
-                            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{block.interval ? `${block.interval}s` : '—'}</span>
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-white/42">
-                            <span>Gas used</span>
-                            <span>{block.gasRatio}%</span>
-                          </div>
-                          <div className="h-2 rounded-full bg-white/[0.05] p-[2px]">
-                            <div className="h-full rounded-full bg-[linear-gradient(90deg,rgba(95,216,255,0.95),rgba(19,164,255,0.40))]" style={{ width: `${block.gasRatio}%` }} />
-                          </div>
-                        </div>
+              <div className="mt-8 grid grid-cols-6 items-end gap-3 sm:gap-4">
+                {chartBlocks.map((item) => {
+                  const height = `${Math.max(24, (item.interval / maxInterval) * 132)}px`
+                  return (
+                    <div key={item.block} className="flex flex-col items-center gap-3">
+                      <div className="flex h-40 w-full items-end justify-center rounded-[1.25rem] border border-white/6 bg-white/[0.02] px-2 py-3">
+                        <div
+                          className="w-full rounded-full bg-[linear-gradient(180deg,rgba(19,164,255,0.95),rgba(19,164,255,0.18))] shadow-[0_10px_30px_rgba(19,164,255,0.22)]"
+                          style={{ height }}
+                        />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {view === 'mining' ? (
-                <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-                  <div className="rounded-[1.6rem] border border-white/10 bg-[#071321]/92 p-5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Mining surface</p>
-                    <h3 className="mt-2 text-xl font-bold text-white">The network should feel mineable, not abstract</h3>
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      {[
-                        { icon: Cpu, label: 'Consensus', value: 'Proof-of-Work' },
-                        { icon: Pickaxe, label: 'Estimated hashrate', value: pulse.hashrateLabel },
-                        { icon: Gauge, label: 'Difficulty', value: pulse.difficultyLabel },
-                        { icon: Radar, label: 'Avg block time', value: pulse.avgBlockTime ? `${pulse.avgBlockTime}s` : '—' },
-                      ].map((item) => {
-                        const Icon = item.icon
-                        return (
-                          <div key={item.label} className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
-                            <div className="flex items-center gap-3">
-                              <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                                <Icon className="h-5 w-5" />
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-[11px] uppercase tracking-[0.18em] text-white/42">{item.label}</p>
-                                <p className="mt-1 truncate text-sm font-semibold text-white">{item.value}</p>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      <div className="text-center">
+                        <p className="text-xs font-bold text-white">{item.interval}s</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/42">#{String(item.block).slice(-4)}</p>
+                      </div>
                     </div>
-                  </div>
+                  )
+                })}
+              </div>
 
-                  <div className="grid gap-4">
-                    {[
-                      {
-                        title: 'Mining Windows',
-                        text: 'A more direct route for CPU miners joining from Windows.',
-                        href: '/mining/windows',
-                      },
-                      {
-                        title: 'Mining Ubuntu',
-                        text: 'Linux path for miners who want a cleaner setup flow.',
-                        href: '/mining/ubuntu',
-                      },
-                      {
-                        title: 'Pool & Explorer',
-                        text: 'Pool participation and block visibility should stay one click away.',
-                        href: '/pool',
-                      },
-                    ].map((item) => (
-                      <Link
-                        key={item.title}
-                        href={item.href}
-                        className="group rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-5 transition hover:border-primary/30 hover:bg-primary/[0.06]"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-lg font-bold text-white">{item.title}</p>
-                            <p className="mt-2 text-sm leading-7 text-white/68">{item.text}</p>
-                          </div>
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary transition group-hover:translate-x-1">
-                            <ArrowRight className="h-5 w-5" />
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
+              <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {detailStats.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={item.label} className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="inline-flex rounded-2xl border border-primary/15 bg-primary/10 p-2 text-primary">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">{item.label}</p>
+                      <p className="mt-2 text-lg font-bold text-white">{item.value}</p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-5 sm:p-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">Design direction</p>
-              <h3 className="mt-2 text-xl font-bold text-white">More premium, less noisy</h3>
-              <div className="mt-5 space-y-4 text-sm leading-7 text-white/72">
-                <div className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>Keep the official INRI blue on a darker, more refined background.</span>
+          <div className="p-6 sm:p-8">
+            <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">Latest blocks</p>
+                  <h3 className="mt-3 text-2xl font-bold text-white">The network should look active at a glance.</h3>
                 </div>
-                <div className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>Use fewer boxes, more spacing, and stronger section hierarchy.</span>
-                </div>
-                <div className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span>Only show live data where it adds trust and motion to the page.</span>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/70">
+                  <Network className="h-4 w-4 text-primary" />
+                  Chain status
                 </div>
               </div>
-            </div>
 
-            <div className="rounded-[1.8rem] border border-primary/15 bg-[linear-gradient(180deg,rgba(19,164,255,0.12),rgba(19,164,255,0.05))] p-5 sm:p-6">
-              <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-                <Shield className="h-4 w-4" />
-                Structured for next pages
-              </p>
-              <p className="mt-3 text-sm leading-7 text-white/80">
-                This section is already shaped to extend into Pool, Staking, Mining, Wallet and Explorer pages without breaking the visual language.
-              </p>
-            </div>
+              <div className="mt-6 space-y-3">
+                {displayBlocks.map((item) => (
+                  <div key={item.block} className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-white/10 bg-[#091322] px-4 py-4">
+                    <div>
+                      <p className="text-sm font-bold text-white">Block #{item.block}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/45">{item.interval}s interval · {item.txs} txs</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.16em] text-white/45">Gas used</p>
+                      <p className="mt-1 text-sm font-bold text-primary">{item.gasUsedPct}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-[#071321]/92 p-5 sm:p-6">
-              <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary/85">
-                <Blocks className="h-4 w-4" />
-                Next detail layer
-              </p>
-              <p className="mt-3 text-sm leading-7 text-white/72">
-                After the homepage is approved, the strongest next move is to build dedicated pages with the same visual system, instead of forcing every ecosystem detail into the front page.
-              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <Link
+                  href="https://explorer.inri.life"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-primary/35 hover:bg-primary/10"
+                >
+                  <p className="text-sm font-bold text-white">Explorer</p>
+                  <p className="mt-2 text-sm leading-6 text-white/62">Inspect blocks, transactions and addresses.</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">
+                    Open <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </Link>
+
+                <Link
+                  href="https://wallet.inri.life"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-primary/35 hover:bg-primary/10"
+                >
+                  <p className="text-sm font-bold text-white">Wallet</p>
+                  <p className="mt-2 text-sm leading-6 text-white/62">Bring users from homepage to real usage quickly.</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">
+                    Open <Wallet className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+
+                <Link
+                  href="/pool"
+                  className="group rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-primary/35 hover:bg-primary/10"
+                >
+                  <p className="text-sm font-bold text-white">Pool</p>
+                  <p className="mt-2 text-sm leading-6 text-white/62">Turn interest in mining into active participation.</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">
+                    Open <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

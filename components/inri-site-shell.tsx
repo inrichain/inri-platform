@@ -49,7 +49,7 @@ function NavLink({ item }: { item: InriNavItem }) {
     <Link
       href={item.href}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className="text-sm font-medium text-white/72 transition hover:text-white"
+      className="rounded-full px-3 py-2 text-sm font-semibold text-white/72 transition hover:bg-white/[0.05] hover:text-white"
     >
       {item.label}
     </Link>
@@ -69,16 +69,16 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'bg-primary text-primary-foreground hover:bg-[#1bb0ff]'
+      ? 'border border-primary/30 bg-primary text-[#03111f] hover:bg-[#27adff] hover:shadow-[0_16px_40px_rgba(19,164,255,0.28)]'
       : variant === 'secondary'
-        ? 'border border-white/15 bg-white/5 text-white hover:border-primary/50 hover:bg-primary/10'
+        ? 'border border-white/12 bg-white/[0.04] text-white hover:border-primary/35 hover:bg-primary/10'
         : 'text-white/75 hover:text-white'
 
   return (
     <Link
       href={href}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all ${styles}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all ${styles}`}
     >
       {children}
     </Link>
@@ -87,15 +87,19 @@ export function InriLinkButton({
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[linear-gradient(180deg,rgba(5,12,20,0.96),rgba(6,14,24,0.92))] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Logo showText size={64} />
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050d17]/88 backdrop-blur-xl">
+      <div className="border-b border-white/8 bg-[linear-gradient(90deg,rgba(19,164,255,0.12),rgba(19,164,255,0.04),rgba(19,164,255,0.12))] px-4 py-2 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-white/72 sm:px-6 lg:px-8">
+        INRI CHAIN · Proof-of-Work for everyone · Chain ID 3777
+      </div>
 
-        <nav className="hidden xl:flex min-w-0 items-center gap-5 rounded-full border border-white/8 bg-white/[0.03] px-5 py-3 2xl:gap-6">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <Logo showText size={62} />
+
+        <div className="hidden xl:flex min-w-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] p-1">
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
-        </nav>
+        </div>
 
         <div className="hidden md:flex items-center gap-3">
           <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
@@ -108,8 +112,8 @@ export function InriHeader() {
         </div>
       </div>
 
-      <div className="xl:hidden border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
+      <div className="xl:hidden border-t border-white/10 bg-white/[0.02]">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
@@ -134,7 +138,7 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-3 text-white/80 transition hover:border-primary/40 hover:bg-primary/10 hover:text-white"
+      className="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-3 text-white/80 transition hover:border-primary/35 hover:bg-primary/10 hover:text-white"
     >
       {children}
     </Link>
@@ -143,14 +147,13 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[linear-gradient(180deg,#050c15_0%,#040a12_100%)]">
+    <footer className="border-t border-white/10 bg-[#040a13]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.9fr_0.9fr]">
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.9fr_0.95fr]">
           <div>
             <Logo showText size={58} />
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/65">
-              INRI CHAIN is a community-driven Proof-of-Work Layer 1 focused on low fees,
-              sustainable mining, ecosystem access and a cleaner experience for real users.
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/64">
+              A fair, community-driven Layer 1 blockchain built for decentralization, low fees and sustainable Proof-of-Work mining.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -166,7 +169,7 @@ export function InriFooter() {
 
             <Link
               href="mailto:contact@inri.life"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white/85 transition hover:text-primary"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white/82 transition hover:text-primary"
             >
               <Mail className="h-4 w-4" />
               contact@inri.life
@@ -174,16 +177,14 @@ export function InriFooter() {
           </div>
 
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-primary/85">
-              Ecosystem
-            </p>
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-primary/82">Ecosystem</p>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
               {footerPrimaryLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  className="text-sm text-white/70 transition hover:text-white"
+                  className="text-sm text-white/68 transition hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -192,27 +193,23 @@ export function InriFooter() {
           </div>
 
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-primary/85">
-              Legal
-            </p>
-            <div className="mt-5 grid gap-3">
-              <Link href="/privacy-policy" className="text-sm text-white/70 transition hover:text-white">
-                Privacy Policy
-              </Link>
-              <Link href="/terms-and-conditions" className="text-sm text-white/70 transition hover:text-white">
-                Terms and Conditions
-              </Link>
-            </div>
-
-            <div className="mt-8 rounded-[1.5rem] border border-primary/15 bg-[linear-gradient(180deg,rgba(19,164,255,0.12),rgba(19,164,255,0.05))] p-5">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-primary/82">Brand direction</p>
+            <div className="mt-5 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6">
               <p className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-primary">
                 <Shield className="h-4 w-4" />
-                Brand direction
+                Cleaner and stronger
               </p>
-              <p className="mt-3 text-sm leading-7 text-white/75">
-                The new site is meant to feel cleaner, more product-focused and more trustworthy,
-                while keeping the current INRI ecosystem structure visible.
+              <p className="mt-4 text-sm leading-7 text-white/66">
+                The site should feel premium and useful at the same time: one strong hero, one refined live section and clear routes into the real INRI products.
               </p>
+              <div className="mt-6 grid gap-3 text-sm">
+                <Link href="/privacy-policy" className="text-white/68 transition hover:text-white">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms-and-conditions" className="text-white/68 transition hover:text-white">
+                  Terms and Conditions
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -227,7 +224,7 @@ export function InriFooter() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.20),transparent_26%),radial-gradient(circle_at_80%_0%,rgba(19,164,255,0.10),transparent_18%),linear-gradient(180deg,#040b14_0%,#07111d_42%,#050d17_100%)] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.18),transparent_28%),linear-gradient(180deg,#040b14_0%,#07111d_36%,#050d17_100%)] text-white">
       <InriHeader />
       {children}
       <InriFooter />
