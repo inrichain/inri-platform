@@ -28,13 +28,15 @@ export function Logo({
   if (!showText) return icon
 
   return (
-    <Link href={href} translate="no" className="notranslate flex min-w-0 items-center gap-3.5 md:gap-4">
+    <Link href={href} translate="no" className="notranslate flex min-w-0 items-center gap-4 md:gap-5">
       <span className="shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-[15px] font-extrabold uppercase tracking-[0.28em] text-primary sm:text-[1.05rem]" translate="no">
+        <p className="truncate text-[1.15rem] font-extrabold uppercase tracking-[0.28em] text-primary sm:text-[1.3rem]" translate="no">
           INRI CHAIN
         </p>
-        <p className="truncate text-sm font-semibold text-white/58" translate="no">PoW • Chain 3777</p>
+        <p className="truncate text-[1rem] font-semibold text-white/66" translate="no">
+          PoW • Chain 3777
+        </p>
       </div>
     </Link>
   )

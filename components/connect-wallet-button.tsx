@@ -22,7 +22,7 @@ function shortAddress(address?: string) {
 }
 
 const baseButton =
-  'inline-flex h-12 items-center gap-2.5 rounded-[1.1rem] border-[1.65px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] px-4 text-sm font-extrabold text-white shadow-[0_18px_46px_rgba(0,0,0,0.30),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
+  'inline-flex h-12 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-sm font-extrabold text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.08]'
 
 export function ConnectWalletButton() {
   const [open, setOpen] = useState(false)
@@ -82,7 +82,7 @@ export function ConnectWalletButton() {
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-[0.8rem] border border-primary/22 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.06)]">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/24 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.06)]">
           <Wallet className="h-4 w-4 text-primary" />
         </span>
         <span className="max-w-[8rem] truncate" translate="no">{shortAddress(address)}</span>
@@ -90,7 +90,7 @@ export function ConnectWalletButton() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] rounded-[1.5rem] border-[1.6px] border-white/[0.15] bg-[linear-gradient(180deg,#040912,#000000)] p-4 shadow-[0_30px_96px_rgba(0,0,0,0.56),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl">
+        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] rounded-[1.4rem] border border-white/[0.14] bg-[linear-gradient(180deg,#040912,#000000)] p-4 shadow-[0_24px_72px_rgba(0,0,0,0.48),0_0_0_1px_rgba(19,164,255,0.06)] backdrop-blur-xl">
           {!address ? (
             <>
               <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Connect wallet</p>
