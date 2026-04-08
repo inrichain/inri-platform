@@ -630,6 +630,7 @@ export function InriPoolClient() {
           </div>
         </section>
       )}
+    </section>
 
       <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,16,28,0.96),rgba(3,9,16,0.985))] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:p-7">
         <SectionTitle eyebrow="How to start" title="Simple mining route" description="Use your INRI wallet address, choose PPLNS or SOLO and monitor the pool from this page." />
