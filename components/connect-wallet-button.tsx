@@ -21,10 +21,7 @@ function shortAddress(address?: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-const baseButton =
-  'inline-flex h-12 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-sm font-extrabold text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.08]'
-
-export function ConnectWalletButton() {
+export function ConnectWalletButton({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false)
   const [address, setAddress] = useState<string>('')
   const [busy, setBusy] = useState(false)
@@ -78,6 +75,10 @@ export function ConnectWalletButton() {
     if (!address) return
     await navigator.clipboard.writeText(address)
   }
+
+  const baseButton = compact
+    ? 'inline-flex h-11 items-center gap-2 rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] px-4 text-[15px] font-extrabold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-px hover:border-primary/45 hover:bg-primary/[0.08]'
+    : 'inline-flex h-12 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-sm font-extrabold text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.08]'
 
   return (
     <div className="relative">

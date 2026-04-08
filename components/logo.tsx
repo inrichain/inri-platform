@@ -9,7 +9,7 @@ type LogoProps = {
 }
 
 export function Logo({
-  size = 56,
+  size = 52,
   className = '',
   href = '/',
   showText = false,
@@ -28,13 +28,13 @@ export function Logo({
   if (!showText) return icon
 
   return (
-    <Link href={href} translate="no" className="notranslate flex min-w-0 items-center gap-4 md:gap-5">
+    <Link href={href} translate="no" className="notranslate flex min-w-0 items-center gap-3.5 md:gap-4">
       <span className="shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-[1.15rem] font-extrabold uppercase tracking-[0.28em] text-primary sm:text-[1.3rem]" translate="no">
+        <p className="truncate text-[1rem] font-extrabold uppercase tracking-[0.26em] text-primary sm:text-[1.12rem]" translate="no">
           INRI CHAIN
         </p>
-        <p className="truncate text-[1rem] font-semibold text-white/66" translate="no">
+        <p className="truncate text-[0.95rem] font-semibold text-white/65" translate="no">
           PoW • Chain 3777
         </p>
       </div>
