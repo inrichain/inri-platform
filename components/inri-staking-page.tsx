@@ -1,38 +1,14 @@
 import type { ReactNode } from 'react'
-import { ArrowRight, Droplets, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Sparkles, Wallet2 } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { InriStakingClient } from '@/components/inri-staking-client'
 
 const stakingAddress = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 
-type Highlight = {
-  title: string
-  text: string
-  icon: ReactNode
-}
-
-const highlights: Highlight[] = [
-  {
-    title: '3 locking plans',
-    text: '90, 180 and 360 day plans with progressive weight multipliers.',
-    icon: <Sparkles className="h-5 w-5" />,
-  },
-  {
-    title: 'Native INRI staking',
-    text: 'Stake and manage directly from the same screen without leaving the site.',
-    icon: <Droplets className="h-5 w-5" />,
-  },
-  {
-    title: 'Claim + emergency logic',
-    text: 'Daily claim cooldown, early-exit penalties and emergency exit support.',
-    icon: <ShieldCheck className="h-5 w-5" />,
-  },
-]
-
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-[2rem] border-[1.35px] border-white/12 bg-[linear-gradient(180deg,rgba(6,15,26,0.98),rgba(2,8,15,0.985))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] ${className}`}
+      className={`overflow-hidden rounded-[2rem] border-[1.5px] border-white/12 bg-[linear-gradient(180deg,rgba(7,15,26,0.97),rgba(2,8,15,0.985))] shadow-[0_28px_90px_rgba(0,0,0,0.34)] ${className}`}
     >
       {children}
     </div>
@@ -44,18 +20,18 @@ export function InriStakingPage() {
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.16),_transparent_22%),linear-gradient(180deg,#02070c_0%,#000000_52%,#03111d_100%)]">
         <section className="border-b border-white/8">
-          <div className="mx-auto max-w-[1320px] px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
-            <div className="mx-auto max-w-[1180px]">
-              <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+          <div className="mx-auto max-w-[1320px] px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+            <div className="mx-auto max-w-[1180px] space-y-8">
+              <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
                 <div>
                   <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
                     INRI staking
                   </div>
-                  <h1 className="mt-5 max-w-[720px] text-4xl font-black leading-[0.96] text-white sm:text-5xl lg:text-[4.45rem]">
-                    Stake INRI from one cleaner, stronger screen.
+                  <h1 className="mt-5 max-w-[760px] text-4xl font-black leading-[0.96] text-white sm:text-5xl lg:text-[4.15rem]">
+                    Professional staking, not a crowded dashboard.
                   </h1>
-                  <p className="mt-5 max-w-[760px] text-base leading-8 text-white/66 sm:text-lg">
-                    Review the program, connect the wallet, choose the plan and manage claim or unstake actions without the clutter.
+                  <p className="mt-5 max-w-[720px] text-base leading-8 text-white/66 sm:text-lg">
+                    One clean screen for plans, rewards, claim cooldown and position management. Built to feel closer to the better mining and dashboard products, with less clutter and stronger hierarchy.
                   </p>
                   <div className="mt-7 flex flex-wrap items-center gap-3">
                     <InriLinkButton href="https://wallet.inri.life" external noTranslate>
@@ -68,20 +44,42 @@ export function InriStakingPage() {
                 </div>
 
                 <Surface className="p-5 sm:p-6">
-                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Program facts</div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {highlights.map((item) => (
-                      <div key={item.title} className="rounded-[1.55rem] border border-white/10 bg-white/[0.03] p-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/24 bg-primary/[0.10] text-primary">
-                          {item.icon}
-                        </div>
-                        <h3 className="mt-4 text-lg font-black text-white">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-7 text-white/58">{item.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.4rem] border border-white/10 bg-black/28 px-4 py-3">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
+                      <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Program overview</div>
+                      <h2 className="mt-3 text-2xl font-black leading-tight text-white sm:text-[2rem]">
+                        Clear plans, visible rewards and direct actions.
+                      </h2>
+                    </div>
+                    <div className="rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-primary">
+                      Live inside the site
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div className="mt-4 text-lg font-black text-white">3 plans</div>
+                      <p className="mt-2 text-sm leading-7 text-white/56">90, 180 and 360 days with increasing weight and early-exit penalty.</p>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
+                        <Wallet2 className="h-5 w-5" />
+                      </div>
+                      <div className="mt-4 text-lg font-black text-white">Native INRI</div>
+                      <p className="mt-2 text-sm leading-7 text-white/56">Stake, claim, restake and exit directly with the connected wallet.</p>
+                    </div>
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
+                        <ShieldCheck className="h-5 w-5" />
+                      </div>
+                      <div className="mt-4 text-lg font-black text-white">Contract rules</div>
+                      <p className="mt-2 text-sm leading-7 text-white/56">Minimum 100 INRI, maximum 10,000 per plan and a daily claim cooldown.</p>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-white/10 bg-black/28 px-4 py-3">
+                    <div className="min-w-0 flex-1">
                       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Staking contract</div>
                       <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{stakingAddress}</div>
                     </div>
@@ -98,9 +96,7 @@ export function InriStakingPage() {
                 </Surface>
               </div>
 
-              <div className="mt-10">
-                <InriStakingClient />
-              </div>
+              <InriStakingClient />
             </div>
           </div>
         </section>

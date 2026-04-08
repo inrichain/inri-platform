@@ -1,15 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck, Sparkles, Wallet2 } from 'lucide-react'
 
 const STAKING_ADDRESS = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 const EXPLORER_URL = `https://explorer.inri.life/address/${STAKING_ADDRESS}`
 const INRI_CHAIN_ID_HEX = '0xec1'
-const INRI_CHAIN_ID_DECIMAL = '3777'
-const FOURBYTE_API = 'https://www.4byte.directory/api/v1/signatures/?text_signature='
 
 const PLAN_META = [
   { id: 0, title: 'Plan 90', days: 90, multiplier: '1.00x', penalty: '5%', accent: 'Balanced entry' },
@@ -83,8 +81,8 @@ function strip0x(value: string) {
   return value.startsWith('0x') ? value.slice(2) : value
 }
 
-function pad32(hex: string) {
-  return strip0x(hex).padStart(64, '0')
+function asciiToHex(value: string) {
+  return `0x${Array.from(value).map((char) => char.charCodeAt(0).toString(16).padStart(2, '0')).join('')}`
 }
 
 function encodeUint(value: bigint) {
@@ -161,33 +159,34 @@ async function rpcCall(method: string, params: unknown[] = []) {
 }
 
 async function fetchSelector(signature: string) {
-  const response = await fetch(`${FOURBYTE_API}${encodeURIComponent(signature)}`)
-  if (!response.ok) throw new Error(`4byte HTTP ${response.status}`)
-  const data = (await response.json()) as { results?: Array<{ hex_signature: string; text_signature: string }> }
-  const match = data.results?.find((item) => item.text_signature === signature)
-  if (!match?.hex_signature) throw new Error(`Selector not found for ${signature}`)
-  return match.hex_signature
+  const result = await rpcCall('web3_sha3', [asciiToHex(signature)])
+  if (typeof result !== 'string' || result.length < 10) throw new Error(`Selector not found for ${signature}`)
+  return result.slice(0, 10)
 }
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(7,15,26,0.96),rgba(2,8,15,0.985))] shadow-[0_28px_90px_rgba(0,0,0,0.34)] ${className}`}>{children}</div>
-}
-
-function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
-      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">{label}</div>
-      <div className="mt-3 text-2xl font-black text-white">{value}</div>
-      <div className="mt-2 text-sm leading-6 text-white/46">{note}</div>
+    <div className={`overflow-hidden rounded-[2rem] border-[1.5px] border-white/12 bg-[linear-gradient(180deg,rgba(7,15,26,0.96),rgba(2,8,15,0.985))] shadow-[0_28px_90px_rgba(0,0,0,0.34)] ${className}`}>
+      {children}
     </div>
   )
 }
 
-function ActionButton({ children, className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="min-w-0 rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">{label}</div>
+      <div className="mt-3 break-words text-[1.65rem] font-black leading-tight text-white">{value}</div>
+      <div className="mt-2 text-sm leading-6 text-white/48">{note}</div>
+    </div>
+  )
+}
+
+function ActionButton({ children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
-      className={`inline-flex h-12 items-center justify-center rounded-full border px-5 text-sm font-black transition ${className}`}
+      className={`inline-flex h-12 items-center justify-center rounded-full border px-5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {children}
     </button>
@@ -203,7 +202,7 @@ export function InriStakingClient() {
   const [userState, setUserState] = useState<UserState | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<0 | 1 | 2>(0)
   const [amount, setAmount] = useState('100')
-  const [status, setStatus] = useState('Connect the wallet and review the staking plans.')
+  const [status, setStatus] = useState('Connect the wallet and review the program from one screen.')
   const [error, setError] = useState<string | null>(null)
   const [busyAction, setBusyAction] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -584,7 +583,7 @@ export function InriStakingClient() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
             <Sparkles className="h-4 w-4" />
-            Staking control panel
+            Staking workspace
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <ActionButton
@@ -605,74 +604,48 @@ export function InriStakingClient() {
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Wallet</div>
-            <div className="mt-3 text-2xl font-black text-white">{shortAddress(account)}</div>
-            <div className="mt-2 text-sm leading-6 text-white/46">{providerReady ? 'Active connected wallet' : 'Open with an EVM wallet'}</div>
-          </div>
-          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Current era</div>
-            <div className="mt-3 text-2xl font-black text-white">{contractStats.currentEra.toString()}</div>
-            <div className="mt-2 text-sm leading-6 text-white/46">Program year in the fixed 5 year schedule</div>
-          </div>
-          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Emission / day</div>
-            <div className="mt-3 text-2xl font-black text-white">{formatAmount(contractStats.emissionPerDay)} INRI</div>
-            <div className="mt-2 text-sm leading-6 text-white/46">Current scheduled emission</div>
-          </div>
-          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Pending rewards</div>
-            <div className="mt-3 text-2xl font-black text-white">{formatAmount(userState?.pendingRewards || 0n)} INRI</div>
-            <div className="mt-2 text-sm leading-6 text-white/46">All unclaimed rewards across your plans</div>
-          </div>
-        </div>
-
-        <div className="mt-5 rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Staking contract</div>
-              <div className="mt-3 break-all font-mono text-sm font-bold text-white">{STAKING_ADDRESS}</div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={copyAddress}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                <Copy className="h-4 w-4" />
-                {copied ? 'Copied' : 'Copy'}
-              </button>
-              <a
-                href={EXPLORER_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                Explorer
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Min stake</div>
-              <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.minStake)} INRI</div>
-            </div>
-            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Max / plan</div>
-              <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.maxPerPlan)} INRI</div>
-            </div>
-            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Claim cooldown</div>
-              <div className="mt-2 text-xl font-black text-white">{Number(contractStats.claimCooldown / 86400n || 0n)} day</div>
-            </div>
-          </div>
+          <StatCard label="Wallet" value={shortAddress(account)} note={providerReady ? 'Connected wallet status' : 'Open with an EVM wallet'} />
+          <StatCard label="Current era" value={contractStats.currentEra.toString()} note="Year in the fixed 5-year schedule" />
+          <StatCard label="Emission / day" value={`${formatAmount(contractStats.emissionPerDay)} INRI`} note="Current scheduled emission" />
+          <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="All unclaimed rewards across your plans" />
         </div>
       </Surface>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Surface className="p-5 sm:p-6 lg:p-7">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Choose your plan</div>
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-[1.55rem] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Staking contract</div>
+                <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{STAKING_ADDRESS}</div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={copyAddress}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+                >
+                  <Copy className="h-4 w-4" />
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+                <a
+                  href={EXPLORER_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+                >
+                  Explorer
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <StatCard label="Min stake" value={`${formatAmount(contractStats.minStake)} INRI`} note="Minimum entry amount" />
+              <StatCard label="Max / plan" value={`${formatAmount(contractStats.maxPerPlan)} INRI`} note="Maximum principal per plan" />
+              <StatCard label="Claim cooldown" value={`${Number(contractStats.claimCooldown / 86400n || 0n)} day`} note="Cooldown between claims" />
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
             {PLAN_META.map((plan) => {
               const position = userState?.positions[plan.id]
               const active = position?.active
@@ -680,38 +653,38 @@ export function InriStakingClient() {
                 <button
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.id)}
-                  className={`rounded-[1.55rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
+                  className={`min-w-0 rounded-[1.55rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
-                      <div className="mt-2 text-2xl font-black text-white">{plan.days} days</div>
+                      <div className="mt-2 text-2xl font-black leading-tight text-white">{plan.days} days</div>
                     </div>
                     <div className="rounded-full border border-white/12 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
                   </div>
-                  <div className="mt-3 text-sm leading-7 text-white/58">Early exit penalty {plan.penalty} · {plan.accent}</div>
-                  <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+                  <div className="mt-3 text-sm leading-7 text-white/56">Penalty {plan.penalty} before unlock · {plan.accent}</div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
                     <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${active ? 'border-primary/35 bg-primary/[0.10] text-primary' : 'border-white/12 bg-white/[0.03] text-white/50'}`}>
-                      {active ? 'Active position' : 'No position'}
+                      {active ? 'Active' : 'No position'}
                     </span>
-                    <span className="text-white/40">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
+                    <span className="break-words text-white/42">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
                   </div>
                 </button>
               )
             })}
           </div>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_0.92fr]">
+          <div className="mt-6 grid gap-5 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Stake or manage</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Create or manage position</div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <label className="block">
+                <label className="block min-w-0">
                   <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected plan</div>
                   <div className="mt-2 flex h-14 items-center rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white">
                     {PLAN_META[selectedPlan].title} · {PLAN_META[selectedPlan].multiplier}
                   </div>
                 </label>
-                <label className="block">
+                <label className="block min-w-0">
                   <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Amount in INRI</div>
                   <input
                     inputMode="decimal"
@@ -723,8 +696,8 @@ export function InriStakingClient() {
                 </label>
               </div>
 
-              <div className="mt-4 rounded-[1.2rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/56">
-                Staking uses native INRI. Enter the amount you want to lock in the selected plan. Claims follow a daily cooldown and restake sends available rewards back into the selected plan.
+              <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/56">
+                Stake native INRI into the selected plan. The contract receives the amount directly, and claim / restake / unstake actions keep using the same connected wallet.
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -733,85 +706,87 @@ export function InriStakingClient() {
                   disabled={busyAction === 'stake' || !providerReady}
                   className="border-primary/35 bg-primary text-black hover:bg-primary/90"
                 >
-                  {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake now'}
+                  {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake INRI'}
                 </ActionButton>
                 <ActionButton
                   onClick={claimAll}
                   disabled={busyAction === 'claim' || !userState?.canClaim}
-                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10 disabled:opacity-50"
+                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10"
                 >
                   {busyAction === 'claim' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Claim rewards'}
                 </ActionButton>
                 <ActionButton
                   onClick={restake}
                   disabled={busyAction === 'restake'}
-                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10 disabled:opacity-50"
+                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10"
                 >
                   {busyAction === 'restake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Restake rewards'}
                 </ActionButton>
                 <ActionButton
                   onClick={unstake}
                   disabled={busyAction === 'unstake'}
-                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10 disabled:opacity-50"
+                  className="border-white/14 bg-white/[0.04] text-white hover:border-primary/55 hover:bg-primary/10"
                 >
-                  {busyAction === 'unstake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Unstake selected plan'}
+                  {busyAction === 'unstake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Unstake selected'}
                 </ActionButton>
               </div>
             </div>
 
-            <div className="rounded-[1.6rem] border border-white/10 bg-black/28 p-5">
-              <div className="flex items-center gap-2 text-xl font-black text-white">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                Position summary
+            <div className="space-y-4">
+              <div className="rounded-[1.6rem] border border-white/10 bg-black/28 p-5">
+                <div className="flex items-center gap-2 text-xl font-black text-white">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  Position summary
+                </div>
+                <div className="mt-5 grid gap-3">
+                  <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="All unclaimed rewards across plans" />
+                  <StatCard label="Selected principal" value={`${formatAmount(selectedPosition?.principal || 0n)} INRI`} note="Principal in the selected plan" />
+                  <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position on this plan'} />
+                  <StatCard label="Can claim" value={userState?.canClaim ? 'Yes' : 'Not yet'} note={userState?.nextClaimAt ? `Next claim: ${formatTimestamp(userState.nextClaimAt)}` : 'Claim availability updates automatically'} />
+                </div>
               </div>
-              <div className="mt-5 grid gap-3">
-                <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="Total unclaimed rewards across all plans" />
-                <StatCard label="Selected principal" value={`${formatAmount(selectedPosition?.principal || 0n)} INRI`} note="Current principal in the chosen plan" />
-                <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position on this plan'} />
-                <StatCard label="Can claim" value={userState?.canClaim ? 'Yes' : 'Not yet'} note={userState?.nextClaimAt ? `Next claim: ${formatTimestamp(userState.nextClaimAt)}` : 'Claim availability updates automatically'} />
+
+              <div className="rounded-[1.6rem] border border-white/10 bg-black/28 p-5">
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
+                <div className="mt-4 rounded-[1.35rem] border border-white/10 bg-black/30 p-4">
+                  <div className="flex items-start gap-3">
+                    {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
+                    <div className="min-w-0">
+                      <div className="text-base font-black text-white">{error ? 'Action needs attention' : 'Staking app online'}</div>
+                      <div className="mt-2 break-words text-sm leading-7 text-white/60">{error || status}</div>
+                    </div>
+                  </div>
+                  {txHash ? (
+                    <a
+                      href={`https://explorer.inri.life/tx/${txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
+                    >
+                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
+                      <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
         </Surface>
 
-        <div className="space-y-6">
-          <Surface className="p-5 sm:p-6">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
-            <div className="mt-4 rounded-[1.45rem] border border-white/10 bg-black/28 p-4">
-              <div className="flex items-start gap-3">
-                {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
-                <div>
-                  <div className="text-base font-black text-white">{error ? 'Action needs attention' : 'Staking app online'}</div>
-                  <div className="mt-2 text-sm leading-7 text-white/60">{error || status}</div>
-                </div>
-              </div>
-              {txHash ? (
-                <a
-                  href={`https://explorer.inri.life/tx/${txHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
-                >
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
-                  <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
-                </a>
-              ) : null}
-            </div>
-          </Surface>
-
+        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <Surface className="p-5 sm:p-6">
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Program state</div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note="Funded once with 5,000,000 INRI" />
+              <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note="Started once with the funded amount" />
               <StatCard label="New stakes" value={contractStats.newStakesPaused ? 'Paused' : 'Open'} note="Controls fresh stake and restake entry" />
               <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When on, unstake has no penalty" />
-              <StatCard label="Base rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Scheduled rewards still not emitted" />
+              <StatCard label="Rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Base rewards still not emitted" />
             </div>
           </Surface>
 
           <Surface className="p-5 sm:p-6">
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Useful routes</div>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {([
                 { title: 'INRI Wallet', text: 'Open the official wallet before staking.', href: 'https://wallet.inri.life', external: true },
                 { title: 'Explorer', text: 'Inspect the staking contract and transactions.', href: '/explorer' },
@@ -824,12 +799,12 @@ export function InriStakingClient() {
                   {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
                   className="block rounded-[1.35rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="text-base font-black text-white">{item.title}</div>
                       <div className="mt-2 text-sm leading-7 text-white/56">{item.text}</div>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-primary" />
+                    <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   </div>
                 </Link>
               ))}
