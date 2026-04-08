@@ -230,6 +230,8 @@ export function InriHeader() {
           </div>
         </div>
       </div>
+
+      <div className="h-[30px] border-t border-primary/10 bg-primary/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]" />
     </header>
   )
 }
