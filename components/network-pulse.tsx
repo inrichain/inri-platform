@@ -131,7 +131,7 @@ const initialPulse: PulseState = {
 }
 
 const routeCards = [
-  { title: 'Wallet', text: 'Official entry', href: '/inri-wallet', icon: Wallet },
+  { title: 'Wallet', text: 'Official entry', href: 'https://wallet.inri.life', icon: Wallet },
   { title: 'Explorer', text: 'Open explorer page', href: '/explorer', icon: Search },
   { title: 'Mining', text: 'Windows and Ubuntu', href: '/mining', icon: Pickaxe },
   { title: 'Pool', text: 'Join active miners', href: '/pool', icon: Waves },

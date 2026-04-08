@@ -6,7 +6,7 @@ export default function Page() {
       title="P2P"
       description="The P2P page gives INRI another product-level destination for direct community interaction, future trading flows and user-to-user activity."
       actions={[
-        { label: 'Open INRI Wallet', href: '/inri-wallet' },
+        { label: 'Open INRI Wallet', href: 'https://wallet.inri.life', external: true },
         { label: 'Swap', href: '/swap', variant: 'secondary' }
       ]}
       items={[
@@ -15,7 +15,7 @@ export default function Page() {
         { title: 'Ready for future products', text: 'You can later add listings, offers, filters, wallet requirements and safety information.' }
       ]}
       resources={[
-        { title: 'INRI Wallet', text: 'Use the wallet as the main entry point.', href: '/inri-wallet' },
+        { title: 'INRI Wallet', text: 'Use the wallet as the main entry point.', href: 'https://wallet.inri.life', external: true },
         { title: 'Swap', text: 'Open the swap section.', href: '/swap' },
         { title: 'Token Factory', text: 'See where new assets could start.', href: '/token-factory' },
         { title: 'Whitepaper', text: 'Read the broader network direction.', href: '/whitepaper' }

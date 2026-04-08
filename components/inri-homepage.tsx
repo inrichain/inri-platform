@@ -19,7 +19,7 @@ const routeCards: {
   {
     title: 'INRI Wallet',
     text: 'Official wallet entry for users and builders.',
-    href: '/inri-wallet',
+    href: 'https://wallet.inri.life',
     icon: Wallet,
   },
   {
@@ -109,7 +109,7 @@ export function InriHomepage() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <InriLinkButton href="/inri-wallet" noTranslate>
+                  <InriLinkButton href="https://wallet.inri.life" external noTranslate>
                     Open INRI Wallet
                   </InriLinkButton>
                   <InriLinkButton href="/mining" variant="secondary">
@@ -141,7 +141,7 @@ export function InriHomepage() {
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <QuickRoute title="Wallet" text="Official wallet access" href="/inri-wallet" />
+                  <QuickRoute title="Wallet" text="Official wallet access" href="https://wallet.inri.life" />
                   <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="/explorer" />
                   <QuickRoute title="Mining" text="Windows, Ubuntu and pool" href="/mining" />
                   <QuickRoute title="Pool" text="Join active miners" href="/pool" />

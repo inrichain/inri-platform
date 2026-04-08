@@ -27,8 +27,10 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Whitepaper', href: '/whitepaper' },
 ]
 
+const LIVE_WALLET_URL = 'https://wallet.inri.life'
+
 const utilityNavItems: InriNavItem[] = [
-  { label: 'INRI Wallet', href: '/inri-wallet' },
+  { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Explorer', href: '/explorer' },
   { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
@@ -40,7 +42,7 @@ const utilityNavItems: InriNavItem[] = [
 ]
 
 const footerPrimaryLinks: InriNavItem[] = [
-  { label: 'INRI Wallet', href: '/inri-wallet' },
+  { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
@@ -101,7 +103,7 @@ function UtilityMenu() {
             asChild
             className="rounded-[0.95rem] px-3 py-3 text-sm font-semibold text-white/82 transition hover:bg-primary/[0.09] hover:text-white"
           >
-            <Link href={item.href} translate="no" className="notranslate flex items-center justify-between gap-3">
+            <Link href={item.href} translate="no" className="notranslate flex items-center justify-between gap-3" {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}>
               <span>{item.label}</span>
               <span className="text-primary/70">↗</span>
             </Link>
@@ -163,7 +165,7 @@ function MobileMenu() {
 
         <div className="flex flex-col gap-6 px-5 py-5">
           <div className="grid gap-3">
-            <InriLinkButton href="/inri-wallet" noTranslate>
+            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
               INRI Wallet
             </InriLinkButton>
             <InriLinkButton href="/explorer" variant="secondary" noTranslate>
@@ -224,14 +226,14 @@ export function InriHeader() {
             <InriLinkButton href="/explorer" variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
-            <InriLinkButton href="/inri-wallet" noTranslate>
+            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
               INRI Wallet
             </InriLinkButton>
             <ConnectWalletButton compact />
           </div>
 
           <div className="flex items-center justify-self-end gap-2 md:hidden">
-            <InriLinkButton href="/inri-wallet" noTranslate>
+            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
               Wallet
             </InriLinkButton>
             <MobileMenu />
@@ -282,7 +284,7 @@ export function InriFooter() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <InriLinkButton href="/inri-wallet" noTranslate>
+              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
                 INRI Wallet
               </InriLinkButton>
               <InriLinkButton href="/explorer" variant="secondary" noTranslate>
