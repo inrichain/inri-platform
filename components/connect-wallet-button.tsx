@@ -22,7 +22,7 @@ function shortAddress(address?: string) {
 }
 
 const baseButton =
-  'inline-flex items-center gap-2 rounded-full border-[1.2px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_42px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:-translate-y-px hover:border-primary/45 hover:bg-primary/10'
+  'inline-flex items-center gap-2 rounded-full border-[1.45px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_46px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:-translate-y-px hover:border-primary/60 hover:bg-primary/12'
 
 export function ConnectWalletButton() {
   const [open, setOpen] = useState(false)
@@ -81,9 +81,9 @@ export function ConnectWalletButton() {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className={baseButton}>
+      <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
         <Wallet className="h-4 w-4 text-primary" />
-        <span className="max-w-[7.5rem] truncate">{shortAddress(address)}</span>
+        <span className="max-w-[7.5rem] truncate" translate="no">{shortAddress(address)}</span>
         <ChevronDown className="h-4 w-4 text-white/70" />
       </button>
 

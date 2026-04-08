@@ -181,13 +181,13 @@
 
 
 .inri-panel-outline {
-  border: 1.25px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1.55px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 24px 74px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .inri-panel-outline-strong {
-  border: 1.35px solid rgba(120, 213, 255, 0.22);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(19, 164, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: 1.7px solid rgba(120, 213, 255, 0.26);
+  box-shadow: 0 30px 94px rgba(0, 0, 0, 0.44), 0 0 0 1px rgba(19, 164, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .inri-blue-grid {
@@ -197,3 +197,7 @@
 
 
 html, body { background: #000; }
+
+.notranslate {
+  translate: no;
+}
