@@ -412,7 +412,7 @@ export function InriTokenFactoryPage() {
                 <h2 className="mt-3 text-3xl font-black text-white">Keep the launch flow inside the INRI site.</h2>
 
                 <div className="mt-6 space-y-3">
-                  {[
+                  {([
                     { title: 'INRI Wallet', text: 'Connect and sign transactions.', href: 'https://wallet.inri.life', external: true },
                     { title: 'Explorer', text: 'Open the factory and inspect deployed tokens.', href: '/explorer' },
                     { title: 'Swap', text: 'Move from creation to liquidity later.', href: '/swap' },
