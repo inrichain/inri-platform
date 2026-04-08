@@ -125,7 +125,7 @@ const valuePills = ['Low fees', 'Community mining', 'EVM compatible', 'Visible u
 
 function GlowFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[1.65rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_20px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)] ${className}`}>
+    <div className={`rounded-[1.75rem] border-[1.25px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] shadow-[0_24px_78px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.05)] ${className}`}>
       {children}
     </div>
   )
@@ -203,10 +203,10 @@ export function InriHomepage() {
 
               <div className="relative">
                 <div className="absolute -inset-8 rounded-[3rem] bg-[radial-gradient(circle,rgba(19,164,255,0.20),transparent_58%)] blur-3xl" />
-                <div className="relative overflow-hidden rounded-[2.2rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(5,10,16,0.98),rgba(0,0,0,0.98))] p-5 shadow-[0_36px_130px_rgba(0,0,0,0.54),0_0_0_1px_rgba(19,164,255,0.06)] sm:p-6">
+                <div className="relative overflow-hidden rounded-[2.3rem] border-[1.3px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(5,10,16,0.98),rgba(0,0,0,0.98))] p-5 shadow-[0_36px_130px_rgba(0,0,0,0.54),0_0_0_1px_rgba(19,164,255,0.06)] sm:p-6">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_36%),linear-gradient(rgba(19,164,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.05)_1px,transparent_1px)] bg-[size:auto,42px_42px,42px_42px] opacity-40" />
 
-                  <div className="relative flex items-center justify-between gap-4 rounded-[1.35rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <div className="relative flex items-center justify-between gap-4 rounded-[1.45rem] border-[1.2px] border-white/[0.18] bg-white/[0.045] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">INRI utility console</p>
                       <p className="mt-1 text-sm text-white/58">Bigger structure, thicker borders and less visual noise.</p>
@@ -238,7 +238,7 @@ export function InriHomepage() {
                     ))}
                   </div>
 
-                  <div className="relative mt-5 rounded-[1.8rem] border border-white/[0.16] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.14),transparent_34%),linear-gradient(180deg,rgba(2,6,11,0.98),rgba(0,0,0,1))] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6">
+                  <div className="relative mt-5 rounded-[1.9rem] border-[1.3px] border-white/[0.18] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.14),transparent_34%),linear-gradient(180deg,rgba(2,6,11,0.98),rgba(0,0,0,1))] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6">
                     <div className="flex flex-wrap gap-2">
                       {active.chips.map((item) => (
                         <span
@@ -314,7 +314,7 @@ export function InriHomepage() {
                     key={item.title}
                     href={item.href}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="group rounded-[1.75rem] border border-white/[0.16] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 transition hover:border-primary/50 hover:bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(19,164,255,0.08),rgba(255,255,255,0.02))] hover:shadow-[0_18px_50px_rgba(19,164,255,0.12)]"
+                    className="group rounded-[1.85rem] border-[1.25px] border-white/[0.18] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 transition hover:border-primary/50 hover:bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(19,164,255,0.08),rgba(255,255,255,0.02))] hover:shadow-[0_18px_50px_rgba(19,164,255,0.12)]"
                   >
                     <div className="inline-flex rounded-2xl border border-primary/30 bg-primary/12 p-3 text-primary shadow-[0_0_22px_rgba(19,164,255,0.14)]">
                       <Icon className="h-5 w-5" />

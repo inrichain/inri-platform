@@ -145,12 +145,12 @@ const utilityRoutes = [
 ]
 
 const presenceNodes = [
-  { name: 'North America', label: 'Explorer', x: 20, y: 34, delay: '0s' },
-  { name: 'Brazil', label: 'Community', x: 30, y: 64, delay: '0.4s' },
-  { name: 'Europe', label: 'Nodes', x: 49, y: 28, delay: '0.8s' },
-  { name: 'Middle East', label: 'P2P', x: 58, y: 38, delay: '1.2s' },
-  { name: 'India', label: 'Mining', x: 65, y: 44, delay: '1.6s' },
-  { name: 'Southeast Asia', label: 'Wallet', x: 74, y: 48, delay: '2s' },
+  { name: 'North America', label: 'Explorer', detail: 'Routing + docs', x: 18, y: 28, delay: '0s' },
+  { name: 'Brazil', label: 'Community', detail: 'Wallet + growth', x: 30, y: 66, delay: '0.4s' },
+  { name: 'Europe', label: 'Nodes', detail: 'RPC + relay', x: 49, y: 26, delay: '0.8s' },
+  { name: 'Middle East', label: 'P2P', detail: 'Route ready', x: 57, y: 40, delay: '1.2s' },
+  { name: 'India', label: 'Mining', detail: 'Pool activity', x: 65, y: 46, delay: '1.6s' },
+  { name: 'Southeast Asia', label: 'Wallet', detail: 'User entry', x: 74, y: 50, delay: '2s' },
 ]
 
 function classNames(...parts: Array<string | false | null | undefined>) {
@@ -386,7 +386,7 @@ function Card({ children, className = '' }: { children: ReactNode; className?: s
   return (
     <div
       className={classNames(
-        'rounded-[1.7rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(8,16,25,0.96),rgba(3,8,14,0.98))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.04)]',
+        'rounded-[1.9rem] border-[1.3px] border-white/[0.20] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.10),transparent_32%),linear-gradient(180deg,rgba(8,16,25,0.98),rgba(1,5,10,0.99))] p-5 shadow-[0_26px_92px_rgba(0,0,0,0.40),0_0_0_1px_rgba(19,164,255,0.05),inset_0_1px_0_rgba(255,255,255,0.05)]',
         className
       )}
     >
@@ -410,20 +410,20 @@ function SectionTitle({ eyebrow, title, subtitle, action }: { eyebrow: string; t
 
 function MetricCard({ icon: Icon, label, value, foot }: { icon: any; label: string; value: string; foot: string }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="flex items-center gap-2 text-white/48">
+    <div className="flex h-full min-h-[154px] flex-col justify-between rounded-[1.45rem] border-[1.25px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 py-4 shadow-[0_18px_46px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.05)]">
+      <div className="min-h-[1.75rem] flex items-center gap-2 text-white/48">
         <Icon className="h-4 w-4 text-primary" />
         <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{label}</p>
       </div>
-      <p className="mt-3 text-xl font-bold text-white sm:text-2xl">{value}</p>
-      <p className="mt-2 text-[11px] uppercase tracking-[0.12em] text-white/38">{foot}</p>
+      <p className="mt-4 text-[1.95rem] font-bold leading-none tabular-nums text-white sm:text-[2.1rem]">{value}</p>
+      <p className="mt-4 min-h-[2.6rem] text-[11px] uppercase tracking-[0.12em] text-white/38">{foot}</p>
     </div>
   )
 }
 
 function ListRow({ left, right, subtle = false }: { left: ReactNode; right: ReactNode; subtle?: boolean }) {
   return (
-    <div className={classNames('flex items-start justify-between gap-4 rounded-[1.2rem] border px-4 py-3', subtle ? 'border-white/[0.10] bg-black/25' : 'border-white/[0.14] bg-white/[0.03]')}>
+    <div className={classNames('flex items-center justify-between gap-4 rounded-[1.3rem] border-[1.15px] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]', subtle ? 'border-white/[0.14] bg-black/32' : 'border-white/[0.18] bg-white/[0.035]')}>
       <div className="min-w-0">{left}</div>
       <div className="shrink-0 text-right">{right}</div>
     </div>
@@ -435,7 +435,7 @@ function RouteCard({ title, text, href, icon: Icon, external }: { title: string;
     <Link
       href={href}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className="group rounded-[1.35rem] border border-white/[0.16] bg-black/35 p-4 transition hover:border-primary/50 hover:bg-primary/10"
+      className="group rounded-[1.45rem] border-[1.2px] border-white/[0.20] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-4 shadow-[0_16px_44px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:-translate-y-px hover:border-primary/50 hover:bg-primary/10 hover:shadow-[0_24px_52px_rgba(19,164,255,0.12)]"
     >
       <div className="inline-flex rounded-2xl border border-primary/30 bg-primary/12 p-2.5 text-primary shadow-[0_0_22px_rgba(19,164,255,0.14)]">
         <Icon className="h-4 w-4" />
@@ -451,75 +451,102 @@ function RouteCard({ title, text, href, icon: Icon, external }: { title: string;
   )
 }
 
-function GlobalPresenceMap({ totalLivePulse, totalPeers, updatedAt }: { totalLivePulse: number; totalPeers: number; updatedAt: string }) {
+function GlobalPresenceMap({ totalLivePulse, totalPeers, poolMiners, updatedAt }: { totalLivePulse: number; totalPeers: number; poolMiners: number; updatedAt: string }) {
   return (
     <Card className="overflow-hidden">
       <SectionTitle
         eyebrow="Global network view"
-        title="Impactful without pretending to be fake live traffic."
-        subtitle="This map is ready for real analytics integration and already gives the homepage a stronger sense of scale."
+        title="A world panel that feels closer to real analytics."
+        subtitle="Designed to look memorable now and become a real active-users-by-country view later when you connect analytics."
         action={<span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Telemetry ready</span>}
       />
 
-      <div className="relative mt-6 overflow-hidden rounded-[1.6rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.18),transparent_36%),linear-gradient(180deg,rgba(4,8,13,0.98),rgba(0,0,0,0.98))] p-4 sm:p-6">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.07)_1px,transparent_1px)] bg-[size:34px_34px] opacity-40" />
-        <div className="absolute -left-12 top-10 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-
-        <div className="relative h-[300px] sm:h-[360px]">
-          <svg viewBox="0 0 1000 520" className="absolute inset-0 h-full w-full opacity-95">
-            <defs>
-              <linearGradient id="arc-blue" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(19,164,255,0)" />
-                <stop offset="45%" stopColor="rgba(19,164,255,0.95)" />
-                <stop offset="100%" stopColor="rgba(19,164,255,0)" />
-              </linearGradient>
-              <linearGradient id="land-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(19,164,255,0.12)" />
-                <stop offset="100%" stopColor="rgba(19,164,255,0.02)" />
-              </linearGradient>
-            </defs>
-
-            <path d="M90 180C160 120 260 120 330 160C405 205 470 210 560 178C635 150 770 150 860 212C908 245 930 282 942 314C840 322 770 344 690 378C612 410 508 412 402 384C305 358 220 350 136 362C106 306 88 248 90 180Z" fill="url(#land-fill)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
-            <path d="M162 190C210 150 264 150 316 176C346 192 388 198 450 188" fill="none" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-            <path d="M480 190C530 170 590 166 658 178C720 188 770 208 830 244" fill="none" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-            <path d="M202 210 Q520 70 748 238" fill="none" stroke="url(#arc-blue)" strokeWidth="2.5" />
-            <path d="M292 332 Q448 182 640 236" fill="none" stroke="url(#arc-blue)" strokeWidth="2" />
-            <path d="M642 234 Q744 188 826 232" fill="none" stroke="url(#arc-blue)" strokeWidth="2" />
-            <path d="M286 316 Q586 212 742 254" fill="none" stroke="url(#arc-blue)" strokeWidth="1.8" opacity="0.8" />
-          </svg>
-
-          {presenceNodes.map((node) => (
-            <div key={node.name} className="absolute" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
-              <div className="absolute -inset-4 animate-ping rounded-full border border-primary/35" style={{ animationDelay: node.delay, animationDuration: '3.2s' }} />
-              <div className="relative flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary shadow-[0_0_22px_rgba(19,164,255,0.95)]">
-                <div className="h-1.5 w-1.5 rounded-full bg-white" />
-              </div>
-              <div className="mt-3 rounded-full border border-white/[0.16] bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/76 backdrop-blur-md">
-                {node.name} • {node.label}
-              </div>
+      <div className="mt-6 rounded-[1.8rem] border-[1.25px] border-white/[0.18] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(3,8,14,0.98),rgba(0,0,0,0.99))] p-4 shadow-[0_22px_68px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5">
+        <div className="grid gap-4 xl:grid-cols-[1.12fr_0.88fr]">
+          <div className="relative overflow-hidden rounded-[1.6rem] border-[1.2px] border-white/[0.16] bg-black/40 p-4 sm:p-5">
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.06)_1px,transparent_1px)] bg-[size:32px_32px] opacity-45" />
+            <div className="absolute -left-10 top-10 h-44 w-44 rounded-full bg-primary/12 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative h-[320px] sm:h-[380px]">
+              <svg viewBox="0 0 1100 620" className="absolute inset-0 h-full w-full opacity-95">
+                <defs>
+                  <linearGradient id="map-line" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(19,164,255,0)" />
+                    <stop offset="50%" stopColor="rgba(19,164,255,0.9)" />
+                    <stop offset="100%" stopColor="rgba(19,164,255,0)" />
+                  </linearGradient>
+                  <linearGradient id="land-a" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(19,164,255,0.18)" />
+                    <stop offset="100%" stopColor="rgba(19,164,255,0.04)" />
+                  </linearGradient>
+                </defs>
+                <path d="M110 164C162 112 234 102 312 128C360 144 414 170 438 214C404 232 356 250 322 266C270 290 214 300 152 300C134 272 124 244 118 214C114 194 110 178 110 164Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M302 312C342 322 366 350 374 388C382 432 364 480 334 532C294 520 276 478 280 438C284 392 290 346 302 312Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M490 164C532 144 576 148 614 168C634 180 650 202 650 222C624 228 602 244 584 268C562 268 546 258 530 248C506 232 492 208 490 164Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M544 262C602 248 650 270 678 312C706 354 706 414 686 472C628 494 566 488 526 460C488 432 470 386 472 340C474 306 500 274 544 262Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M642 174C716 138 810 138 886 170C938 192 986 232 1000 280C956 296 918 292 874 314C830 336 766 332 714 316C692 294 678 262 668 232C660 208 650 190 642 174Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M816 420C854 406 900 412 930 440C948 458 958 484 954 506C916 518 878 520 844 510C816 500 796 478 796 454C796 440 802 430 816 420Z" fill="url(#land-a)" stroke="rgba(19,164,255,0.18)" strokeWidth="2" />
+                <path d="M200 205 Q440 100 676 200" fill="none" stroke="url(#map-line)" strokeWidth="2.4" />
+                <path d="M290 410 Q500 228 668 300" fill="none" stroke="url(#map-line)" strokeWidth="2.2" />
+                <path d="M564 234 Q732 184 846 250" fill="none" stroke="url(#map-line)" strokeWidth="2" />
+                <path d="M320 270 Q520 202 760 330" fill="none" stroke="url(#map-line)" strokeWidth="1.8" opacity="0.8" />
+                <path d="M520 238 Q660 236 848 454" fill="none" stroke="url(#map-line)" strokeWidth="1.8" opacity="0.75" />
+              </svg>
+              {presenceNodes.map((node) => (
+                <div key={node.name} className="absolute" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
+                  <div className="absolute -inset-5 animate-ping rounded-full border border-primary/35" style={{ animationDelay: node.delay, animationDuration: '3.3s' }} />
+                  <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-primary shadow-[0_0_28px_rgba(19,164,255,0.95)]">
+                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                  </div>
+                  <div className="mt-3 rounded-full border-[1.15px] border-white/[0.18] bg-black/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/80 backdrop-blur-md">
+                    {node.name} • {node.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid content-start gap-3">
+            <div className="rounded-[1.4rem] border-[1.2px] border-white/[0.18] bg-white/[0.035] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Country-ready telemetry</p>
+              <p className="mt-2 text-sm leading-7 text-white/58">
+                This block is shaped like an analytics surface so later you can plug in real country activity without redesigning the homepage again.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              {presenceNodes.map((node, index) => (
+                <div key={`${node.name}-card`} className="rounded-[1.3rem] border-[1.15px] border-white/[0.16] bg-black/30 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-white">{node.name}</p>
+                      <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/40">{node.label}</p>
+                    </div>
+                    <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">Ready</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/58">{node.detail}</p>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div className="h-full rounded-full bg-[linear-gradient(90deg,rgba(19,164,255,0.95),rgba(108,220,255,0.95))]" style={{ width: `${48 + index * 7}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            ['Total live pulse', formatNumber(totalLivePulse)],
+            ['Network peers', formatNumber(totalPeers)],
+            ['Pool miners', formatNumber(poolMiners)],
+            ['Last refresh', updatedAt],
+          ].map(([label, value]) => (
+            <div key={String(label)} className="rounded-[1.25rem] border-[1.15px] border-white/[0.16] bg-black/32 px-4 py-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/42">{label}</p>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-white">{value}</p>
             </div>
           ))}
         </div>
-
-        <div className="relative mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[1.1rem] border border-white/[0.14] bg-black/35 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/44">Total live pulse</p>
-            <p className="mt-2 text-xl font-bold text-white">{formatNumber(totalLivePulse)}</p>
-          </div>
-          <div className="rounded-[1.1rem] border border-white/[0.14] bg-black/35 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/44">Network peers</p>
-            <p className="mt-2 text-xl font-bold text-white">{formatNumber(totalPeers)}</p>
-          </div>
-          <div className="rounded-[1.1rem] border border-white/[0.14] bg-black/35 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/44">Last refresh</p>
-            <p className="mt-2 text-xl font-bold text-white">{updatedAt}</p>
-          </div>
-        </div>
       </div>
-
       <p className="mt-4 text-xs leading-6 text-white/48">
-        To show real visitors by country like Google Analytics, this panel needs a telemetry source such as GA4 Realtime, Vercel Analytics or Cloudflare analytics.
+        Connect GA4 Realtime, Vercel Web Analytics or Cloudflare analytics later to turn this into a true live users-by-country panel.
       </p>
     </Card>
   )
@@ -738,7 +765,7 @@ export function NetworkPulse() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8 lg:py-20">
-      <div className="overflow-hidden rounded-[2.4rem] border border-white/[0.16] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(19,164,255,0.08),transparent_24%),linear-gradient(180deg,rgba(5,10,16,0.98),rgba(0,0,0,0.99))] shadow-[0_36px_160px_rgba(0,0,0,0.56),0_0_0_1px_rgba(19,164,255,0.06)]">
+      <div className="overflow-hidden rounded-[2.55rem] border-[1.35px] border-white/[0.20] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(19,164,255,0.09),transparent_24%),linear-gradient(180deg,rgba(5,10,16,0.98),rgba(0,0,0,0.99))] shadow-[0_40px_170px_rgba(0,0,0,0.58),0_0_0_1px_rgba(19,164,255,0.08)]">
         <div className="border-b border-white/[0.12] px-5 py-6 sm:px-8 sm:py-8">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div>
@@ -751,7 +778,7 @@ export function NetworkPulse() {
             <StatusPill pulse={pulse} />
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <div className="mt-6 grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-6">
             {topMetrics.map((item) => (
               <MetricCard key={item.label} icon={item.icon} label={item.label} value={item.value} foot={item.foot} />
             ))}
@@ -767,10 +794,10 @@ export function NetworkPulse() {
                 key={item.key}
                 onClick={() => setTab(item.key)}
                 className={classNames(
-                  'rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.14em] transition',
+                  'rounded-full border-[1.15px] px-4 py-2.5 text-sm font-bold uppercase tracking-[0.14em] transition',
                   tab === item.key
                     ? 'border-primary/50 bg-primary text-black shadow-[0_14px_40px_rgba(19,164,255,0.26)]'
-                    : 'border-white/[0.14] bg-white/[0.03] text-white/70 hover:border-primary/40 hover:bg-primary/10 hover:text-white'
+                    : 'border-white/[0.18] bg-white/[0.035] text-white/72 hover:border-primary/40 hover:bg-primary/10 hover:text-white'
                 )}
               >
                 {item.label}
@@ -797,7 +824,7 @@ export function NetworkPulse() {
                       { label: 'Hashrate', value: pulse.hashrate },
                       { label: 'Gas', value: pulse.gasUsedRatio },
                     ].map((item) => (
-                      <span key={item.label} className="rounded-full border border-white/[0.16] bg-white/[0.04] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/76">
+                      <span key={item.label} className="rounded-full border-[1.15px] border-white/[0.18] bg-white/[0.045] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/76">
                         {item.label}: <span className="text-white">{item.value}</span>
                       </span>
                     ))}
@@ -808,7 +835,7 @@ export function NetworkPulse() {
                       const height = `${Math.max(34, (item.interval / maxInterval) * 136)}px`
                       return (
                         <div key={item.block} className="flex flex-col items-center gap-3">
-                          <div className="flex h-40 w-full items-end justify-center rounded-[1.35rem] border border-white/[0.14] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                          <div className="flex h-40 w-full items-end justify-center rounded-[1.45rem] border-[1.2px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-2 py-3 shadow-[0_16px_36px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">
                             <div
                               className="w-full rounded-full bg-[linear-gradient(180deg,rgba(32,184,255,0.98),rgba(19,164,255,0.14))] shadow-[0_18px_40px_rgba(19,164,255,0.24)]"
                               style={{ height }}
@@ -855,7 +882,7 @@ export function NetworkPulse() {
                         { name: 'PPLNS', data: pplns },
                         { name: 'SOLO', data: solo },
                       ].map((item) => (
-                        <div key={item.name} className="rounded-[1.5rem] border border-white/[0.16] bg-black/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div key={item.name} className="rounded-[1.6rem] border-[1.2px] border-white/[0.20] bg-black/35 p-4 shadow-[0_16px_38px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">
                           <div className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-xl font-bold text-white">{item.name}</p>
@@ -872,7 +899,7 @@ export function NetworkPulse() {
                               { label: 'Pool hashrate', value: formatHashrate(Number(item.data?.poolHashrate || 0)) },
                               { label: 'Recent payments', value: formatNumber(Number(item.data?.paymentsCount || 0)) },
                             ].map((stat) => (
-                              <div key={stat.label} className="rounded-[1.15rem] border border-white/[0.14] bg-white/[0.03] px-3 py-3">
+                              <div key={stat.label} className="rounded-[1.2rem] border-[1.15px] border-white/[0.18] bg-white/[0.035] px-3 py-3">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">{stat.label}</p>
                                 <p className="mt-2 text-lg font-bold text-white">{stat.value}</p>
                               </div>
@@ -899,7 +926,27 @@ export function NetworkPulse() {
                         <ListRow
                           key={String(label)}
                           left={<p className="text-sm text-white/62">{label}</p>}
-                          right={<p className="text-sm font-bold text-white">{value}</p>}
+                          right={<p className="text-sm font-bold tabular-nums text-white">{value}</p>}
+                        />
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card>
+                    <SectionTitle eyebrow="Mining & gas pulse" title="Useful live data for miners too." action={<span className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/48">Main RPC</span>} />
+                    <div className="mt-5 space-y-3">
+                      {[
+                        ['Mining status', pulse.latestBlock > 0 ? 'Blocks are being mined' : 'Waiting for miners'],
+                        ['Difficulty', pulse.difficulty],
+                        ['Estimated hashrate', pulse.hashrate],
+                        ['Avg block time', pulse.avgBlockTime],
+                        ['Last block utilization', pulse.gasUsedRatio],
+                        ['Latest txs', formatNumber(pulse.latestTxs)],
+                      ].map(([label, value]) => (
+                        <ListRow
+                          key={String(label)}
+                          left={<p className="text-sm text-white/62">{label}</p>}
+                          right={<p className="text-sm font-bold tabular-nums text-white">{value}</p>}
                         />
                       ))}
                     </div>
@@ -1130,7 +1177,7 @@ export function NetworkPulse() {
 
           {tab === 'global' ? (
             <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-              <GlobalPresenceMap totalLivePulse={totalLivePulse} totalPeers={totalNetworkPeers} updatedAt={pulse.updatedAt} />
+              <GlobalPresenceMap totalLivePulse={totalLivePulse} totalPeers={totalNetworkPeers} poolMiners={poolConnectedMiners} updatedAt={pulse.updatedAt} />
 
               <div className="space-y-5">
                 <Card>

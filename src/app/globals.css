@@ -123,7 +123,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #000000;
-    background-image: radial-gradient(circle at top left, rgba(19, 164, 255, 0.08), transparent 22%), radial-gradient(circle at top right, rgba(19, 164, 255, 0.04), transparent 18%);
+    background-image: radial-gradient(circle at top left, rgba(19, 164, 255, 0.10), transparent 22%), radial-gradient(circle at top right, rgba(19, 164, 255, 0.05), transparent 18%), linear-gradient(180deg, rgba(0, 0, 0, 1), rgba(2, 6, 12, 1) 38%, rgba(0, 0, 0, 1));
   }
 }
 
@@ -177,4 +177,20 @@
 
 .inri-soft-float {
   animation: inri-soft-float 5s ease-in-out infinite;
+}
+
+
+.inri-panel-outline {
+  border: 1.25px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.inri-panel-outline-strong {
+  border: 1.35px solid rgba(120, 213, 255, 0.22);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(19, 164, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.inri-blue-grid {
+  background-image: linear-gradient(rgba(19, 164, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(19, 164, 255, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
 }

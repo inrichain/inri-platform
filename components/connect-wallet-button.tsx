@@ -80,7 +80,7 @@ export function ConnectWalletButton() {
     <div className="relative shrink-0">
       <button
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-11 items-center gap-2 rounded-full border border-white/[0.16] bg-white/[0.04] px-4 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 hover:shadow-[0_14px_34px_rgba(19,164,255,0.10)]"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/[0.20] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-4 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.30),inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:-translate-y-px hover:border-primary/45 hover:bg-primary/10 hover:shadow-[0_20px_48px_rgba(19,164,255,0.14)]"
       >
         <Wallet className="h-4 w-4 text-primary" />
         <span className="max-w-[8.5rem] truncate">{shortAddress(address)}</span>
@@ -88,7 +88,7 @@ export function ConnectWalletButton() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] overflow-hidden rounded-[1.7rem] border border-white/[0.16] bg-[#02060c]/98 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.58),0_0_0_1px_rgba(19,164,255,0.06)] backdrop-blur-xl">
+        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] overflow-hidden rounded-[1.8rem] border border-white/[0.18] bg-[linear-gradient(180deg,#030811,#000000)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.58),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl">
           {!address ? (
             <>
               <p className="text-xs font-bold uppercase tracking-[0.20em] text-primary">Connect wallet</p>
@@ -102,7 +102,7 @@ export function ConnectWalletButton() {
                       key={item.key}
                       onClick={() => connect(item.provider)}
                       disabled={busy}
-                      className="rounded-[1.2rem] border border-white/[0.16] bg-white/[0.04] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
+                      className="rounded-[1.25rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
                     >
                       {busy ? 'Connecting...' : item.label}
                     </button>
@@ -111,7 +111,7 @@ export function ConnectWalletButton() {
                   <button
                     onClick={() => connect()}
                     disabled={busy}
-                    className="rounded-[1.2rem] border border-white/[0.16] bg-white/[0.04] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
+                    className="rounded-[1.25rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
                   >
                     {busy ? 'Connecting...' : 'Connect browser wallet'}
                   </button>
@@ -122,20 +122,20 @@ export function ConnectWalletButton() {
           ) : (
             <>
               <p className="text-xs font-bold uppercase tracking-[0.20em] text-primary">Wallet connected</p>
-              <div className="mt-4 rounded-[1.25rem] border border-white/[0.16] bg-white/[0.04] p-4">
+              <div className="mt-4 rounded-[1.3rem] border border-white/[0.18] bg-white/[0.04] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Address</p>
                 <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
               </div>
               <div className="mt-4 grid gap-3">
                 <button
                   onClick={copyAddress}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1.2rem] border border-white/[0.16] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10"
+                  className="inline-flex items-center justify-center gap-2 rounded-[1.25rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10"
                 >
                   <Copy className="h-4 w-4" /> Copy address
                 </button>
                 <button
                   onClick={disconnect}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1.2rem] border border-white/[0.16] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10"
+                  className="inline-flex items-center justify-center gap-2 rounded-[1.25rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10"
                 >
                   <LogOut className="h-4 w-4" /> Disconnect
                 </button>

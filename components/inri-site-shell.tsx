@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { Github, Instagram, Mail, Send, Shield, Youtube } from 'lucide-react'
+import { Github, Instagram, Mail, Menu, Send, Shield, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export type InriNavItem = {
   label: string
@@ -49,7 +50,7 @@ function NavLink({ item }: { item: InriNavItem }) {
     <Link
       href={item.href}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className="inline-flex h-11 shrink-0 items-center rounded-full border border-transparent px-4 text-sm font-semibold text-white/74 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-white"
+      className="inline-flex h-11 shrink-0 items-center rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-4 text-sm font-semibold text-white/78 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:-translate-y-px hover:border-primary/45 hover:bg-primary/10 hover:text-white"
     >
       {item.label}
     </Link>
@@ -69,27 +70,27 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'border border-primary/50 bg-primary text-black shadow-[0_16px_44px_rgba(19,164,255,0.22)] hover:bg-[#33b0ff] hover:shadow-[0_20px_54px_rgba(19,164,255,0.30)]'
+      ? 'border border-[#71d2ff]/70 bg-[linear-gradient(135deg,#13a4ff_0%,#42c2ff_60%,#8ce3ff_100%)] text-black shadow-[0_18px_46px_rgba(19,164,255,0.28),inset_0_1px_0_rgba(255,255,255,0.45)] hover:-translate-y-px hover:brightness-105 hover:shadow-[0_22px_56px_rgba(19,164,255,0.34)]'
       : variant === 'secondary'
-        ? 'border border-white/[0.16] bg-white/[0.04] text-white hover:border-primary/45 hover:bg-primary/10 hover:shadow-[0_14px_40px_rgba(19,164,255,0.10)]'
-        : 'text-white/75 hover:text-white'
+        ? 'border border-white/[0.20] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:-translate-y-px hover:border-primary/45 hover:bg-primary/10 hover:shadow-[0_18px_42px_rgba(19,164,255,0.12)]'
+        : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold transition-all ${styles}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-bold transition-all ${styles}`}
     >
       {children}
     </Link>
   )
 }
 
-function HeaderNav() {
+function DesktopNav() {
   return (
-    <div className="min-w-0 flex-1 xl:flex xl:justify-center">
-      <div className="hidden xl:block max-w-full overflow-hidden rounded-full border border-white/[0.14] bg-white/[0.035] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-        <div className="flex min-w-max items-center gap-1 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="hidden 2xl:flex min-w-0 flex-1 justify-center px-4">
+      <div className="max-w-full rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-1.5 shadow-[0_18px_42px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="flex min-w-max items-center gap-1 overflow-x-auto whitespace-nowrap pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {inriNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
@@ -99,45 +100,112 @@ function HeaderNav() {
   )
 }
 
-export function InriHeader() {
+function MobileMenu() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.12] bg-black/88 backdrop-blur-xl">
-      <div className="border-b border-primary/15 bg-[linear-gradient(90deg,rgba(19,164,255,0.12),rgba(19,164,255,0.03),rgba(19,164,255,0.12))] px-4 py-2 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-white/62 sm:px-6 lg:px-8">
-        MAINNET • POW • CHAIN 3777
-      </div>
+    <Sheet>
+      <SheetTrigger asChild>
+        <button className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.2] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-primary/45 hover:bg-primary/10 lg:hidden">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Open menu</span>
+        </button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[88vw] border-l border-white/[0.18] bg-[linear-gradient(180deg,#030811,#000000)] p-0 text-white sm:max-w-md">
+        <SheetHeader className="border-b border-white/[0.12] px-5 py-5 text-left">
+          <SheetTitle className="text-left text-white">
+            <Logo showText size={48} />
+          </SheetTitle>
+          <SheetDescription className="pt-2 text-left text-white/58">
+            Wallet, explorer, mining and core routes in one responsive menu.
+          </SheetDescription>
+        </SheetHeader>
 
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="shrink-0">
-          <Logo showText size={56} />
-        </div>
+        <div className="flex flex-col gap-6 px-5 py-5">
+          <div className="grid gap-3">
+            <InriLinkButton href="https://wallet.inri.life" external>
+              INRI Wallet
+            </InriLinkButton>
+            <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
+              Explorer
+            </InriLinkButton>
+            <ConnectWalletButton />
+          </div>
 
-        <HeaderNav />
-
-        <div className="hidden items-center gap-3 md:flex">
-          <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
-            Explorer
-          </InriLinkButton>
-          <InriLinkButton href="https://wallet.inri.life" external>
-            INRI Wallet
-          </InriLinkButton>
-          <ConnectWalletButton />
-        </div>
-      </div>
-
-      <div className="xl:hidden border-t border-white/[0.12] bg-white/[0.02]">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="grid gap-2">
             {inriNavItems.map((item) => (
-              <NavLink key={item.label} item={item} />
+              <Link
+                key={item.label}
+                href={item.href}
+                {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                className="rounded-[1.15rem] border border-white/[0.16] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/78 transition hover:border-primary/45 hover:bg-primary/10 hover:text-white"
+              >
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
-        <div className="mx-auto flex max-w-7xl gap-3 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8 md:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+export function InriHeader() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-white/[0.14] bg-black/88 backdrop-blur-xl">
+      <div className="border-b border-primary/18 bg-[linear-gradient(90deg,rgba(19,164,255,0.16),rgba(19,164,255,0.04),rgba(19,164,255,0.16))]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/68">MAINNET • POW • CHAIN 3777</p>
+          <div className="hidden flex-wrap items-center gap-2 md:flex">
+            {['Low fees', 'Community mining', 'Explorer-ready'].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-white/[0.16] bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 2xl:flex-nowrap">
+          <div className="shrink-0">
+            <Logo showText size={58} />
+          </div>
+
+          <DesktopNav />
+
+          <div className="ml-auto hidden flex-wrap items-center justify-end gap-2 md:flex 2xl:ml-0">
+            <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
+              Explorer
+            </InriLinkButton>
+            <InriLinkButton href="https://wallet.inri.life" external>
+              INRI Wallet
+            </InriLinkButton>
+            <ConnectWalletButton />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 md:hidden">
+            <InriLinkButton href="https://wallet.inri.life" external>
+              Wallet
+            </InriLinkButton>
+            <MobileMenu />
+          </div>
+        </div>
+
+        <div className="mt-4 2xl:hidden">
+          <div className="rounded-[1.55rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <div className="flex gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {inriNavItems.map((item) => (
+                <NavLink key={item.label} item={item} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-2 overflow-x-auto md:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <InriLinkButton href="https://explorer.inri.life" variant="secondary" external>
             Explorer
-          </InriLinkButton>
-          <InriLinkButton href="https://wallet.inri.life" external>
-            INRI Wallet
           </InriLinkButton>
           <ConnectWalletButton />
         </div>
@@ -153,7 +221,7 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-white/[0.16] bg-white/[0.04] px-3 text-white/80 transition hover:border-primary/45 hover:bg-primary/10 hover:text-white hover:shadow-[0_14px_34px_rgba(19,164,255,0.10)]"
+      className="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-3 text-white/82 transition hover:-translate-y-px hover:border-primary/45 hover:bg-primary/10 hover:text-white hover:shadow-[0_18px_40px_rgba(19,164,255,0.12)]"
     >
       {children}
     </Link>
@@ -162,7 +230,7 @@ function FooterSocialIcon({ href, label, children }: { href: string; label: stri
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/[0.12] bg-black">
+    <footer className="border-t border-white/[0.14] bg-black">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.85fr_0.95fr]">
           <div>
@@ -209,7 +277,7 @@ export function InriFooter() {
 
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.22em] text-primary/82">Why INRI</p>
-            <div className="mt-5 rounded-[1.75rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="mt-5 rounded-[1.85rem] border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)]">
               <p className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-primary">
                 <Shield className="h-4 w-4" />
                 Real utility
