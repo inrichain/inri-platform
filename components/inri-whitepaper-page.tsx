@@ -536,12 +536,12 @@ export function InriWhitepaperPage() {
                   <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary">Useful routes</p>
                   <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">Continue through the rest of the network.</h2>
                   <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {[
+                    {([
                       { title: 'Wallets', text: 'Onboarding and wallet access.', href: '/wallets' },
                       { title: 'Mining', text: 'Windows, Ubuntu and network mining routes.', href: '/mining' },
                       { title: 'Pool', text: 'Pool entry and mining stats routes.', href: '/pool' },
                       { title: 'Explorer', text: 'Open the internal explorer page and continue into the public explorer if needed.', href: '/explorer' },
-                    ].map((item) => (
+                    ] as { title: string; text: string; href: string; external?: boolean }[]).map((item) => (
                       <Link
                         key={item.title}
                         href={item.href}
