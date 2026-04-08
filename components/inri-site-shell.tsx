@@ -231,7 +231,7 @@ export function InriHeader() {
         </div>
       </div>
 
-      <div className="h-[30px] border-t border-primary/10 bg-primary/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]" />
+      <div className="h-[6px] border-t border-white/10 bg-[linear-gradient(90deg,#056ec7_0%,#118ff0_52%,#056ec7_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
     </header>
   )
 }
