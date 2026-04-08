@@ -20,7 +20,7 @@ export function Logo({
       alt="INRI CHAIN"
       width={size}
       height={size}
-      className={className || 'object-contain drop-shadow-[0_0_22px_rgba(19,164,255,0.20)]'}
+      className={className || 'object-contain'}
       style={{ width: size, height: size, objectFit: 'contain' }}
     />
   )
@@ -31,10 +31,10 @@ export function Logo({
     <Link href={href} className="flex min-w-0 items-center gap-3 md:gap-4">
       <span className="shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-sm font-extrabold uppercase tracking-[0.26em] text-primary sm:text-base">
+        <p className="truncate text-sm font-bold uppercase tracking-[0.22em] text-primary sm:text-base sm:tracking-[0.30em]">
           INRI CHAIN
         </p>
-        <p className="truncate text-[11px] font-medium text-white/58 sm:text-xs">PoW • Chain 3777</p>
+        <p className="truncate text-xs text-white/60 sm:text-sm">PoW • Chain 3777</p>
       </div>
     </Link>
   )

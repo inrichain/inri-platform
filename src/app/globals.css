@@ -194,3 +194,6 @@
   background-image: linear-gradient(rgba(19, 164, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(19, 164, 255, 0.06) 1px, transparent 1px);
   background-size: 42px 42px;
 }
+
+
+html, body { background: #000; }
