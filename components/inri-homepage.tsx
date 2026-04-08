@@ -1,17 +1,9 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
-import {
-  ArrowRight,
-  Blocks,
-  Coins,
-  Factory,
-  Pickaxe,
-  ShieldCheck,
-  Sparkles,
-  Wallet,
-} from 'lucide-react'
+import { ArrowRight, Blocks, Coins, Factory, Pickaxe, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
@@ -20,92 +12,124 @@ type Mode = 'use' | 'mine' | 'verify'
 type HeroMode = {
   title: string
   text: string
+  chips: string[]
   primary: { label: string; href: string; external?: boolean }
   secondary: { label: string; href: string; external?: boolean }
-  tiles: Array<{ label: string; value: string }>
+  bullets: Array<{ label: string; value: string }>
 }
 
 const modes: Record<Mode, HeroMode> = {
   use: {
-    title: 'Open the network and use it fast.',
-    text: 'Wallet, explorer, staking and token tools should feel immediate, not hidden behind a crowded homepage.',
+    title: 'Use the chain with less friction and more confidence.',
+    text: 'Lead new visitors into the wallet, explorer, swap and staking without forcing them to decode the site first.',
+    chips: ['Wallet first', 'Low friction', 'Fast entry'],
     primary: { label: 'Open INRI Wallet', href: 'https://wallet.inri.life', external: true },
     secondary: { label: 'View Wallets', href: '/wallets' },
-    tiles: [
-      { label: 'Wallet', value: 'Send, hold, connect' },
-      { label: 'Explorer', value: 'Check blocks and txs' },
-      { label: 'Staking', value: 'Longer-term utility' },
-      { label: 'Factory', value: 'Launch token routes' },
+    bullets: [
+      { label: 'Main route', value: 'Official wallet' },
+      { label: 'Proof', value: 'Open explorer fast' },
+      { label: 'Next step', value: 'Stake or swap' },
     ],
   },
   mine: {
-    title: 'Make Proof-of-Work visible and useful.',
-    text: 'Mining should feel like a live route on the homepage, with clear paths for Windows, Ubuntu and pool participation.',
+    title: 'Put Proof-of-Work in the center of the homepage.',
+    text: 'Mining should feel alive from the first screen: guides, pool access, chain pulse and real participation signals.',
+    chips: ['Windows', 'Ubuntu', 'Pool'],
     primary: { label: 'Start Mining', href: '/mining' },
     secondary: { label: 'Open Pool', href: '/pool' },
-    tiles: [
-      { label: 'Windows', value: 'CPU setup route' },
-      { label: 'Ubuntu', value: 'Linux mining route' },
-      { label: 'Pool', value: 'Join active mining' },
-      { label: 'Explorer', value: 'Verify mined blocks' },
+    bullets: [
+      { label: 'Entry', value: 'Mining routes' },
+      { label: 'Signal', value: 'Live pulse' },
+      { label: 'Access', value: 'Pool + solo path' },
     ],
   },
   verify: {
-    title: 'Show proof before promises.',
-    text: 'Visitors should see live blocks, recent transactions and direct verification routes without leaving the site too early.',
+    title: 'Show proof before promises and routes before noise.',
+    text: 'A premium homepage proves the network is alive early: blocks, fees, activity, miners and direct explorer access.',
+    chips: ['Explorer', 'Blocks', 'Activity'],
     primary: { label: 'Open Explorer', href: 'https://explorer.inri.life', external: true },
     secondary: { label: 'Read Whitepaper', href: '/whitepaper' },
-    tiles: [
-      { label: 'Live blocks', value: 'Recent chain rhythm' },
-      { label: 'Transactions', value: 'Latest chain activity' },
-      { label: 'Search', value: 'Address, tx or block' },
-      { label: 'Chain', value: 'Proof-of-Work 3777' },
+    bullets: [
+      { label: 'Trust', value: 'Live chain data' },
+      { label: 'Proof', value: 'Recent blocks' },
+      { label: 'Context', value: 'Chain 3777' },
     ],
   },
 }
 
-const routeCards = [
+const proofCards = [
+  {
+    title: 'Wallet route',
+    text: 'Open the official wallet and enter INRI in one clear action.',
+    icon: Wallet,
+  },
+  {
+    title: 'Explorer proof',
+    text: 'Make blocks, txs and addresses visible fast for trust.',
+    icon: Blocks,
+  },
+  {
+    title: 'Mining route',
+    text: 'Show miners the path without hiding it deep in the site.',
+    icon: Pickaxe,
+  },
+  {
+    title: 'Real utility',
+    text: 'Pool, staking, P2P and token factory should feel reachable.',
+    icon: ShieldCheck,
+  },
+]
+
+const utilityCards = [
   {
     title: 'Wallet',
-    text: 'Official wallet access for everyday use.',
+    text: 'Official route into INRI and the easiest first step for new users.',
     href: 'https://wallet.inri.life',
     external: true,
     icon: Wallet,
   },
   {
+    title: 'Mining',
+    text: 'Windows, Ubuntu and pool routes with a stronger PoW presentation.',
+    href: '/mining',
+    icon: Pickaxe,
+  },
+  {
     title: 'Explorer',
-    text: 'Blocks, addresses, transactions and proof.',
+    text: 'Blocks, transactions and address verification without friction.',
     href: 'https://explorer.inri.life',
     external: true,
     icon: Blocks,
   },
   {
-    title: 'Mining',
-    text: 'Windows and Ubuntu routes for real participation.',
-    href: '/mining',
-    icon: Pickaxe,
-  },
-  {
-    title: 'Pool',
-    text: 'Follow miners, blocks and recent payments.',
-    href: '/pool',
-    icon: ShieldCheck,
-  },
-  {
     title: 'Staking',
-    text: 'Keep utility inside the INRI ecosystem.',
+    text: 'Longer-term utility and clearer participation routes on the site.',
     href: '/staking',
     icon: Coins,
   },
   {
     title: 'Factory',
-    text: 'Create and launch assets inside the network.',
+    text: 'Token creation should look like part of a real ecosystem, not an extra link.',
     href: '/token-factory',
     icon: Factory,
   },
+  {
+    title: 'Whitepaper',
+    text: 'The network story and technical direction should stay one click away.',
+    href: '/whitepaper',
+    icon: ShieldCheck,
+  },
 ]
 
-const valuePills = ['Low fees', 'Community mining', 'EVM compatible', 'Real utility']
+const valuePills = ['Low fees', 'Community mining', 'EVM compatible', 'Visible utility']
+
+function GlowFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-[1.65rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_20px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)] ${className}`}>
+      {children}
+    </div>
+  )
+}
 
 export function InriHomepage() {
   const [mode, setMode] = useState<Mode>('use')
@@ -114,13 +138,14 @@ export function InriHomepage() {
   return (
     <InriShell>
       <main>
-        <section className="relative overflow-hidden border-b border-white/10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(19,164,255,0.18),transparent_28%),radial-gradient(circle_at_88%_14%,rgba(19,164,255,0.10),transparent_24%),linear-gradient(180deg,rgba(0,0,0,0.94),rgba(0,0,0,1))]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:58px_58px] opacity-[0.06]" />
+        <section className="relative overflow-hidden border-b border-white/[0.12]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(19,164,255,0.22),transparent_28%),radial-gradient(circle_at_84%_14%,rgba(19,164,255,0.12),transparent_24%),radial-gradient(circle_at_58%_100%,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,rgba(0,0,0,0.94),rgba(0,0,0,0.99))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.06)_1px,transparent_1px)] bg-[size:58px_58px] opacity-35" />
+          <div className="absolute left-0 top-0 h-px w-full bg-[linear-gradient(90deg,rgba(19,164,255,0),rgba(19,164,255,0.9),rgba(19,164,255,0))]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-              <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_14px_rgba(19,164,255,0.95)]" />
+            <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary shadow-[0_0_30px_rgba(19,164,255,0.10)]">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_16px_rgba(19,164,255,0.95)]" />
               INRI CHAIN
               <span className="text-white/28">•</span>
               Proof-of-Work
@@ -128,21 +153,24 @@ export function InriHomepage() {
               Chain 3777
             </div>
 
-            <div className="mt-8 grid gap-8 xl:grid-cols-[1.02fr_0.98fr] xl:items-center">
+            <div className="mt-9 grid gap-8 xl:grid-cols-[1.02fr_0.98fr] xl:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   {valuePills.map((pill) => (
-                    <span key={pill} className="inri-chip">
+                    <span
+                      key={pill}
+                      className="rounded-full border border-white/[0.14] bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/70"
+                    >
                       {pill}
                     </span>
                   ))}
                 </div>
 
-                <h1 className="mt-8 max-w-4xl text-4xl font-bold leading-[0.96] text-white sm:text-6xl lg:text-7xl">
-                  Proof-of-Work with real utility.
+                <h1 className="mt-8 max-w-4xl text-balance text-4xl font-bold leading-[0.95] text-white sm:text-6xl lg:text-7xl">
+                  Proof-of-Work with visible value and a stronger presence.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
-                  A cleaner INRI homepage focused on what users actually do: open the wallet, verify the chain, mine, join the pool, stake and build.
+                  INRI should look like a real network from the first screen: wallet, explorer, mining, pool, staking and live proof in a cleaner blue-on-black system.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -157,36 +185,38 @@ export function InriHomepage() {
                   </InriLinkButton>
                 </div>
 
-                <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                  {[
-                    { label: 'Use', text: 'Wallet, staking, swap and token routes.' },
-                    { label: 'Verify', text: 'Live blocks, txs and direct proof.' },
-                    { label: 'Mine', text: 'Visible paths for real participation.' },
-                  ].map((item) => (
-                    <div key={item.label} className="inri-card p-5">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{item.label}</p>
-                      <p className="mt-3 text-sm leading-6 text-white/68">{item.text}</p>
-                    </div>
-                  ))}
+                <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:max-w-3xl">
+                  {proofCards.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <GlowFrame key={item.title} className="p-4 backdrop-blur-sm">
+                        <div className="inline-flex rounded-2xl border border-primary/30 bg-primary/12 p-2.5 text-primary shadow-[0_0_22px_rgba(19,164,255,0.14)]">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <p className="mt-4 text-base font-bold text-white">{item.title}</p>
+                        <p className="mt-2 text-sm leading-6 text-white/60">{item.text}</p>
+                      </GlowFrame>
+                    )
+                  })}
                 </div>
               </div>
 
               <div className="relative">
-                <div className="absolute -inset-6 rounded-[2.8rem] bg-[radial-gradient(circle,rgba(19,164,255,0.14),transparent_58%)] blur-3xl" />
-                <div className="inri-panel-strong relative overflow-hidden p-5 sm:p-6">
-                  <div className="flex flex-col gap-4 rounded-[1.35rem] border border-white/10 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">INRI utility hub</p>
-                      <p className="mt-1 text-sm leading-6 text-white/58">
-                        Shorter text, stronger layout and cleaner translation behavior.
-                      </p>
+                <div className="absolute -inset-8 rounded-[3rem] bg-[radial-gradient(circle,rgba(19,164,255,0.20),transparent_58%)] blur-3xl" />
+                <div className="relative overflow-hidden rounded-[2.2rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(5,10,16,0.98),rgba(0,0,0,0.98))] p-5 shadow-[0_36px_130px_rgba(0,0,0,0.54),0_0_0_1px_rgba(19,164,255,0.06)] sm:p-6">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_36%),linear-gradient(rgba(19,164,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.05)_1px,transparent_1px)] bg-[size:auto,42px_42px,42px_42px] opacity-40" />
+
+                  <div className="relative flex items-center justify-between gap-4 rounded-[1.35rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">INRI utility console</p>
+                      <p className="mt-1 text-sm text-white/58">Bigger structure, thicker borders and less visual noise.</p>
                     </div>
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                    <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                       Main routes
                     </span>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-2">
+                  <div className="relative mt-5 flex flex-wrap gap-2">
                     {(
                       [
                         { key: 'use', label: 'Use' },
@@ -197,10 +227,10 @@ export function InriHomepage() {
                       <button
                         key={item.key}
                         onClick={() => setMode(item.key)}
-                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                        className={`rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.14em] transition ${
                           mode === item.key
-                            ? 'border-primary/40 bg-primary text-black'
-                            : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-primary/30 hover:bg-primary/10 hover:text-white'
+                            ? 'border-primary/50 bg-primary text-black shadow-[0_14px_40px_rgba(19,164,255,0.24)]'
+                            : 'border-white/[0.14] bg-white/[0.03] text-white/72 hover:border-primary/40 hover:bg-primary/10 hover:text-white'
                         }`}
                       >
                         {item.label}
@@ -208,9 +238,29 @@ export function InriHomepage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 rounded-[1.7rem] border border-white/10 bg-black/60 p-5 sm:p-6">
-                    <h2 className="max-w-xl text-2xl font-bold leading-tight text-white sm:text-[2rem]">{active.title}</h2>
+                  <div className="relative mt-5 rounded-[1.8rem] border border-white/[0.16] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.14),transparent_34%),linear-gradient(180deg,rgba(2,6,11,0.98),rgba(0,0,0,1))] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6">
+                    <div className="flex flex-wrap gap-2">
+                      {active.chips.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-white/[0.14] bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/68"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+
+                    <h2 className="mt-5 text-3xl font-bold text-white sm:text-[2.35rem] sm:leading-[1.02]">{active.title}</h2>
                     <p className="mt-3 max-w-xl text-sm leading-7 text-white/64 sm:text-base">{active.text}</p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                      {active.bullets.map((item) => (
+                        <GlowFrame key={item.label} className="bg-white/[0.03] p-4">
+                          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{item.label}</p>
+                          <p className="mt-3 text-sm font-semibold text-white">{item.value}</p>
+                        </GlowFrame>
+                      ))}
+                    </div>
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <InriLinkButton href={active.primary.href} external={active.primary.external}>
@@ -221,13 +271,19 @@ export function InriHomepage() {
                       </InriLinkButton>
                     </div>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                      {active.tiles.map((item) => (
-                        <div key={item.label} className="inri-card min-h-[112px] p-4">
-                          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{item.label}</p>
-                          <p className="mt-3 text-sm font-semibold leading-6 text-white/88">{item.value}</p>
-                        </div>
-                      ))}
+                    <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                      <GlowFrame className="p-4">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Why this feels stronger</p>
+                        <p className="mt-3 text-sm leading-7 text-white/60">
+                          One big live section, thicker borders, better spacing and more obvious utility routes keep the page premium without feeling exaggerated.
+                        </p>
+                      </GlowFrame>
+                      <GlowFrame className="p-4">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">What the user should feel</p>
+                        <p className="mt-3 text-sm leading-7 text-white/60">
+                          “This looks real, active and worth exploring” — not just another static landing page with crypto buzzwords.
+                        </p>
+                      </GlowFrame>
                     </div>
                   </div>
                 </div>
@@ -238,34 +294,34 @@ export function InriHomepage() {
 
         <NetworkPulse />
 
-        <section className="border-t border-white/10 bg-[linear-gradient(180deg,rgba(0,0,0,0.98),rgba(0,0,0,1))]">
+        <section className="border-t border-white/[0.12] bg-[linear-gradient(180deg,rgba(0,0,0,0.98),rgba(0,0,0,1))]">
           <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8 lg:py-20">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Everything in one place</p>
-                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Keep the user inside the INRI ecosystem.</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Core routes</p>
+                <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Every important route should feel like part of the same product.</h2>
               </div>
               <p className="max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
-                A strong homepage should not just look modern. It should guide people into real actions and make the network feel alive.
+                Real value comes from use: open the wallet, verify the chain, mine, join the pool, stake or launch tokens.
               </p>
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {routeCards.map((item) => {
+              {utilityCards.map((item) => {
                 const Icon = item.icon
                 return (
                   <Link
                     key={item.title}
                     href={item.href}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="group inri-card min-h-[176px] p-5 transition hover:border-primary/35 hover:bg-[linear-gradient(180deg,rgba(19,164,255,0.10),rgba(255,255,255,0.02))]"
+                    className="group rounded-[1.75rem] border border-white/[0.16] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 transition hover:border-primary/50 hover:bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(19,164,255,0.08),rgba(255,255,255,0.02))] hover:shadow-[0_18px_50px_rgba(19,164,255,0.12)]"
                   >
-                    <div className="inline-flex rounded-2xl border border-primary/18 bg-primary/10 p-3 text-primary">
+                    <div className="inline-flex rounded-2xl border border-primary/30 bg-primary/12 p-3 text-primary shadow-[0_0_22px_rgba(19,164,255,0.14)]">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="mt-5 flex items-center justify-between gap-3">
                       <h3 className="text-xl font-bold text-white">{item.title}</h3>
-                      <ArrowRight className="h-4 w-4 shrink-0 text-primary transition group-hover:translate-x-1" />
+                      <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
                     </div>
                     <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
                   </Link>
@@ -275,37 +331,35 @@ export function InriHomepage() {
           </div>
         </section>
 
-        <section className="border-t border-white/10 bg-black">
+        <section className="border-t border-white/[0.12] bg-black">
           <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8 lg:py-20">
-            <div className="inri-panel p-7 sm:p-10">
+            <GlowFrame className="overflow-hidden rounded-[2.1rem] p-7 sm:p-10">
               <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-primary">
                     <Sparkles className="h-4 w-4" />
-                    Visual direction
+                    Final direction
                   </p>
-                  <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-                    Pure black, electric blue and cleaner hierarchy.
-                  </h2>
+                  <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">Black, electric blue and a homepage that feels worth staying on.</h2>
                   <p className="mt-5 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
-                    Bigger containers, calmer spacing and shorter labels keep the site cleaner across desktop, mobile and browser translation.
+                    The right balance is not “more effects everywhere”. It is stronger contrast, thicker borders, more deliberate glow, clearer utility and enough live proof to keep people exploring.
                   </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    'Shorter labels that survive translation better',
-                    'Larger containers with stronger alignment',
-                    'Live data inside one cleaner visual system',
-                    'More utility, less homepage noise',
+                    'Pure black base with more visible blue light and thicker outlines',
+                    'One major command-center section instead of loose cards fighting each other',
+                    'Shorter wording so the layout survives translation better',
+                    'A global-view area ready for real analytics when you want to wire it in',
                   ].map((item) => (
-                    <div key={item} className="inri-card p-4 text-sm leading-7 text-white/72">
+                    <GlowFrame key={item} className="bg-black/60 p-4 text-sm leading-7 text-white/72">
                       {item}
-                    </div>
+                    </GlowFrame>
                   ))}
                 </div>
               </div>
-            </div>
+            </GlowFrame>
           </div>
         </section>
       </main>
