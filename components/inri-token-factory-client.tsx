@@ -18,10 +18,9 @@ type EthereumProvider = {
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider
-  }
+function getEthereum(): EthereumProvider | undefined {
+  if (typeof window === 'undefined') return undefined
+  return (window as Window & { ethereum?: EthereumProvider }).ethereum
 }
 
 type FormState = {
@@ -182,7 +181,7 @@ export function InriTokenFactoryClient() {
   }, [refreshFactoryStats])
 
   useEffect(() => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     setProviderReady(Boolean(eth))
 
     if (!eth) return
@@ -222,7 +221,7 @@ export function InriTokenFactoryClient() {
   }, [])
 
   const connectWallet = async () => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     if (!eth) {
       setError('No wallet detected. Open this page with INRI Wallet, MetaMask or another EVM wallet.')
       return
@@ -244,7 +243,7 @@ export function InriTokenFactoryClient() {
   }
 
   const switchToInri = async () => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     if (!eth) {
       setError('No wallet detected to switch networks.')
       return
@@ -289,7 +288,7 @@ export function InriTokenFactoryClient() {
   }
 
   const estimateGas = async () => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     if (!eth || !account || !networkReady) return
 
     try {
@@ -313,7 +312,7 @@ export function InriTokenFactoryClient() {
   }, [form.name, form.symbol, form.decimals, form.supply, account, networkReady])
 
   const createToken = async () => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     if (!eth) {
       setError('No wallet detected. Use INRI Wallet or another EVM wallet.')
       return
@@ -429,7 +428,7 @@ export function InriTokenFactoryClient() {
   }
 
   const addTokenToWallet = async () => {
-    const eth = window.ethereum
+    const eth = getEthereum()
     if (!eth || !createdToken) return
 
     try {
