@@ -1,8 +1,16 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
+import { ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export type InriNavItem = {
@@ -19,7 +27,7 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Docs', href: '/whitepaper' },
 ]
 
-const secondaryNavItems: InriNavItem[] = [
+const utilityNavItems: InriNavItem[] = [
   { label: 'Swap', href: '/swap' },
   { label: 'Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
@@ -47,16 +55,55 @@ const socialLinks = [
   { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: Youtube },
 ]
 
-function NavLink({ item, compact = false }: { item: InriNavItem; compact?: boolean }) {
+const navPillClass =
+  'notranslate inline-flex h-12 shrink-0 items-center justify-center rounded-[1.15rem] border-[1.6px] border-transparent px-5 text-sm font-semibold text-white/80 transition-all hover:-translate-y-px hover:border-primary/32 hover:bg-primary/[0.08] hover:text-white'
+
+function NavLink({ item }: { item: InriNavItem }) {
   return (
     <Link
       href={item.href}
       translate="no"
-      className="notranslate inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border-[1.45px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] px-4 text-sm font-semibold text-white/82 shadow-[0_16px_40px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:-translate-y-px hover:border-primary/60 hover:bg-primary/12 hover:text-white"
+      className={navPillClass}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
-      <span className={compact ? 'text-[13px]' : ''}>{item.label}</span>
+      {item.label}
     </Link>
+  )
+}
+
+function UtilityMenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          translate="no"
+          className={`${navPillClass} gap-2`}
+        >
+          More
+          <ChevronDown className="h-4 w-4 text-white/55" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={14}
+        className="w-60 rounded-[1.4rem] border-[1.5px] border-white/[0.14] bg-[linear-gradient(180deg,#040912,#000000)] p-2 text-white shadow-[0_28px_90px_rgba(0,0,0,0.52),0_0_0_1px_rgba(19,164,255,0.08)]"
+      >
+        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Utility</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-white/[0.08]" />
+        {utilityNavItems.map((item) => (
+          <DropdownMenuItem
+            key={item.label}
+            asChild
+            className="rounded-[1rem] px-3 py-3 text-sm font-semibold text-white/82 transition hover:bg-primary/[0.09] hover:text-white"
+          >
+            <Link href={item.href} translate="no" className="notranslate flex items-center justify-between gap-3">
+              <span>{item.label}</span>
+              <span className="text-primary/70">↗</span>
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -75,16 +122,16 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'border-[1.55px] border-[#7dd6ff]/82 bg-[linear-gradient(135deg,#0a97f2_0%,#22b4ff_52%,#7edaff_100%)] text-black shadow-[0_18px_54px_rgba(19,164,255,0.34),inset_0_1px_0_rgba(255,255,255,0.55)] hover:-translate-y-px hover:brightness-105'
+      ? 'border-[1.7px] border-[#84dbff]/85 bg-[linear-gradient(135deg,#0896ef_0%,#22b2ff_54%,#8fe1ff_100%)] text-black shadow-[0_20px_60px_rgba(19,164,255,0.32),inset_0_1px_0_rgba(255,255,255,0.58)] hover:-translate-y-px hover:brightness-105'
       : variant === 'secondary'
-        ? 'border-[1.45px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] text-white shadow-[0_16px_40px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.05)] hover:-translate-y-px hover:border-primary/60 hover:bg-primary/12'
+        ? 'border-[1.6px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02))] text-white shadow-[0_18px_44px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
         : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-bold transition-all ${noTranslate ? 'notranslate' : ''} ${styles}`}
+      className={`inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.1rem] px-5 text-sm font-extrabold transition-all ${noTranslate ? 'notranslate' : ''} ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {children}
@@ -96,17 +143,17 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-12 w-12 items-center justify-center rounded-full border-[1.45px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] text-white shadow-[0_16px_40px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-primary/60 hover:bg-primary/12 lg:hidden">
+        <button className="inline-flex h-12 w-12 items-center justify-center rounded-[1.1rem] border-[1.6px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02))] text-white shadow-[0_18px_44px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-primary/55 hover:bg-primary/[0.10] lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[88vw] border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md">
-        <SheetHeader className="border-b border-white/[0.12] px-5 py-5 text-left">
+        <SheetHeader className="border-b border-white/[0.10] px-5 py-5 text-left">
           <SheetTitle className="text-left text-white">
-            <Logo showText size={48} />
+            <Logo showText size={50} />
           </SheetTitle>
-          <SheetDescription className="pt-2 text-left text-white/58">Main routes, wallet access and live chain entry points.</SheetDescription>
+          <SheetDescription className="pt-2 text-left text-white/55">Wallet access, network routes and main chain entry points.</SheetDescription>
         </SheetHeader>
 
         <div className="flex flex-col gap-6 px-5 py-5">
@@ -121,12 +168,12 @@ function MobileMenu() {
           </div>
 
           <div className="grid gap-2">
-            {[...inriNavItems, ...secondaryNavItems].map((item) => (
+            {[...inriNavItems, ...utilityNavItems].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 translate="no"
-                className="notranslate rounded-[1.15rem] border-[1.4px] border-white/[0.18] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/82 transition hover:border-primary/60 hover:bg-primary/12 hover:text-white"
+                className="notranslate rounded-[1.1rem] border-[1.55px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
                 {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
               >
                 {item.label}
@@ -141,32 +188,33 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.12] bg-black/92 backdrop-blur-xl">
-      <div className="border-b border-primary/18 bg-[linear-gradient(90deg,rgba(19,164,255,0.18),rgba(19,164,255,0.06),rgba(19,164,255,0.18))]">
-        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-2.5 sm:px-6 lg:px-8">
-          <p translate="no" className="notranslate text-center text-[11px] font-bold uppercase tracking-[0.24em] text-white/70">
+    <header className="sticky top-0 z-50 border-b border-white/[0.10] bg-black/94 backdrop-blur-2xl">
+      <div className="border-b border-primary/14 bg-[linear-gradient(90deg,rgba(19,164,255,0.14),rgba(19,164,255,0.05),rgba(19,164,255,0.14))]">
+        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-2 sm:px-6 lg:px-8">
+          <p translate="no" className="notranslate text-center text-[11px] font-extrabold uppercase tracking-[0.26em] text-white/68">
             Mainnet • Proof-of-Work • Chain 3777
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 lg:gap-5">
+        <div className="flex items-center gap-4 xl:gap-6">
           <div className="shrink-0">
-            <Logo showText size={56} />
+            <Logo showText size={58} />
           </div>
 
-          <div className="hidden min-w-0 flex-1 lg:flex lg:justify-center">
-            <div className="max-w-full rounded-full border-[1.5px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-1.5 shadow-[0_18px_52px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <div className="flex min-w-max items-center gap-1 overflow-x-auto whitespace-nowrap pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
+            <div className="rounded-[1.85rem] border-[1.8px] border-white/[0.14] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] p-1.5 shadow-[0_24px_74px_rgba(0,0,0,0.36),0_0_0_1px_rgba(19,164,255,0.05),inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <nav className="flex min-w-max items-center gap-1">
                 {inriNavItems.map((item) => (
                   <NavLink key={item.label} item={item} />
                 ))}
-              </div>
+                <UtilityMenu />
+              </nav>
             </div>
           </div>
 
-          <div className="ml-auto hidden items-center gap-2 md:flex">
+          <div className="ml-auto hidden items-center gap-3 md:flex">
             <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
               Explorer
             </InriLinkButton>
@@ -181,14 +229,6 @@ export function InriHeader() {
               Wallet
             </InriLinkButton>
             <MobileMenu />
-          </div>
-        </div>
-
-        <div className="mt-3 hidden lg:flex lg:items-center lg:justify-center">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {secondaryNavItems.map((item) => (
-              <NavLink key={item.label} item={item} compact />
-            ))}
           </div>
         </div>
       </div>

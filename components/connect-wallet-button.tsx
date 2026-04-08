@@ -22,7 +22,7 @@ function shortAddress(address?: string) {
 }
 
 const baseButton =
-  'inline-flex items-center gap-2 rounded-full border-[1.45px] border-white/[0.22] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_46px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:-translate-y-px hover:border-primary/60 hover:bg-primary/12'
+  'inline-flex h-12 items-center gap-2.5 rounded-[1.1rem] border-[1.65px] border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] px-4 text-sm font-extrabold text-white shadow-[0_18px_46px_rgba(0,0,0,0.30),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
 
 export function ConnectWalletButton() {
   const [open, setOpen] = useState(false)
@@ -82,17 +82,19 @@ export function ConnectWalletButton() {
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
-        <Wallet className="h-4 w-4 text-primary" />
-        <span className="max-w-[7.5rem] truncate" translate="no">{shortAddress(address)}</span>
-        <ChevronDown className="h-4 w-4 text-white/70" />
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-[0.8rem] border border-primary/22 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.06)]">
+          <Wallet className="h-4 w-4 text-primary" />
+        </span>
+        <span className="max-w-[8rem] truncate" translate="no">{shortAddress(address)}</span>
+        <ChevronDown className="h-4 w-4 text-white/66" />
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] rounded-[1.6rem] border-[1.2px] border-white/[0.18] bg-[linear-gradient(180deg,#04070d,#000000)] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.06)] backdrop-blur-xl">
+        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,360px)] rounded-[1.5rem] border-[1.6px] border-white/[0.15] bg-[linear-gradient(180deg,#040912,#000000)] p-4 shadow-[0_30px_96px_rgba(0,0,0,0.56),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl">
           {!address ? (
             <>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Connect wallet</p>
-              <p className="mt-2 text-sm leading-6 text-white/62">
+              <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Connect wallet</p>
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 MetaMask, OKX Wallet or another injected browser wallet.
               </p>
               <div className="mt-4 grid gap-3">
@@ -101,7 +103,7 @@ export function ConnectWalletButton() {
                     key={item.key}
                     onClick={() => connect(item.provider)}
                     disabled={busy}
-                    className="rounded-2xl border-[1.15px] border-white/[0.16] bg-white/[0.03] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
+                    className="rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/[0.10] disabled:opacity-50"
                   >
                     {busy ? 'Connecting...' : item.label}
                   </button>
@@ -109,7 +111,7 @@ export function ConnectWalletButton() {
                   <button
                     onClick={() => connect()}
                     disabled={busy}
-                    className="rounded-2xl border-[1.15px] border-white/[0.16] bg-white/[0.03] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10 disabled:opacity-50"
+                    className="rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/[0.10] disabled:opacity-50"
                   >
                     {busy ? 'Connecting...' : 'Connect browser wallet'}
                   </button>
@@ -119,16 +121,16 @@ export function ConnectWalletButton() {
             </>
           ) : (
             <>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Wallet connected</p>
-              <div className="mt-4 rounded-2xl border-[1.15px] border-white/[0.16] bg-white/[0.03] p-4">
+              <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Wallet connected</p>
+              <div className="mt-4 rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Address</p>
                 <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
               </div>
               <div className="mt-4 grid gap-3">
-                <button onClick={copyAddress} className="inline-flex items-center justify-center gap-2 rounded-2xl border-[1.15px] border-white/[0.16] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10">
+                <button onClick={copyAddress} className="inline-flex items-center justify-center gap-2 rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/[0.10]">
                   <Copy className="h-4 w-4" /> Copy address
                 </button>
-                <button onClick={disconnect} className="inline-flex items-center justify-center gap-2 rounded-2xl border-[1.15px] border-white/[0.16] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/10">
+                <button onClick={disconnect} className="inline-flex items-center justify-center gap-2 rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white transition hover:border-primary/45 hover:bg-primary/[0.10]">
                   <LogOut className="h-4 w-4" /> Disconnect
                 </button>
               </div>
