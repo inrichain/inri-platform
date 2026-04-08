@@ -8,7 +8,7 @@ import { InriLinkButton } from '@/components/inri-site-shell'
 
 declare global {
   interface Window {
-    INRI_POOL_PULSE?: PoolWidgetData
+    INRI_POOL_PULSE?: any
   }
 }
 
