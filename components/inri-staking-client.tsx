@@ -579,12 +579,12 @@ export function InriStakingClient() {
   const selectedPosition = userState?.positions[selectedPlan] || null
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-      <Surface className="p-6 sm:p-7 lg:p-8">
+    <div className="space-y-6">
+      <Surface className="p-5 sm:p-6 lg:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
             <Sparkles className="h-4 w-4" />
-            Stake on the site
+            Staking control panel
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <ActionButton
@@ -592,7 +592,7 @@ export function InriStakingClient() {
               disabled={busyAction === 'connect'}
               className="border-primary/35 bg-primary text-black hover:bg-primary/90"
             >
-              {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Connect wallet'}
+              {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : account ? 'Reconnect wallet' : 'Connect wallet'}
             </ActionButton>
             <ActionButton
               onClick={switchNetwork}
@@ -604,85 +604,110 @@ export function InriStakingClient() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <StatCard label="Wallet" value={shortAddress(account)} note={providerReady ? 'Connected wallet status' : 'Open with an EVM wallet'} />
-          <StatCard label="Current era" value={contractStats.currentEra.toString()} note="Program year in the 5-year schedule" />
-          <StatCard label="Emission / day" value={`${formatAmount(contractStats.emissionPerDay)} INRI`} note="Current scheduled emission" />
-        </div>
-
-        <div className="mt-6 rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Staking contract</div>
-              <div className="mt-3 break-all font-mono text-sm font-bold text-white">{STAKING_ADDRESS}</div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button
-                  onClick={copyAddress}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-                >
-                  <Copy className="h-4 w-4" />
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-                <a
-                  href={EXPLORER_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-                >
-                  Open on explorer
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]">
-              <div className="rounded-[1.3rem] border border-white/10 bg-black/30 p-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Min stake</div>
-                <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.minStake)} INRI</div>
-              </div>
-              <div className="rounded-[1.3rem] border border-white/10 bg-black/30 p-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Max / plan</div>
-                <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.maxPerPlan)} INRI</div>
-              </div>
-            </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Wallet</div>
+            <div className="mt-3 text-2xl font-black text-white">{shortAddress(account)}</div>
+            <div className="mt-2 text-sm leading-6 text-white/46">{providerReady ? 'Active connected wallet' : 'Open with an EVM wallet'}</div>
+          </div>
+          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Current era</div>
+            <div className="mt-3 text-2xl font-black text-white">{contractStats.currentEra.toString()}</div>
+            <div className="mt-2 text-sm leading-6 text-white/46">Program year in the fixed 5 year schedule</div>
+          </div>
+          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Emission / day</div>
+            <div className="mt-3 text-2xl font-black text-white">{formatAmount(contractStats.emissionPerDay)} INRI</div>
+            <div className="mt-2 text-sm leading-6 text-white/46">Current scheduled emission</div>
+          </div>
+          <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Pending rewards</div>
+            <div className="mt-3 text-2xl font-black text-white">{formatAmount(userState?.pendingRewards || 0n)} INRI</div>
+            <div className="mt-2 text-sm leading-6 text-white/46">All unclaimed rewards across your plans</div>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {PLAN_META.map((plan) => {
-            const position = userState?.positions[plan.id]
-            const active = position?.active
-            return (
+        <div className="mt-5 rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Staking contract</div>
+              <div className="mt-3 break-all font-mono text-sm font-bold text-white">{STAKING_ADDRESS}</div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <button
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
-                className={`rounded-[1.6rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/45 bg-primary/[0.10]' : 'border-white/10 bg-white/[0.03] hover:border-primary/30 hover:bg-primary/[0.05]'}`}
+                onClick={copyAddress}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
-                    <div className="mt-2 text-2xl font-black text-white">{plan.days} days</div>
-                  </div>
-                  <div className="rounded-full border border-white/12 px-3 py-2 text-sm font-black text-white">{plan.multiplier}</div>
-                </div>
-                <div className="mt-3 text-sm leading-7 text-white/58">Penalty before unlock: {plan.penalty} · {plan.accent}</div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full border px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] ${active ? 'border-primary/30 bg-primary/[0.10] text-primary' : 'border-white/12 bg-white/[0.03] text-white/58'}`}>
-                    {active ? 'Active position' : 'No position yet'}
-                  </span>
-                </div>
+                <Copy className="h-4 w-4" />
+                {copied ? 'Copied' : 'Copy'}
               </button>
-            )
-          })}
+              <a
+                href={EXPLORER_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+              >
+                Explorer
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Min stake</div>
+              <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.minStake)} INRI</div>
+            </div>
+            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Max / plan</div>
+              <div className="mt-2 text-xl font-black text-white">{formatAmount(contractStats.maxPerPlan)} INRI</div>
+            </div>
+            <div className="rounded-[1.25rem] border border-white/10 bg-black/30 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Claim cooldown</div>
+              <div className="mt-2 text-xl font-black text-white">{Number(contractStats.claimCooldown / 86400n || 0n)} day</div>
+            </div>
+          </div>
         </div>
+      </Surface>
 
-        <div className="mt-6 rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <div className="grid gap-5 xl:grid-cols-[1fr_0.8fr]">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Stake form</div>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <Surface className="p-5 sm:p-6 lg:p-7">
+          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Choose your plan</div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            {PLAN_META.map((plan) => {
+              const position = userState?.positions[plan.id]
+              const active = position?.active
+              return (
+                <button
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`rounded-[1.55rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
+                      <div className="mt-2 text-2xl font-black text-white">{plan.days} days</div>
+                    </div>
+                    <div className="rounded-full border border-white/12 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
+                  </div>
+                  <div className="mt-3 text-sm leading-7 text-white/58">Early exit penalty {plan.penalty} · {plan.accent}</div>
+                  <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+                    <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${active ? 'border-primary/35 bg-primary/[0.10] text-primary' : 'border-white/12 bg-white/[0.03] text-white/50'}`}>
+                      {active ? 'Active position' : 'No position'}
+                    </span>
+                    <span className="text-white/40">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_0.92fr]">
+            <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Stake or manage</div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected plan</div>
-                  <div className="mt-2 h-14 rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white flex items-center">
+                  <div className="mt-2 flex h-14 items-center rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white">
                     {PLAN_META[selectedPlan].title} · {PLAN_META[selectedPlan].multiplier}
                   </div>
                 </label>
@@ -699,16 +724,16 @@ export function InriStakingClient() {
               </div>
 
               <div className="mt-4 rounded-[1.2rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/56">
-                The contract stakes native INRI. The minimum is {formatAmount(contractStats.minStake)} INRI and each plan allows up to {formatAmount(contractStats.maxPerPlan)} INRI per wallet. Claims are limited by a {Number(contractStats.claimCooldown / 86400n || 0n)} day cooldown.
+                Staking uses native INRI. Enter the amount you want to lock in the selected plan. Claims follow a daily cooldown and restake sends available rewards back into the selected plan.
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <ActionButton
                   onClick={stakeNow}
                   disabled={busyAction === 'stake' || !providerReady}
                   className="border-primary/35 bg-primary text-black hover:bg-primary/90"
                 >
-                  {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake on INRI'}
+                  {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake now'}
                 </ActionButton>
                 <ActionButton
                   onClick={claimAll}
@@ -734,100 +759,83 @@ export function InriStakingClient() {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/28 p-5">
+            <div className="rounded-[1.6rem] border border-white/10 bg-black/28 p-5">
               <div className="flex items-center gap-2 text-xl font-black text-white">
                 <ShieldCheck className="h-5 w-5 text-primary" />
-                Your staking preview
+                Position summary
               </div>
               <div className="mt-5 grid gap-3">
                 <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="Total unclaimed rewards across all plans" />
                 <StatCard label="Selected principal" value={`${formatAmount(selectedPosition?.principal || 0n)} INRI`} note="Current principal in the chosen plan" />
-                <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position'} />
+                <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position on this plan'} />
+                <StatCard label="Can claim" value={userState?.canClaim ? 'Yes' : 'Not yet'} note={userState?.nextClaimAt ? `Next claim: ${formatTimestamp(userState.nextClaimAt)}` : 'Claim availability updates automatically'} />
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Program state</div>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Started" value={contractStats.started ? 'Yes' : 'No'} note="Program started with 5,000,000 INRI" />
-            <StatCard label="New stakes" value={contractStats.newStakesPaused ? 'Paused' : 'Open'} note="Owner can pause new stakes/restakes" />
-            <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When enabled, unstake has no penalty" />
-            <StatCard label="Base rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Unemitted scheduled rewards remaining" />
-          </div>
-        </div>
-      </Surface>
-
-      <div className="space-y-6">
-        <Surface className="p-6">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
-          <div className="mt-4 flex items-start gap-3 rounded-[1.4rem] border border-white/10 bg-black/28 p-4">
-            {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
-            <div>
-              <div className="text-sm font-black text-white">{error ? 'Action needs attention' : 'Staking app ready'}</div>
-              <div className="mt-2 text-sm leading-7 text-white/60">{error || status}</div>
-            </div>
-          </div>
-
-          {txHash ? (
-            <div className="mt-4 rounded-[1.4rem] border border-white/10 bg-black/28 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
-              <div className="mt-3 break-all font-mono text-sm font-semibold text-primary">{txHash}</div>
-              <a
-                href={`https://explorer.inri.life/tx/${txHash}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-white hover:text-primary"
-              >
-                Open transaction
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
-          ) : null}
         </Surface>
 
-        <Surface className="p-6">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Plans at a glance</div>
-          <div className="mt-4 space-y-3">
-            {PLAN_META.map((plan) => (
-              <div key={plan.id} className="rounded-[1.4rem] border border-white/10 bg-black/28 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-lg font-black text-white">{plan.title}</div>
-                  <div className="rounded-full border border-white/12 px-3 py-1 text-sm font-black text-white">{plan.multiplier}</div>
+        <div className="space-y-6">
+          <Surface className="p-5 sm:p-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
+            <div className="mt-4 rounded-[1.45rem] border border-white/10 bg-black/28 p-4">
+              <div className="flex items-start gap-3">
+                {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
+                <div>
+                  <div className="text-base font-black text-white">{error ? 'Action needs attention' : 'Staking app online'}</div>
+                  <div className="mt-2 text-sm leading-7 text-white/60">{error || status}</div>
                 </div>
-                <div className="mt-2 text-sm leading-7 text-white/56">{plan.days} days · early exit penalty {plan.penalty}</div>
               </div>
-            ))}
-          </div>
-        </Surface>
+              {txHash ? (
+                <a
+                  href={`https://explorer.inri.life/tx/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
+                >
+                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
+                  <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
+                </a>
+              ) : null}
+            </div>
+          </Surface>
 
-        <Surface className="p-6">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Useful routes</div>
-          <div className="mt-4 space-y-3">
-            {([
-              { title: 'INRI Wallet', text: 'Open the official wallet before staking.', href: 'https://wallet.inri.life', external: true },
-              { title: 'Explorer', text: 'Inspect the staking contract and transactions.', href: '/explorer' },
-              { title: 'Whitepaper', text: 'Read the tokenomics and program context.', href: '/whitepaper' },
-              { title: 'Pool', text: 'Compare mining and staking side by side.', href: '/pool' },
-            ] as { title: string; text: string; href: string; external?: boolean }[]).map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                className="block rounded-[1.4rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-base font-black text-white">{item.title}</div>
-                    <div className="mt-2 text-sm leading-7 text-white/56">{item.text}</div>
+          <Surface className="p-5 sm:p-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Program state</div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note="Funded once with 5,000,000 INRI" />
+              <StatCard label="New stakes" value={contractStats.newStakesPaused ? 'Paused' : 'Open'} note="Controls fresh stake and restake entry" />
+              <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When on, unstake has no penalty" />
+              <StatCard label="Base rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Scheduled rewards still not emitted" />
+            </div>
+          </Surface>
+
+          <Surface className="p-5 sm:p-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Useful routes</div>
+            <div className="mt-4 space-y-3">
+              {([
+                { title: 'INRI Wallet', text: 'Open the official wallet before staking.', href: 'https://wallet.inri.life', external: true },
+                { title: 'Explorer', text: 'Inspect the staking contract and transactions.', href: '/explorer' },
+                { title: 'Whitepaper', text: 'Read the tokenomics and program context.', href: '/whitepaper' },
+                { title: 'Pool', text: 'Compare mining and staking side by side.', href: '/pool' },
+              ] as { title: string; text: string; href: string; external?: boolean }[]).map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  className="block rounded-[1.35rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-base font-black text-white">{item.title}</div>
+                      <div className="mt-2 text-sm leading-7 text-white/56">{item.text}</div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-primary" />
                   </div>
-                  <ExternalLink className="h-4 w-4 text-primary" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Surface>
+                </Link>
+              ))}
+            </div>
+          </Surface>
+        </div>
       </div>
     </div>
   )
