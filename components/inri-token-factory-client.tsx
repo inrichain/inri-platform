@@ -1,16 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import type { ReactNode } from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck, Sparkles, Wallet2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  CheckCircle2,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  LoaderCircle,
+  ShieldCheck,
+  Sparkles,
+  Wallet2,
+} from 'lucide-react'
 
 const FACTORY_ADDRESS = '0x1D760E78D92aA5B46b484bc054Bbfae11198B751'
 const INRI_CHAIN_ID_HEX = '0xec1'
-const CREATE_TOKEN_SELECTOR = '210f5dda'
-const TOTAL_TOKENS_SELECTOR = '7e1c0c09'
-const ALL_TOKENS_SELECTOR = '634282af'
-const TOKEN_CREATED_TOPIC = '0x6aba688e0d9fb13e49808a9f69e09384142cd46853e4ecfcf79aa7e4d63c1832'
+const CREATE_TOKEN_SELECTOR = 'b2cb1e5c'
+const TOTAL_TOKENS_SELECTOR = '2f745c59'
+const ALL_TOKENS_SELECTOR = 'fe2d1a7d'
+const TOKEN_CREATED_TOPIC = '0x8f78f3f0d1fc8f1bd0d8c71dafb7f46d9ca5f0b2d9d4547892fb4e8d1ba6de0f'
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
@@ -39,10 +47,6 @@ const initialForm: FormState = {
 
 function strip0x(value: string) {
   return value.startsWith('0x') ? value.slice(2) : value
-}
-
-function pad64(hex: string) {
-  return strip0x(hex).padStart(64, '0')
 }
 
 function encodeUint(value: bigint) {
@@ -103,27 +107,59 @@ async function rpcCall(method: string, params: unknown[] = []) {
     body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
   })
 
-  if (!response.ok) {
-    throw new Error(`RPC HTTP ${response.status}`)
-  }
+  if (!response.ok) throw new Error(`RPC HTTP ${response.status}`)
 
   const data = (await response.json()) as { result?: unknown; error?: { message?: string } }
-  if (data.error) {
-    throw new Error(data.error.message || 'RPC error')
-  }
-
+  if (data.error) throw new Error(data.error.message || 'RPC error')
   return data.result
 }
 
-function Surface({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
+function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className="rounded-[1.9rem] border-[1.45px] border-white/12 bg-[linear-gradient(180deg,rgba(6,14,24,0.96),rgba(2,7,14,0.98))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.30)]">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">{title}</p>
-        {right}
-      </div>
-      <div className="mt-5">{children}</div>
+    <div className={`rounded-[2rem] border-[1.5px] border-white/12 bg-[linear-gradient(180deg,rgba(8,17,29,0.97),rgba(2,7,14,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.34)] ${className}`}>
+      {children}
     </div>
+  )
+}
+
+function StatTile({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className={`rounded-[1.35rem] border px-4 py-4 ${accent ? 'border-primary/24 bg-primary/[0.08]' : 'border-white/10 bg-white/[0.03]'}`}>
+      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">{label}</div>
+      <div className={`mt-2 text-lg font-black ${accent ? 'text-primary' : 'text-white'}`}>{value}</div>
+    </div>
+  )
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
+  helper,
+  uppercase = false,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  inputMode?: 'text' | 'numeric'
+  helper?: string
+  uppercase?: boolean
+}) {
+  return (
+    <label className="block">
+      <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">{label}</span>
+      <input
+        inputMode={inputMode}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={`mt-2 h-14 w-full rounded-[1.15rem] border border-white/12 bg-black/38 px-4 text-sm font-semibold text-white outline-none transition placeholder:text-white/25 focus:border-primary/55 ${uppercase ? 'uppercase' : ''}`}
+      />
+      {helper ? <p className="mt-2 text-xs leading-6 text-white/44">{helper}</p> : null}
+    </label>
   )
 }
 
@@ -132,7 +168,7 @@ export function InriTokenFactoryClient() {
   const [account, setAccount] = useState<string | null>(null)
   const [chainId, setChainId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(initialForm)
-  const [status, setStatus] = useState('Connect your wallet and switch to INRI CHAIN to create a token.')
+  const [status, setStatus] = useState('Connect the wallet, switch to INRI CHAIN and fill the token details.')
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [createdToken, setCreatedToken] = useState<string | null>(null)
@@ -146,14 +182,15 @@ export function InriTokenFactoryClient() {
 
   const networkReady = chainId?.toLowerCase() === INRI_CHAIN_ID_HEX
 
-  const formSummary = useMemo(() => {
-    return [
-      { label: 'Name', value: form.name || 'Your token name' },
+  const previewItems = useMemo(
+    () => [
+      { label: 'Token name', value: form.name || 'Your token name' },
       { label: 'Symbol', value: form.symbol || 'Ticker' },
       { label: 'Decimals', value: form.decimals || '18' },
-      { label: 'Supply', value: form.supply || '0' },
-    ]
-  }, [form])
+      { label: 'Initial supply', value: form.supply || '0' },
+    ],
+    [form],
+  )
 
   const refreshFactoryStats = useCallback(async () => {
     try {
@@ -183,7 +220,6 @@ export function InriTokenFactoryClient() {
   useEffect(() => {
     const eth = getEthereum()
     setProviderReady(Boolean(eth))
-
     if (!eth) return
 
     const syncState = async () => {
@@ -195,7 +231,7 @@ export function InriTokenFactoryClient() {
         setAccount(accounts[0] || null)
         setChainId(currentChainId || null)
       } catch {
-        // ignore initial sync issues
+        // noop
       }
     }
 
@@ -205,9 +241,7 @@ export function InriTokenFactoryClient() {
     }
 
     const handleChainChanged = (nextChainId: unknown) => {
-      if (typeof nextChainId === 'string') {
-        setChainId(nextChainId)
-      }
+      if (typeof nextChainId === 'string') setChainId(nextChainId)
     }
 
     syncState().catch(() => undefined)
@@ -234,7 +268,7 @@ export function InriTokenFactoryClient() {
       const currentChainId = (await eth.request({ method: 'eth_chainId' })) as string
       setAccount(selected || null)
       setChainId(currentChainId)
-      setStatus(selected ? 'Wallet connected. You can now prepare your token.' : 'Wallet connection canceled.')
+      setStatus(selected ? 'Wallet connected. Review the form and continue.' : 'Wallet connection canceled.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wallet connection failed.')
     } finally {
@@ -252,12 +286,9 @@ export function InriTokenFactoryClient() {
     try {
       setIsSwitching(true)
       setError(null)
-      await eth.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: INRI_CHAIN_ID_HEX }],
-      })
+      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
       setChainId(INRI_CHAIN_ID_HEX)
-      setStatus('INRI CHAIN selected. You can create your token now.')
+      setStatus('INRI CHAIN selected. You can create the token now.')
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       if (message.includes('4902') || message.toLowerCase().includes('unrecognized chain')) {
@@ -275,7 +306,7 @@ export function InriTokenFactoryClient() {
             ],
           })
           setChainId(INRI_CHAIN_ID_HEX)
-          setStatus('INRI CHAIN added to your wallet. Review the network and continue.')
+          setStatus('INRI CHAIN added to the wallet. Review the network and continue.')
         } catch (addErr) {
           setError(addErr instanceof Error ? addErr.message : 'Could not add INRI CHAIN to the wallet.')
         }
@@ -296,12 +327,8 @@ export function InriTokenFactoryClient() {
       if (!form.name || !form.symbol || !cleanSupply) return
       const decimals = Number(form.decimals)
       const data = encodeCreateToken(form.name.trim(), form.symbol.trim(), decimals, BigInt(cleanSupply))
-      const gas = (await eth.request({
-        method: 'eth_estimateGas',
-        params: [{ from: account, to: FACTORY_ADDRESS, data }],
-      })) as string
-      const gasBig = BigInt(gas)
-      setGasEstimate(gasBig.toString())
+      const gas = (await eth.request({ method: 'eth_estimateGas', params: [{ from: account, to: FACTORY_ADDRESS, data }] })) as string
+      setGasEstimate(BigInt(gas).toString())
     } catch {
       setGasEstimate(null)
     }
@@ -333,22 +360,10 @@ export function InriTokenFactoryClient() {
     const cleanSupply = sanitizeSupply(form.supply)
     const decimals = Number(form.decimals)
 
-    if (!name) {
-      setError('Token name is required.')
-      return
-    }
-    if (!symbol) {
-      setError('Token symbol is required.')
-      return
-    }
-    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) {
-      setError('Decimals must be an integer between 0 and 255.')
-      return
-    }
-    if (!/^\d+$/.test(cleanSupply) || BigInt(cleanSupply) <= 0n) {
-      setError('Supply must be a whole number greater than zero.')
-      return
-    }
+    if (!name) return setError('Token name is required.')
+    if (!symbol) return setError('Token symbol is required.')
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) return setError('Decimals must be an integer between 0 and 255.')
+    if (!/^\d+$/.test(cleanSupply) || BigInt(cleanSupply) <= 0n) return setError('Supply must be a whole number greater than zero.')
 
     try {
       setError(null)
@@ -361,10 +376,7 @@ export function InriTokenFactoryClient() {
       let gasHex: string | undefined
 
       try {
-        const estimated = (await eth.request({
-          method: 'eth_estimateGas',
-          params: [{ from: account, to: FACTORY_ADDRESS, data }],
-        })) as string
+        const estimated = (await eth.request({ method: 'eth_estimateGas', params: [{ from: account, to: FACTORY_ADDRESS, data }] })) as string
         const boosted = (BigInt(estimated) * 120n) / 100n
         gasHex = `0x${boosted.toString(16)}`
         setGasEstimate(boosted.toString())
@@ -374,14 +386,7 @@ export function InriTokenFactoryClient() {
 
       const hash = (await eth.request({
         method: 'eth_sendTransaction',
-        params: [
-          {
-            from: account,
-            to: FACTORY_ADDRESS,
-            data,
-            ...(gasHex ? { gas: gasHex } : {}),
-          },
-        ],
+        params: [{ from: account, to: FACTORY_ADDRESS, data, ...(gasHex ? { gas: gasHex } : {}) }],
       })) as string
 
       setTxHash(hash)
@@ -403,9 +408,7 @@ export function InriTokenFactoryClient() {
         return
       }
 
-      if (receipt.status !== '0x1') {
-        throw new Error('Transaction reverted. Check the explorer or wallet details.')
-      }
+      if (receipt.status !== '0x1') throw new Error('Transaction reverted. Check the explorer or wallet details.')
 
       const tokenLog = receipt.logs?.find(
         (log) => log.address?.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics?.[0]?.toLowerCase() === TOKEN_CREATED_TOPIC.toLowerCase(),
@@ -414,7 +417,7 @@ export function InriTokenFactoryClient() {
 
       if (created && isValidAddress(created)) {
         setCreatedToken(created)
-        setStatus('Token created successfully. You can now open it on the explorer or add it to your wallet.')
+        setStatus('Token created successfully. You can open it on the explorer or add it to the wallet.')
       } else {
         setStatus('Token created. Open the explorer transaction to view the new contract address.')
       }
@@ -459,222 +462,206 @@ export function InriTokenFactoryClient() {
   }
 
   return (
-    <div className="space-y-6">
-      <Surface
-        title="Create token now"
-        right={
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/22 bg-primary/[0.09] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            App live inside the site
+    <Panel className="p-6 sm:p-7">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Create token now</p>
+          <h2 className="mt-3 text-3xl font-black text-white">A cleaner launch panel.</h2>
+          <p className="mt-3 text-sm leading-7 text-white/62">
+            Connect, switch, fill the token details and send the factory transaction from the same screen.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/22 bg-primary/[0.09] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+          <Sparkles className="h-3.5 w-3.5" />
+          App live
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <StatTile label="Wallet" value={shortAddress(account)} accent={Boolean(account)} />
+        <StatTile label="Network" value={networkReady ? 'INRI CHAIN' : 'Switch needed'} accent={networkReady} />
+        <StatTile label="Total created" value={factoryCount} />
+      </div>
+
+      <div className="mt-6 rounded-[1.5rem] border border-primary/18 bg-primary/[0.08] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Factory contract</div>
+            <div className="mt-2 break-all font-mono text-sm font-bold text-white">{FACTORY_ADDRESS}</div>
           </div>
-        }
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">Wallet</p>
-                <p className="mt-2 text-sm font-bold text-white">{shortAddress(account)}</p>
-              </div>
-              <Wallet2 className="h-5 w-5 text-primary" />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={connectWallet}
-                disabled={isConnecting}
-                className="inline-flex h-11 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-5 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isConnecting ? 'Connecting...' : account ? 'Reconnect' : 'Connect wallet'}
-              </button>
-              <button
-                type="button"
-                onClick={switchToInri}
-                disabled={isSwitching}
-                className="inline-flex h-11 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSwitching ? 'Switching...' : networkReady ? 'INRI CHAIN ready' : 'Switch to INRI'}
-              </button>
-            </div>
-            {!providerReady && (
-              <p className="mt-4 text-sm leading-6 text-amber-300/90">
-                No wallet detected in this browser. Open the site with INRI Wallet, MetaMask or another EVM wallet.
-              </p>
-            )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={copyFactory}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+            >
+              <Copy className="h-4 w-4" />
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+            <Link
+              href={`https://explorer.inri.life/address/${FACTORY_ADDRESS}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+            >
+              Explorer
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={connectWallet}
+          disabled={isConnecting}
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isConnecting ? 'Connecting...' : account ? 'Reconnect wallet' : 'Connect wallet'}
+        </button>
+        <button
+          type="button"
+          onClick={switchToInri}
+          disabled={isSwitching}
+          className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSwitching ? 'Switching...' : networkReady ? 'INRI CHAIN ready' : 'Switch network'}
+        </button>
+      </div>
+
+      {!providerReady ? (
+        <p className="mt-4 text-sm leading-6 text-amber-300/88">
+          No wallet detected in this browser. Open this page with INRI Wallet, MetaMask or another EVM wallet.
+        </p>
+      ) : null}
+
+      <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_290px]">
+        <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="grid gap-5 md:grid-cols-2">
+            <InputField
+              label="Token name"
+              value={form.name}
+              onChange={(value) => setForm((current) => ({ ...current, name: value }))}
+              placeholder="Example: INRI COMMUNITY TOKEN"
+              helper="Visible name users will see in wallets and explorers."
+            />
+            <InputField
+              label="Symbol"
+              value={form.symbol}
+              onChange={(value) => setForm((current) => ({ ...current, symbol: value.toUpperCase().slice(0, 12) }))}
+              placeholder="Example: ICT"
+              helper="Short ticker, usually 3 to 8 characters."
+              uppercase
+            />
+            <InputField
+              label="Decimals"
+              value={form.decimals}
+              onChange={(value) => setForm((current) => ({ ...current, decimals: value.replace(/[^0-9]/g, '').slice(0, 3) }))}
+              placeholder="18"
+              inputMode="numeric"
+              helper="Most ERC-20 tokens use 18 decimals."
+            />
+            <InputField
+              label="Initial supply"
+              value={form.supply}
+              onChange={(value) => setForm((current) => ({ ...current, supply: value.replace(/[^0-9,_\s]/g, '') }))}
+              placeholder="1000000"
+              inputMode="numeric"
+              helper="Enter a whole number. The contract multiplies it by 10**decimals."
+            />
           </div>
 
-          <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">Factory contract</p>
-                <p className="mt-2 font-mono text-sm font-bold text-white">{FACTORY_ADDRESS}</p>
-              </div>
-              <button
-                type="button"
-                onClick={copyFactory}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/14 bg-white/[0.04] text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                <Copy className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <div className="rounded-[1rem] border border-white/10 bg-black/25 px-4 py-3">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Total created</div>
-                <div className="mt-1 text-lg font-black text-white">{factoryCount}</div>
-              </div>
-              <div className="rounded-[1rem] border border-white/10 bg-black/25 px-4 py-3">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Estimated gas</div>
-                <div className="mt-1 text-lg font-black text-white">{gasEstimate ? `${gasEstimate}` : '-'}</div>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href={`https://explorer.inri.life/address/${FACTORY_ADDRESS}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                Open on explorer
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-              {copied && <span className="self-center text-xs font-bold uppercase tracking-[0.16em] text-primary">Copied</span>}
-            </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={createToken}
+              disabled={isCreating}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCreating ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Creating token...
+                </>
+              ) : (
+                'Create token on INRI'
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm(initialForm)}
+              disabled={isCreating}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Clear form
+            </button>
+          </div>
+
+          <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-black/25 px-4 py-4 text-sm leading-7 text-white/70">
+            <strong className="text-white">Important:</strong> the factory mints the full supply once and sends it to the connected wallet.
+            Enter a whole-number supply like <strong className="text-white">1000000</strong>. The contract itself applies
+            <strong className="text-white"> 10**decimals</strong> internally.
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5">
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/48">Token name</span>
-                <input
-                  value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  placeholder="Example: INRI COMMUNITY TOKEN"
-                  className="mt-2 h-12 w-full rounded-[1rem] border border-white/12 bg-black/35 px-4 text-sm font-semibold text-white outline-none transition placeholder:text-white/28 focus:border-primary/55"
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/48">Symbol</span>
-                <input
-                  value={form.symbol}
-                  onChange={(event) => setForm((current) => ({ ...current, symbol: event.target.value.toUpperCase().slice(0, 12) }))}
-                  placeholder="Example: ICT"
-                  className="mt-2 h-12 w-full rounded-[1rem] border border-white/12 bg-black/35 px-4 text-sm font-semibold uppercase text-white outline-none transition placeholder:text-white/28 focus:border-primary/55"
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/48">Decimals</span>
-                <input
-                  inputMode="numeric"
-                  value={form.decimals}
-                  onChange={(event) => setForm((current) => ({ ...current, decimals: event.target.value.replace(/[^0-9]/g, '').slice(0, 3) }))}
-                  placeholder="18"
-                  className="mt-2 h-12 w-full rounded-[1rem] border border-white/12 bg-black/35 px-4 text-sm font-semibold text-white outline-none transition placeholder:text-white/28 focus:border-primary/55"
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/48">Initial supply</span>
-                <input
-                  inputMode="numeric"
-                  value={form.supply}
-                  onChange={(event) => setForm((current) => ({ ...current, supply: event.target.value.replace(/[^0-9,_\s]/g, '') }))}
-                  placeholder="1000000"
-                  className="mt-2 h-12 w-full rounded-[1rem] border border-white/12 bg-black/35 px-4 text-sm font-semibold text-white outline-none transition placeholder:text-white/28 focus:border-primary/55"
-                />
-              </label>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={createToken}
-                disabled={isCreating}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isCreating ? (
-                  <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    Creating token...
-                  </>
-                ) : (
-                  'Create token on INRI'
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm(initialForm)}
-                disabled={isCreating}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Clear form
-              </button>
-            </div>
-
-            <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-black/25 px-4 py-3 text-sm leading-7 text-white/72">
-              <strong className="text-white">Important:</strong> the factory mints the full supply once and sends it to the connected wallet. Enter a whole-number supply like <strong className="text-white">1000000</strong>. The contract itself multiplies this by <strong className="text-white">10**decimals</strong> internally.
-            </div>
+        <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="flex items-center gap-2 text-white">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h3 className="text-xl font-black">Launch preview</h3>
           </div>
-
-          <div className="rounded-[1.55rem] border border-white/10 bg-black/25 p-5">
-            <div className="flex items-center gap-2 text-white">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-black">Launch preview</h3>
-            </div>
-            <div className="mt-4 space-y-3">
-              {formSummary.map((item) => (
-                <div key={item.label} className="rounded-[1rem] border border-white/10 bg-white/[0.03] px-4 py-3">
-                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">{item.label}</div>
-                  <div className="mt-1 text-sm font-bold text-white">{item.value}</div>
-                </div>
-              ))}
-            </div>
-            {latestToken && (
-              <div className="mt-4 rounded-[1rem] border border-primary/20 bg-primary/[0.08] px-4 py-3">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Latest token from factory</div>
-                <div className="mt-1 font-mono text-sm font-bold text-white">{latestToken}</div>
+          <div className="mt-5 space-y-3">
+            {previewItems.map((item) => (
+              <div key={item.label} className="rounded-[1.15rem] border border-white/10 bg-black/26 px-4 py-4">
+                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/46">{item.label}</div>
+                <div className="mt-2 text-sm font-bold text-white">{item.value}</div>
               </div>
-            )}
+            ))}
           </div>
-        </div>
 
-        <div className="mt-5 rounded-[1.45rem] border border-white/10 bg-black/25 p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-white/78">{status}</span>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <StatTile label="Estimated gas" value={gasEstimate || '-'} />
+            {latestToken ? <StatTile label="Latest token" value={`${latestToken.slice(0, 6)}...${latestToken.slice(-4)}`} accent /> : null}
           </div>
-          {error && <p className="mt-3 text-sm font-semibold text-rose-300">{error}</p>}
-          {txHash && (
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/72">
-              <span className="font-bold text-white">Tx:</span>
-              <Link href={`https://explorer.inri.life/tx/${txHash}`} target="_blank" rel="noreferrer" className="font-mono text-primary underline-offset-4 hover:underline">
-                {txHash}
-              </Link>
-            </div>
-          )}
-          {createdToken && (
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href={`https://explorer.inri.life/address/${createdToken}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                Open token on explorer
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-              <button
-                type="button"
-                onClick={addTokenToWallet}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/[0.10] px-5 text-sm font-bold text-primary transition hover:bg-primary/[0.16]"
-              >
-                Add token to wallet
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
         </div>
-      </Surface>
-    </div>
+      </div>
+
+      <div className="mt-6 rounded-[1.45rem] border border-white/10 bg-black/26 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-white/78">{status}</span>
+        </div>
+        {error ? <p className="mt-3 text-sm font-semibold text-rose-300">{error}</p> : null}
+        {txHash ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/72">
+            <span className="font-bold text-white">Transaction</span>
+            <Link href={`https://explorer.inri.life/tx/${txHash}`} target="_blank" rel="noreferrer" className="font-mono text-primary underline-offset-4 hover:underline">
+              {txHash}
+            </Link>
+          </div>
+        ) : null}
+        {createdToken ? (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={`https://explorer.inri.life/address/${createdToken}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+            >
+              Open token on explorer
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={addTokenToWallet}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/[0.10] px-5 text-sm font-bold text-primary transition hover:bg-primary/[0.16]"
+            >
+              Add token to wallet
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </Panel>
   )
 }
