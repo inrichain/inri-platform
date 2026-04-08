@@ -39,7 +39,7 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
-const footerPrimaryLinks = [
+const footerPrimaryLinks: InriNavItem[] = [
   { label: 'INRI Wallet', href: '/inri-wallet' },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Mining', href: '/mining' },
