@@ -56,7 +56,7 @@ const socialLinks = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap px-3 text-[15px] font-bold text-white/74 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-5 xl:px-4'
+  'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold text-white/78 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-3'
 
 function NavLink({ item }: { item: InriNavItem }) {
   return (
@@ -119,16 +119,16 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'rounded-full border border-[#7ed4ff]/85 bg-[linear-gradient(135deg,#0796ef_0%,#24b2ff_65%,#8ce0ff_100%)] text-black shadow-[0_14px_34px_rgba(19,164,255,0.26),inset_0_1px_0_rgba(255,255,255,0.5)] hover:-translate-y-px hover:brightness-105'
+      ? 'rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_14px_34px_rgba(19,164,255,0.28),inset_0_1px_0_rgba(255,255,255,0.52)] hover:-translate-y-px hover:brightness-105'
       : variant === 'secondary'
-        ? 'rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] hover:-translate-y-px hover:border-primary/45 hover:bg-primary/[0.08]'
+        ? 'rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
         : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap px-5 text-[15px] font-extrabold transition-all ${noTranslate ? 'notranslate' : ''} ${styles}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap px-5 text-[14px] font-extrabold transition-all ${noTranslate ? 'notranslate' : ''} ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {children}
@@ -185,26 +185,26 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/96 backdrop-blur-2xl">
-      <div className="border-b border-primary/14 bg-[linear-gradient(90deg,rgba(19,164,255,0.12),rgba(19,164,255,0.03),rgba(19,164,255,0.12))]">
-        <div className="mx-auto max-w-[1740px] px-4 py-3 sm:px-8 xl:px-12 2xl:px-16">
+    <header className="sticky top-0 z-50 border-b border-primary/18 bg-black/96 backdrop-blur-2xl">
+      <div className="bg-[linear-gradient(90deg,#056ec7_0%,#118ff0_52%,#056ec7_100%)] shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+        <div className="mx-auto max-w-[1600px] px-4 py-3 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[13px] font-extrabold uppercase tracking-[0.3em] text-white/74 sm:text-[14px]"
+            className="notranslate text-center text-[14px] font-extrabold uppercase tracking-[0.26em] text-white/92 sm:text-[15px]"
           >
             Mainnet • Proof-of-Work • Chain 3777
           </p>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1740px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="relative flex h-[84px] items-center justify-between gap-4 lg:gap-8">
-          <div className="z-10 flex min-w-0 flex-1 items-center justify-start lg:max-w-[280px] lg:flex-none">
-            <Logo showText size={56} />
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
+        <div className="grid h-[86px] grid-cols-[auto_1fr_auto] items-center gap-4 md:gap-6 lg:h-[88px]">
+          <div className="min-w-0 justify-self-start">
+            <Logo showText size={48} />
           </div>
 
-          <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:flex">
-            <nav className="flex items-center justify-center gap-4 xl:gap-6">
+          <div className="hidden min-w-0 items-center justify-center lg:flex">
+            <nav className="flex items-center justify-center gap-5 xl:gap-6">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -212,7 +212,7 @@ export function InriHeader() {
             </nav>
           </div>
 
-          <div className="z-10 hidden flex-1 items-center justify-end gap-3 md:flex lg:max-w-[360px] lg:flex-none">
+          <div className="hidden items-center justify-self-end gap-3 md:flex">
             <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
               Explorer
             </InriLinkButton>
@@ -222,7 +222,7 @@ export function InriHeader() {
             <ConnectWalletButton compact />
           </div>
 
-          <div className="flex items-center justify-end gap-2 md:hidden">
+          <div className="flex items-center justify-self-end gap-2 md:hidden">
             <InriLinkButton href="https://wallet.inri.life" external noTranslate>
               Wallet
             </InriLinkButton>

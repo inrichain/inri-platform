@@ -77,16 +77,16 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 items-center gap-2 rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] px-4 text-[15px] font-extrabold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-px hover:border-primary/45 hover:bg-primary/[0.08]'
+    ? 'inline-flex h-11 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
     : 'inline-flex h-12 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-sm font-extrabold text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.08]'
 
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/24 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.06)]">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/28 bg-primary/[0.12] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]">
           <Wallet className="h-4 w-4 text-primary" />
         </span>
-        <span className="max-w-[8rem] truncate" translate="no">{shortAddress(address)}</span>
+        <span className="max-w-[8rem] truncate text-[14px]" translate="no">{shortAddress(address)}</span>
         <ChevronDown className="h-4 w-4 text-white/66" />
       </button>
 
