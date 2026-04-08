@@ -9,7 +9,13 @@ const heroPoints = [
   'Wallet, explorer, mining and pool connected',
 ]
 
-const routeCards = [
+const routeCards: {
+  title: string
+  text: string
+  href: string
+  icon: typeof Wallet
+  external?: boolean
+}[] = [
   {
     title: 'INRI Wallet',
     text: 'Official wallet entry for users and builders.',
