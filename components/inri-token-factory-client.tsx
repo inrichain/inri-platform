@@ -10,7 +10,6 @@ import {
   LoaderCircle,
   ShieldCheck,
   Sparkles,
-  Wallet2,
 } from 'lucide-react'
 
 const FACTORY_ADDRESS = '0x1D760E78D92aA5B46b484bc054Bbfae11198B751'
@@ -114,7 +113,7 @@ async function rpcCall(method: string, params: unknown[] = []) {
   return data.result
 }
 
-function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
+function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className={`rounded-[2rem] border-[1.5px] border-white/12 bg-[linear-gradient(180deg,rgba(8,17,29,0.97),rgba(2,7,14,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.34)] ${className}`}>
       {children}
@@ -122,9 +121,9 @@ function Panel({ children, className = '' }: { children: ReactNode; className?: 
   )
 }
 
-function StatTile({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+function StatBox({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`rounded-[1.35rem] border px-4 py-4 ${accent ? 'border-primary/24 bg-primary/[0.08]' : 'border-white/10 bg-white/[0.03]'}`}>
+    <div className={`rounded-[1.3rem] border px-4 py-4 ${accent ? 'border-primary/24 bg-primary/[0.08]' : 'border-white/10 bg-white/[0.03]'}`}>
       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">{label}</div>
       <div className={`mt-2 text-lg font-black ${accent ? 'text-primary' : 'text-white'}`}>{value}</div>
     </div>
@@ -199,11 +198,7 @@ export function InriTokenFactoryClient() {
       setFactoryCount(total.toString())
 
       if (total > 0n) {
-        const latestRaw = await rpcCall('eth_call', [
-          { to: FACTORY_ADDRESS, data: `0x${ALL_TOKENS_SELECTOR}${encodeUint(total - 1n)}` },
-          'latest',
-        ])
-
+        const latestRaw = await rpcCall('eth_call', [{ to: FACTORY_ADDRESS, data: `0x${ALL_TOKENS_SELECTOR}${encodeUint(total - 1n)}` }, 'latest'])
         if (typeof latestRaw === 'string' && latestRaw.startsWith('0x') && latestRaw.length >= 66) {
           setLatestToken(`0x${latestRaw.slice(-40)}`)
         }
@@ -321,7 +316,6 @@ export function InriTokenFactoryClient() {
   const estimateGas = async () => {
     const eth = getEthereum()
     if (!eth || !account || !networkReady) return
-
     try {
       const cleanSupply = sanitizeSupply(form.supply)
       if (!form.name || !form.symbol || !cleanSupply) return
@@ -344,12 +338,10 @@ export function InriTokenFactoryClient() {
       setError('No wallet detected. Use INRI Wallet or another EVM wallet.')
       return
     }
-
     if (!account) {
       await connectWallet()
       return
     }
-
     if (!networkReady) {
       setError('Switch to INRI CHAIN first.')
       return
@@ -374,7 +366,6 @@ export function InriTokenFactoryClient() {
 
       const data = encodeCreateToken(name, symbol, decimals, BigInt(cleanSupply))
       let gasHex: string | undefined
-
       try {
         const estimated = (await eth.request({ method: 'eth_estimateGas', params: [{ from: account, to: FACTORY_ADDRESS, data }] })) as string
         const boosted = (BigInt(estimated) * 120n) / 100n
@@ -433,7 +424,6 @@ export function InriTokenFactoryClient() {
   const addTokenToWallet = async () => {
     const eth = getEthereum()
     if (!eth || !createdToken) return
-
     try {
       await eth.request({
         method: 'wallet_watchAsset',
@@ -462,13 +452,13 @@ export function InriTokenFactoryClient() {
   }
 
   return (
-    <Panel className="p-6 sm:p-7">
-      <div className="flex items-start justify-between gap-4">
+    <Surface className="p-5 sm:p-7 lg:p-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Create token now</p>
-          <h2 className="mt-3 text-3xl font-black text-white">A cleaner launch panel.</h2>
-          <p className="mt-3 text-sm leading-7 text-white/62">
-            Connect, switch, fill the token details and send the factory transaction from the same screen.
+          <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">Focused launch panel</h2>
+          <p className="mt-3 max-w-[680px] text-sm leading-7 text-white/62 sm:text-base">
+            Connect, switch, fill the token details and send the live factory transaction from the same panel.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/22 bg-primary/[0.09] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
@@ -477,13 +467,15 @@ export function InriTokenFactoryClient() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <StatTile label="Wallet" value={shortAddress(account)} accent={Boolean(account)} />
-        <StatTile label="Network" value={networkReady ? 'INRI CHAIN' : 'Switch needed'} accent={networkReady} />
-        <StatTile label="Total created" value={factoryCount} />
+      <div className="mt-6 grid gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <StatBox label="Wallet" value={shortAddress(account)} accent={Boolean(account)} />
+        <StatBox label="Network" value={networkReady ? 'INRI CHAIN' : 'Switch needed'} accent={networkReady} />
+        <StatBox label="Total created" value={factoryCount} />
+        <StatBox label="Estimated gas" value={gasEstimate || '-'} />
+        <StatBox label="Latest token" value={latestToken ? `${latestToken.slice(0, 6)}...${latestToken.slice(-4)}` : '-'} />
       </div>
 
-      <div className="mt-6 rounded-[1.5rem] border border-primary/18 bg-primary/[0.08] p-4">
+      <div className="mt-6 rounded-[1.5rem] border border-primary/18 bg-primary/[0.08] p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Factory contract</div>
@@ -511,34 +503,34 @@ export function InriTokenFactoryClient() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={connectWallet}
-          disabled={isConnecting}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isConnecting ? 'Connecting...' : account ? 'Reconnect wallet' : 'Connect wallet'}
-        </button>
-        <button
-          type="button"
-          onClick={switchToInri}
-          disabled={isSwitching}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSwitching ? 'Switching...' : networkReady ? 'INRI CHAIN ready' : 'Switch network'}
-        </button>
-      </div>
-
-      {!providerReady ? (
-        <p className="mt-4 text-sm leading-6 text-amber-300/88">
-          No wallet detected in this browser. Open this page with INRI Wallet, MetaMask or another EVM wallet.
-        </p>
-      ) : null}
-
-      <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_290px]">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_360px]">
         <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={connectWallet}
+              disabled={isConnecting}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isConnecting ? 'Connecting...' : account ? 'Reconnect wallet' : 'Connect wallet'}
+            </button>
+            <button
+              type="button"
+              onClick={switchToInri}
+              disabled={isSwitching}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSwitching ? 'Switching...' : networkReady ? 'INRI CHAIN ready' : 'Switch network'}
+            </button>
+          </div>
+
+          {!providerReady ? (
+            <p className="mt-4 text-sm leading-6 text-amber-300/88">
+              No wallet detected in this browser. Open this page with INRI Wallet, MetaMask or another EVM wallet.
+            </p>
+          ) : null}
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
             <InputField
               label="Token name"
               value={form.name}
@@ -572,6 +564,12 @@ export function InriTokenFactoryClient() {
             />
           </div>
 
+          <div className="mt-6 rounded-[1.25rem] border border-white/10 bg-black/25 px-4 py-4 text-sm leading-7 text-white/70">
+            <strong className="text-white">Important:</strong> the factory mints the full supply once and sends it to the connected wallet.
+            Enter a whole-number supply like <strong className="text-white">1000000</strong>. The contract itself applies
+            <strong className="text-white"> 10**decimals</strong> internally.
+          </div>
+
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
@@ -597,71 +595,62 @@ export function InriTokenFactoryClient() {
               Clear form
             </button>
           </div>
-
-          <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-black/25 px-4 py-4 text-sm leading-7 text-white/70">
-            <strong className="text-white">Important:</strong> the factory mints the full supply once and sends it to the connected wallet.
-            Enter a whole-number supply like <strong className="text-white">1000000</strong>. The contract itself applies
-            <strong className="text-white"> 10**decimals</strong> internally.
-          </div>
         </div>
 
-        <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <div className="flex items-center gap-2 text-white">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h3 className="text-xl font-black">Launch preview</h3>
+        <div className="space-y-6">
+          <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+            <div className="flex items-center gap-2 text-white">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <h3 className="text-xl font-black">Launch preview</h3>
+            </div>
+            <div className="mt-5 space-y-3">
+              {previewItems.map((item) => (
+                <div key={item.label} className="rounded-[1.15rem] border border-white/10 bg-black/26 px-4 py-4">
+                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/46">{item.label}</div>
+                  <div className="mt-2 text-sm font-bold text-white">{item.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="mt-5 space-y-3">
-            {previewItems.map((item) => (
-              <div key={item.label} className="rounded-[1.15rem] border border-white/10 bg-black/26 px-4 py-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/46">{item.label}</div>
-                <div className="mt-2 text-sm font-bold text-white">{item.value}</div>
+
+          <div className="rounded-[1.65rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-white/78">{status}</span>
+            </div>
+            {error ? <p className="mt-3 text-sm font-semibold text-rose-300">{error}</p> : null}
+            {txHash ? (
+              <div className="mt-4 text-sm text-white/72">
+                <div className="font-bold text-white">Transaction</div>
+                <Link href={`https://explorer.inri.life/tx/${txHash}`} target="_blank" rel="noreferrer" className="mt-2 inline-block break-all font-mono text-primary underline-offset-4 hover:underline">
+                  {txHash}
+                </Link>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <StatTile label="Estimated gas" value={gasEstimate || '-'} />
-            {latestToken ? <StatTile label="Latest token" value={`${latestToken.slice(0, 6)}...${latestToken.slice(-4)}`} accent /> : null}
+            ) : null}
+            {createdToken ? (
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link
+                  href={`https://explorer.inri.life/address/${createdToken}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
+                >
+                  Open token on explorer
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={addTokenToWallet}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/[0.10] px-5 text-sm font-bold text-primary transition hover:bg-primary/[0.16]"
+                >
+                  Add token to wallet
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
-
-      <div className="mt-6 rounded-[1.45rem] border border-white/10 bg-black/26 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <CheckCircle2 className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-white/78">{status}</span>
-        </div>
-        {error ? <p className="mt-3 text-sm font-semibold text-rose-300">{error}</p> : null}
-        {txHash ? (
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/72">
-            <span className="font-bold text-white">Transaction</span>
-            <Link href={`https://explorer.inri.life/tx/${txHash}`} target="_blank" rel="noreferrer" className="font-mono text-primary underline-offset-4 hover:underline">
-              {txHash}
-            </Link>
-          </div>
-        ) : null}
-        {createdToken ? (
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href={`https://explorer.inri.life/address/${createdToken}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-            >
-              Open token on explorer
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-            <button
-              type="button"
-              onClick={addTokenToWallet}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/[0.10] px-5 text-sm font-bold text-primary transition hover:bg-primary/[0.16]"
-            >
-              Add token to wallet
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        ) : null}
-      </div>
-    </Panel>
+    </Surface>
   )
 }
