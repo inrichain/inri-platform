@@ -234,6 +234,16 @@ export function InriHeader() {
   )
 }
 
+export function InriShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <InriHeader />
+      {children}
+      <InriFooter />
+    </div>
+  )
+}
+
 function FooterSocialIcon({ href, label, children }: { href: string; label: string; children: ReactNode }) {
   return (
     <Link
