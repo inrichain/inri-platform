@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <InriPageTemplate
       title="Token Factory"
-      description="Token Factory gives the INRI ecosystem a real product page for token creation, launch guidance and future project onboarding."
+      description="Token Factory now lives inside the same INRI website flow, giving builders a clear internal route for token creation, launch guidance and future project onboarding."
       actions={[
         { label: 'Open INRI Wallet', href: '/inri-wallet' },
         { label: 'Open swap page', href: '/swap', variant: 'secondary' }
@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Swap', text: 'See where created tokens could later be swapped.', href: '/swap' },
         { title: 'Wallets', text: 'Open the wallet compatibility page.', href: '/wallets' },
         { title: 'INRI Wallet', text: 'Use the official wallet section.', href: '/inri-wallet' },
-        { title: 'Explorer', text: 'Verify tokens and activity externally.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Verify tokens and activity externally.', href: '/explorer' }
       ]}
       note="Next step for this page: add token creation flow cards, standards, cost notes, examples, deployment steps and launch guidance."
     />

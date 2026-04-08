@@ -94,15 +94,15 @@ export function InriWhitepaperPage() {
                 <p className="mt-6 max-w-4xl text-base leading-8 text-white/68 sm:text-lg">
                   This page brings the full project structure into the live site language: Proof-of-Work, EVM compatibility,
                   fee burning, transparent tokenomics, staking allocation and founder vesting — all in one serious route for users,
-                  miners and partners. fileciteturn3file0
+                  miners and partners.
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <InriLinkButton href="https://www.inri.life/whitepaper" external noTranslate>
-                    Open live whitepaper
+                  <InriLinkButton href="/token-factory">
+                    Open token factory
                   </InriLinkButton>
-                  <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
-                    Open explorer
+                  <InriLinkButton href="/explorer" variant="secondary">
+                    Open explorer page
                   </InriLinkButton>
                 </div>
 
@@ -134,7 +134,7 @@ export function InriWhitepaperPage() {
                 </div>
                 <div className="mt-6 rounded-[1.4rem] border border-primary/20 bg-primary/[0.07] p-4 text-sm leading-7 text-white/78">
                   This route was rebuilt from your uploaded whitepaper structure and content, including the updated tokenomics,
-                  staking contract, founder vesting and reward schedule. fileciteturn3file0
+                  staking contract, founder vesting and reward schedule.
                 </div>
               </div>
             </div>
@@ -520,7 +520,7 @@ export function InriWhitepaperPage() {
                   </p>
                   <p>INRI CHAIN is an invitation to mine, build, experiment and help shape a network that truly belongs to its community.</p>
                   <div className="mt-8 flex flex-wrap gap-3">
-                    <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
+                    <InriLinkButton href="/explorer" variant="secondary">
                       Verify on explorer
                     </InriLinkButton>
                     <InriLinkButton href="/wallets" variant="secondary">
@@ -540,7 +540,7 @@ export function InriWhitepaperPage() {
                       { title: 'Wallets', text: 'Onboarding and wallet access.', href: '/wallets' },
                       { title: 'Mining', text: 'Windows, Ubuntu and network mining routes.', href: '/mining' },
                       { title: 'Pool', text: 'Pool entry and mining stats routes.', href: '/pool' },
-                      { title: 'Explorer', text: 'Public chain verification route.', href: 'https://explorer.inri.life', external: true },
+                      { title: 'Explorer', text: 'Open the internal explorer page and continue into the public explorer if needed.', href: '/explorer' },
                     ].map((item) => (
                       <Link
                         key={item.title}

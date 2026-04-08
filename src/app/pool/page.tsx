@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Live pool', text: 'Open pool.inri.life.', href: 'https://pool.inri.life', external: true },
         { title: 'Mining Windows', text: 'Start with the Windows mining page.', href: '/mining/windows' },
         { title: 'Mining Ubuntu', text: 'Start with the Ubuntu mining page.', href: '/mining/ubuntu' },
-        { title: 'Explorer', text: 'Verify pool-related activity externally.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Verify pool-related activity externally.', href: '/explorer' }
       ]}
       note="Next step: add pool stats, worker data, payout explanations, fee info and real-time widgets."
     />

@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Mining Windows', text: 'Open the official Windows mining page.', href: '/mining/windows' },
         { title: 'Mining Ubuntu', text: 'Open the official Ubuntu mining page.', href: '/mining/ubuntu' },
         { title: 'Pool', text: 'Join the pool route if needed.', href: '/pool' },
-        { title: 'Explorer', text: 'Verify public chain activity.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Verify public chain activity.', href: '/explorer' }
       ]}
       note="Next step: add real miner downloads, config examples, pool guidance and troubleshooting."
     />

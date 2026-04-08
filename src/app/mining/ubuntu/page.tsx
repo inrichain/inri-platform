@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Mining', text: 'Return to the mining overview.', href: '/mining' },
         { title: 'Mining Windows', text: 'See the Windows route.', href: '/mining/windows' },
         { title: 'Pool', text: 'Open the pool section.', href: '/pool' },
-        { title: 'Explorer', text: 'Verify chain activity externally.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Verify chain activity externally.', href: '/explorer' }
       ]}
       note="Next step: add Linux commands, configs, pool guidance and troubleshooting."
     />

@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Mining', text: 'Return to the mining overview.', href: '/mining' },
         { title: 'Pool', text: 'Open the pool section.', href: '/pool' },
         { title: 'Wallets', text: 'Prepare wallet support before mining.', href: '/wallets' },
-        { title: 'Explorer', text: 'Verify network activity externally.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Verify network activity externally.', href: '/explorer' }
       ]}
       note="Next step: add the real Windows miner download, config examples and payout guidance."
     />

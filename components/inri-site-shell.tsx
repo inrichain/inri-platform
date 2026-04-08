@@ -24,13 +24,19 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
-  { label: 'Docs', href: '/whitepaper' },
+  { label: 'Whitepaper', href: '/whitepaper' },
 ]
 
 const utilityNavItems: InriNavItem[] = [
+  { label: 'INRI Wallet', href: '/inri-wallet' },
+  { label: 'Explorer', href: '/explorer' },
   { label: 'Swap', href: '/swap' },
-  { label: 'Factory', href: '/token-factory' },
+  { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
+  { label: 'Mining Windows', href: '/mining/windows' },
+  { label: 'Mining Ubuntu', href: '/mining/ubuntu' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
 const footerPrimaryLinks = [
@@ -43,7 +49,9 @@ const footerPrimaryLinks = [
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
   { label: 'Whitepaper', href: '/whitepaper' },
-  { label: 'Explorer', href: 'https://explorer.inri.life', external: true },
+  { label: 'Explorer', href: '/explorer' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
 const socialLinks = [
@@ -85,7 +93,7 @@ function UtilityMenu() {
         sideOffset={14}
         className="w-60 rounded-[1.2rem] border border-white/[0.12] bg-[linear-gradient(180deg,#040912,#000000)] p-2 text-white shadow-[0_22px_70px_rgba(0,0,0,0.5),0_0_0_1px_rgba(19,164,255,0.06)]"
       >
-        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Utility</DropdownMenuLabel>
+        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">More pages</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/[0.08]" />
         {utilityNavItems.map((item) => (
           <DropdownMenuItem
@@ -155,10 +163,10 @@ function MobileMenu() {
 
         <div className="flex flex-col gap-6 px-5 py-5">
           <div className="grid gap-3">
-            <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+            <InriLinkButton href="/inri-wallet" noTranslate>
               INRI Wallet
             </InriLinkButton>
-            <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
+            <InriLinkButton href="/explorer" variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
             <ConnectWalletButton compact />
@@ -213,17 +221,17 @@ export function InriHeader() {
           </div>
 
           <div className="hidden items-center justify-self-end gap-3 md:flex">
-            <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
+            <InriLinkButton href="/explorer" variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
-            <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+            <InriLinkButton href="/inri-wallet" noTranslate>
               INRI Wallet
             </InriLinkButton>
             <ConnectWalletButton compact />
           </div>
 
           <div className="flex items-center justify-self-end gap-2 md:hidden">
-            <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+            <InriLinkButton href="/inri-wallet" noTranslate>
               Wallet
             </InriLinkButton>
             <MobileMenu />
@@ -274,10 +282,10 @@ export function InriFooter() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+              <InriLinkButton href="/inri-wallet" noTranslate>
                 INRI Wallet
               </InriLinkButton>
-              <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
+              <InriLinkButton href="/explorer" variant="secondary" noTranslate>
                 Explorer
               </InriLinkButton>
             </div>

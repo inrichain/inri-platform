@@ -7,7 +7,7 @@ export default function Page() {
       description="The swap page gives INRI a real place for future token swaps, liquidity flows and exchange activity inside the official website structure."
       actions={[
         { label: 'Open INRI Wallet', href: '/inri-wallet' },
-        { label: 'Open explorer', href: 'https://explorer.inri.life', external: true, variant: 'secondary' }
+        { label: 'Open explorer', href: '/explorer', variant: 'secondary' }
       ]}
       items={[
         { title: 'Future swap hub', text: 'This page is ready to become the official place for swap access, pair discovery, routing and liquidity information.' },

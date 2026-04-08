@@ -13,8 +13,7 @@ const routeCards = [
   {
     title: 'INRI Wallet',
     text: 'Official wallet entry for users and builders.',
-    href: 'https://wallet.inri.life',
-    external: true,
+    href: '/inri-wallet',
     icon: Wallet,
   },
   {
@@ -26,8 +25,7 @@ const routeCards = [
   {
     title: 'Explorer',
     text: 'Blocks, transactions and addresses in one place.',
-    href: 'https://explorer.inri.life',
-    external: true,
+    href: '/explorer',
     icon: Blocks,
   },
   {
@@ -105,13 +103,13 @@ export function InriHomepage() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+                  <InriLinkButton href="/inri-wallet" noTranslate>
                     Open INRI Wallet
                   </InriLinkButton>
                   <InriLinkButton href="/mining" variant="secondary">
                     Start Mining
                   </InriLinkButton>
-                  <InriLinkButton href="https://explorer.inri.life" variant="secondary" external noTranslate>
+                  <InriLinkButton href="/explorer" variant="secondary" noTranslate>
                     Explorer
                   </InriLinkButton>
                 </div>
@@ -137,8 +135,8 @@ export function InriHomepage() {
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <QuickRoute title="Wallet" text="Official wallet access" href="https://wallet.inri.life" external />
-                  <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="https://explorer.inri.life" external />
+                  <QuickRoute title="Wallet" text="Official wallet access" href="/inri-wallet" />
+                  <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="/explorer" />
                   <QuickRoute title="Mining" text="Windows, Ubuntu and pool" href="/mining" />
                   <QuickRoute title="Pool" text="Join active miners" href="/pool" />
                 </div>

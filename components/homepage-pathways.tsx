@@ -21,8 +21,8 @@ const pathways: Array<{
     eyebrow: 'Onboard faster',
     title: 'A cleaner route for people discovering INRI for the first time.',
     text: 'The best homepages reduce friction. This route highlights wallet, explorer and swap access first, then explains what the chain is doing in real time.',
-    primary: { label: 'Open INRI Wallet', href: 'https://wallet.inri.life', external: true },
-    secondary: { label: 'Explore the network', href: 'https://explorer.inri.life', external: true },
+    primary: { label: 'Open INRI Wallet', href: '/inri-wallet' },
+    secondary: { label: 'Explore the network', href: '/explorer' },
     bullets: [
       { title: 'Wallet-first onboarding', text: 'Push the official wallet as the main entry point, not as one of many equal links.', icon: Wallet },
       { title: 'Proof before promise', text: 'Show live block, peers and base fee right on the homepage to create trust faster.', icon: Globe2 },

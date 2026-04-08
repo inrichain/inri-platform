@@ -18,7 +18,7 @@ export default function Page() {
         { title: 'Live wallet', text: 'Open wallet.inri.life.', href: 'https://wallet.inri.life', external: true },
         { title: 'Wallets', text: 'See other wallet options that support the network.', href: '/wallets' },
         { title: 'Swap', text: 'Continue into the swap section.', href: '/swap' },
-        { title: 'Explorer', text: 'Inspect activity externally.', href: 'https://explorer.inri.life', external: true }
+        { title: 'Explorer', text: 'Inspect activity externally.', href: '/explorer' }
       ]}
       note="Next step: add wallet download cards, setup flow, screenshots, security notes and ecosystem shortcuts."
     />
