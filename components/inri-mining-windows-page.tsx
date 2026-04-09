@@ -169,18 +169,18 @@ export function InriMiningWindowsPage() {
                 <CodeBlock
                   title="Folder structure reminder"
                   note="The old page keeps reinforcing the same root route and asks the user to store the files in the INRI folder."
-                  code={String.raw`C:\INRI\
+                  code={`C:\\INRI\\
 ├─ geth-inri-windows.exe
 ├─ genesis.json
 ├─ password.txt
 ├─ wallet.txt
 ├─ miner_real.bat
-└─ data\`}
+└─ data\\`}
                 />
                 <CodeBlock
                   title="What to change in the miner batch"
                   note="The old guide says to change only the payout address and the thread count before saving the batch file."
-                  code={String.raw`set COINBASE=0x0000000000000000000000000000000000000000
+                  code={`set COINBASE=0x0000000000000000000000000000000000000000
 set THREADS=4`}
                 />
               </div>
