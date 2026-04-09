@@ -154,13 +154,9 @@ function CopyShell({ title, code, note }: { title: string; code: string; note?: 
     <div className="rounded-[1.65rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-lg font-black text-white">{title}</h3>
-        <button
-          type="button"
-          onClick={() => navigator.clipboard.writeText(code).catch(() => {})}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/40 hover:bg-primary/[0.10]"
-        >
-          <Copy className="h-4 w-4 text-primary" /> Copy
-        </button>
+        <div className="inline-flex h-10 items-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white/78">
+          <Copy className="h-4 w-4 text-primary" /> Select and copy
+        </div>
       </div>
       {note ? <p className="mt-2 text-sm leading-7 text-white/62">{note}</p> : null}
       <pre className="mt-4 overflow-x-auto rounded-[1.2rem] border border-white/10 bg-black/40 p-4 text-xs leading-6 text-white/82">{code}</pre>
