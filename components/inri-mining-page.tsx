@@ -6,13 +6,13 @@ import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 const entryCards = [
   {
     title: 'Mining Windows',
-    text: 'Premium version of the classic Windows mining guide, now cleaner and easier to follow.',
+    text: 'Complete Windows mining guide with the full INRI setup flow in a premium layout.',
     href: '/mining-windows',
     icon: <MonitorSmartphone className="h-5 w-5" />,
   },
   {
     title: 'Mining Ubuntu',
-    text: 'Premium version of the Ubuntu route with the current installer download kept available.',
+    text: 'Premium Ubuntu mining route with the installer flow kept available.',
     href: '/mining-ubuntu',
     icon: <Server className="h-5 w-5" />,
   },
@@ -53,10 +53,10 @@ export function InriMiningPage() {
                   Mining hub
                 </div>
                 <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-5xl xl:text-[4.35rem]">
-                  Premium mining pages with the <span className="text-primary">classic INRI routes</span> kept intact.
+                  Premium mining pages with the <span className="text-primary">full INRI setup flow</span>.
                 </h1>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">
-                  This hub keeps the familiar Windows and Ubuntu paths while presenting them in a cleaner, stronger layout that matches the rest of the site.
+                  Choose the route that fits your machine and follow the full mining setup flow with the same visual standard as the rest of the INRI site.
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <InriLinkButton href="/mining-windows">Open Mining Windows</InriLinkButton>
@@ -100,8 +100,8 @@ export function InriMiningPage() {
         <section className="py-10 sm:py-12">
           <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <FeatureCard title="Windows first" text="The Windows page follows the same classic step order from the old site: clean folders, create mining account, place files, add chaindata and start mining." icon={<MonitorSmartphone className="h-5 w-5" />} />
-              <FeatureCard title="Ubuntu kept simple" text="The Ubuntu page stays lighter, closer to the old route, but adds a premium layout and keeps the installer script available." icon={<Server className="h-5 w-5" />} />
+              <FeatureCard title="Windows first" text="The Windows page walks through the full setup order: clean folders, create the mining account, place files, add chaindata and start mining." icon={<MonitorSmartphone className="h-5 w-5" />} />
+              <FeatureCard title="Ubuntu kept simple" text="The Ubuntu page stays direct and practical, with the installer path clearly available." icon={<Server className="h-5 w-5" />} />
               <FeatureCard title="Wallet before mining" text="Users should always prepare the payout address first, then move to the mining setup that matches their machine." icon={<ShieldCheck className="h-5 w-5" />} />
               <FeatureCard title="Pool after setup" text="Once the miner is live, the pool page becomes the operational place to watch activity and search miner addresses." icon={<Pickaxe className="h-5 w-5" />} />
             </div>
