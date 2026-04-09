@@ -1,5 +1,5 @@
 import { InriMiningWindowsPage } from '@/components/inri-mining-windows-page'
 
-export default function MiningWindowsLegacyPage() {
+export default function Page() {
   return <InriMiningWindowsPage />
 }

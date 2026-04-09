@@ -35,8 +35,8 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
-  { label: 'Mining Windows', href: '/mining/windows' },
-  { label: 'Mining Ubuntu', href: '/mining/ubuntu' },
+  { label: 'Mining Windows', href: '/mining-windows' },
+  { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
