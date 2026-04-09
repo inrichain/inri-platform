@@ -42,7 +42,7 @@ fi
 
 echo
 read -r -p "Mining threads [$CPU_THREADS]: " MINER_THREADS
-MINER_THREADS="${MINER_THREADS:-$CPU_THREADS}"
+MINER_THREADS="\${MINER_THREADS:-$CPU_THREADS}"
 
 if ! echo "$MINER_THREADS" | grep -Eq "^[0-9]+$"; then
   echo

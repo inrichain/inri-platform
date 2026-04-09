@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, Download, FolderCog, HardDriveDownload, Picka
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 
 const gethZipUrl = 'https://github.com/inrichain/inri-geth/releases/download/v3.0-fork6000000/INRI-GETH-FORK-6000000.zip'
+const chaindataUrl = 'https://github.com/inrichain/inri-chain-chaindata/releases/latest/download/INRI-chaindata-block-700000.rar'
 
 const cleanCode = `REM Delete old INRI folders completely
 rd /s /q C:\\INRI
@@ -202,8 +203,8 @@ export function InriMiningWindowsPage() {
                   <InriLinkButton href={gethZipUrl} external>
                     Download official geth ZIP
                   </InriLinkButton>
-                  <InriLinkButton href="#chaindata-step" variant="secondary">
-                    Chaindata step
+                  <InriLinkButton href={chaindataUrl} external variant="secondary">
+                    Download chaindata
                   </InriLinkButton>
                   <InriLinkButton href="/pool" variant="secondary">
                     Open pool
@@ -231,10 +232,10 @@ export function InriMiningWindowsPage() {
                       </div>
                       <HardDriveDownload className="h-5 w-5 text-primary" />
                     </a>
-                    <a href="#chaindata-step" className="flex items-center justify-between rounded-[1rem] border border-white/10 bg-white/[0.03] px-4 py-4 transition hover:border-primary/40 hover:bg-primary/[0.08]">
+                    <a href={chaindataUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-[1rem] border border-white/10 bg-white/[0.03] px-4 py-4 transition hover:border-primary/40 hover:bg-primary/[0.08]">
                       <div>
                         <div className="text-sm font-black text-white">Chaindata package</div>
-                        <div className="mt-1 text-xs text-white/58">Weekly fast-sync step highlighted below</div>
+                        <div className="mt-1 text-xs text-white/58">Latest public chaindata package</div>
                       </div>
                       <Download className="h-5 w-5 text-primary" />
                     </a>
@@ -292,16 +293,16 @@ export function InriMiningWindowsPage() {
             <StepCard
               eyebrow="Step 4"
               title="Add chaindata"
-              text="Before the first launch, download the chaindata package, extract the ZIP file and copy the chaindata folder into your INRI data route. This is the fast-sync step highlighted on the current mining page."
+              text="Before the first launch, download the chaindata package, extract the RAR file and copy the chaindata folder into your INRI data route. Then start the miner batch."
               icon={<Pickaxe className="h-5 w-5" />}
             >
               <div id="chaindata-step" className="rounded-[1.4rem] border border-white/10 bg-black/30 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-black text-white">Chaindata route</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/62">Fast Sync (Recommended). Download the current chaindata package, extract the ZIP, then copy the folder <span className="font-semibold text-white">chaindata</span> into <span className="font-semibold text-white">C:\\INRI\\data</span> before the first run.</p>
+                    <p className="mt-2 text-sm leading-6 text-white/62">Fast Sync (Recommended). Download the current chaindata package, extract the RAR, then copy the folder <span className="font-semibold text-white">chaindata</span> into <span className="font-semibold text-white">C:\\INRI\\data</span> before the first run.</p>
                   </div>
-                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Updated weekly</span>
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Download now</span>
                 </div>
               </div>
             </StepCard>
