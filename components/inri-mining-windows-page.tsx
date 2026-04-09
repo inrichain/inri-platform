@@ -1,262 +1,267 @@
-import type { ReactNode } from 'react'
+import type { ComponentType } from 'react'
+import { ArrowRight, Blocks, FolderCog, HardDriveDownload, KeyRound, Pickaxe, Rocket, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { AlertTriangle, ArrowRight, CheckCircle2, Download, FolderCog, HardDrive, Pickaxe, ShieldCheck, TerminalSquare } from 'lucide-react'
-import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
+import { InriShell, InriLinkButton } from '@/components/inri-site-shell'
 
-const gethZipUrl = 'https://github.com/inrichain/inri-geth/releases/download/v3.0-fork6000000/INRI-GETH-FORK-6000000.zip'
-const windowsLauncher = '/downloads/mining/windows/Run-INRI-Windows-Miner-Installer.bat'
-const windowsInstaller = '/downloads/mining/windows/INRI-Windows-Miner-Installer.ps1'
-const chaindataUrl = 'https://www.inri.life/mining-windows'
-
-const quickFacts = [
-  ['Route', 'Windows CPU Miner'],
-  ['Chain ID', '3777'],
-  ['Main folder', 'C:\\INRI'],
-  ['Required binary', 'geth-inri-windows'],
-  ['Fork reminder', 'Block 6000000'],
-] as const
-
-const requiredFiles = [
-  'C:\\INRI\\geth-inri-windows',
-  'C:\\INRI\\genesis.json',
-  'C:\\INRI\\password.txt',
-  'C:\\INRI\\wallet.txt',
-  'C:\\INRI\\miner_real.bat',
-  'C:\\INRI\\data\\',
-] as const
+const bootnodes =
+  'enode://453d847d192861e020ae9bd44734c6d985f07786af3f2543c1a4a4578405c5232215852d02cab335f86376bfed4fb4fe8065f122cf36f41e5c7c805a04d7dc2b@134.199.203.8:30303,enode://5480948164d342bd728bf8a26fae74e8282c5f3fb905b03e25ab708866ea38cb0ec7015211623f0bc6f83aa7afa2dd7ae6789fdda788c5234564a794a938e15f@170.64.222.34:30303'
 
 const steps = [
   {
-    number: 'Step 0',
+    eyebrow: 'Step 0',
     title: 'Clean everything',
-    body: 'Start from a fully clean route. The mining flow expects C:\\INRI and C:\\INRI\\data to be clean before you create accounts, add chaindata or start the node.',
-    bullets: [
-      'Run CMD as Administrator.',
-      'Delete old chaindata and wrong network files before starting over.',
-      'Keep only one clean Windows mining route for INRI.',
+    text: 'Reset the local folders first so there is no old spam, wrong network, wrong account or broken chaindata mixed into the setup.',
+    icon: FolderCog,
+    body: [
+      'Create a clean working folder such as C:\\INRI\\ and a data folder such as C:\\INRI\\data.',
+      'If you already tested older setups, delete the previous chain data before starting again.',
+      'The goal of this step is the same as the current public guide: start from zero before mining.',
     ],
-    icon: <FolderCog className="h-5 w-5" />,
+    codeTitle: 'Target folder structure before you continue',
+    code: 'C:\\INRI\\\nC:\\INRI\\data\\',
   },
   {
-    number: 'Step 1',
-    title: 'Create the mining account',
-    body: 'Create a dedicated mining account one time and store the password file in the INRI root folder. This account is for the local miner and is different from MetaMask.',
-    bullets: [
-      'Choose a simple mining password for the local account.',
-      'Save the password in C:\\INRI\\password.txt.',
-      'Write down the generated address and save it in C:\\INRI\\wallet.txt.',
+    eyebrow: 'Step 1',
+    title: 'Create a mining account',
+    text: 'Create the mining account only once. This is the local geth account used by the miner — not MetaMask.',
+    icon: KeyRound,
+    body: [
+      'Choose a simple password and save it in Notepad as C:\\INRI\\password.txt.',
+      'Run the account creation command only after your folders are clean and the binary is in place.',
+      'Write down the generated address and save it in a file such as C:\\INRI\\wallet.txt.',
     ],
-    icon: <ShieldCheck className="h-5 w-5" />,
+    codeTitle: 'Password file example',
+    code: 'inri123',
+    commandTitle: 'Create the local mining account',
+    command: 'cd /d C:\\INRI\ngeth-inri-windows account new --datadir C:\\INRI\\data --password C:\\INRI\\password.txt',
   },
   {
-    number: 'Step 2',
+    eyebrow: 'Step 2',
     title: 'Place the correct files',
-    body: 'The setup only works cleanly when the Windows route contains the correct fork package and the correct genesis file.',
-    bullets: [
-      'Download the official fork 6000000 geth ZIP.',
-      'Extract the correct Windows binary into C:\\INRI.',
-      'Save genesis.json directly inside C:\\INRI.',
-      'If the binary is not the INRI Windows one, stop and replace it before going further.',
+    text: 'Inside C:\\INRI\\ you need the correct Windows binary and the correct genesis file before you initialize the chain.',
+    icon: HardDriveDownload,
+    body: [
+      'If the binary is not named geth-inri-windows, stop and replace it with the correct one.',
+      'Save the genesis file in Notepad as C:\\INRI\\genesis.json.',
+      'Download the official Windows geth package, extract it and keep the Windows binary in C:\\INRI\\geth-inri-windows.',
     ],
-    icon: <Download className="h-5 w-5" />,
+    codeTitle: 'Files expected in C:\\INRI\\',
+    code: 'C:\\INRI\\geth-inri-windows\nC:\\INRI\\genesis.json\nC:\\INRI\\password.txt',
   },
   {
-    number: 'Step 3',
+    eyebrow: 'Step 3',
+    title: 'Initialize the local chain structure',
+    text: 'This creates the local blockchain structure that points to the INRI network. Run it once. Do not run it again after you already synced.',
+    icon: Blocks,
+    body: [
+      'The current public page warns about this clearly: re-running init later can wipe the synchronized chain data.',
+      'Only use the command after the correct genesis file is already saved in C:\\INRI\\genesis.json.',
+    ],
+    commandTitle: 'Initialize the INRI chain',
+    command: 'cd /d C:\\INRI\ngeth-inri-windows --datadir C:\\INRI\\data init C:\\INRI\\genesis.json',
+  },
+  {
+    eyebrow: 'Step 4',
     title: 'Create the miner batch file',
-    body: 'The batch file should only need your payout address and the thread count changed. Save it inside the INRI folder so the launch path stays clean and repeatable.',
-    bullets: [
-      'Change only COINBASE and THREADS.',
-      'Save the file as C:\\INRI\\miner_real.bat.',
-      'Keep the rest of the launch parameters aligned to INRI CHAIN.',
+    text: 'Keep the batch simple. The public guide highlights the same two values to change before saving: the payout address and the thread count.',
+    icon: ShieldCheck,
+    body: [
+      'Replace only the payout address and the number of threads you want to use.',
+      'Save the file in Notepad as C:\\INRI\\miner_real.bat.',
+      'Run the batch as Administrator when you are ready to start mining.',
     ],
-    icon: <TerminalSquare className="h-5 w-5" />,
+    codeTitle: 'What you change in the batch file',
+    code: 'set COINBASE=0x0000000000000000000000000000000000000000\nset THREADS=4',
+    commandTitle: 'Batch structure',
+    command: '@echo off\nset COINBASE=0x0000000000000000000000000000000000000000\nset THREADS=4\n\nC:\\INRI\\geth-inri-windows ^\n  --datadir C:\\INRI\\data ^\n  --networkid 3777 ^\n  --bootnodes ' + bootnodes + ' ^\n  --syncmode full ^\n  --snapshot=false ^\n  --maxpeers 100 ^\n  --cache 1024 ^\n  --mine ^\n  --miner.threads %THREADS% ^\n  --miner.etherbase %COINBASE% ^\n  --http ^\n  --http.addr 0.0.0.0 ^\n  --http.port 8545 ^\n  --http.api eth,net,web3,txpool,miner ^\n  --verbosity 3',
   },
   {
-    number: 'Step 4',
-    title: 'Add chaindata',
-    body: 'Before the first live run, add the chaindata package to speed up initial sync for new miners.',
-    bullets: [
-      'Download the latest chaindata package.',
-      'Extract the ZIP.',
-      'Copy the chaindata folder into C:\\INRI\\data before the first run.',
+    eyebrow: 'Step 5',
+    title: 'Add chaindata and start mining',
+    text: 'Before the first full run, add the chaindata package to accelerate sync. Then launch the miner batch as Administrator.',
+    icon: Rocket,
+    body: [
+      'Download the chaindata package, extract it and copy the chaindata folder into your data directory.',
+      'The current public guide recommends Fast Sync through this chaindata step for new users.',
+      'After that, right-click the miner batch and run it as Administrator.',
+      'Watch the console to confirm peers, sync progress and mining activity on the original network.',
     ],
-    icon: <HardDrive className="h-5 w-5" />,
+    codeTitle: 'Chaindata target path',
+    code: 'C:\\INRI\\data\\geth\\chaindata',
   },
-  {
-    number: 'Step 5',
-    title: 'Start mining',
-    body: 'Right-click the batch file and run it as Administrator. Then confirm that your wallet, peers and network behavior are correct before leaving the miner running.',
-    bullets: [
-      'Run the miner batch as Administrator.',
-      'Verify you are on the original INRI network.',
-      'Confirm the account, block progress and peer activity.',
-    ],
-    icon: <Pickaxe className="h-5 w-5" />,
-  },
-] as const
+]
 
 function StepCard({
-  number,
+  eyebrow,
   title,
+  text,
   body,
-  bullets,
-  icon,
+  codeTitle,
+  code,
+  commandTitle,
+  command,
+  icon: Icon,
 }: {
-  number: string
+  eyebrow: string
   title: string
-  body: string
-  bullets: readonly string[]
-  icon: ReactNode
+  text: string
+  body: string[]
+  codeTitle?: string
+  code?: string
+  commandTitle?: string
+  command?: string
+  icon: ComponentType<{ className?: string }>
 }) {
   return (
-    <section className="rounded-[2rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.26)]">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">{icon}</div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">{number}</p>
-          <h2 className="mt-2 text-2xl font-black text-white">{title}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/66">{body}</p>
+    <section className="rounded-[2rem] border border-white/10 bg-[#091425] p-6 shadow-[0_22px_70px_rgba(0,0,0,0.22)] sm:p-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-primary/90">{eyebrow}</p>
+          <h2 className="mt-3 text-3xl font-black text-white">{title}</h2>
+          <p className="mt-4 text-base leading-8 text-white/72">{text}</p>
+          <div className="mt-6 space-y-3">
+            {body.map((line) => (
+              <div key={line} className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-white/74">
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.4rem] border border-primary/25 bg-primary/10 text-primary">
+          <Icon className="h-8 w-8" />
         </div>
       </div>
-      <div className="mt-5 grid gap-3">
-        {bullets.map((bullet) => (
-          <div key={bullet} className="flex items-start gap-3 rounded-[1.2rem] border border-white/10 bg-black/25 px-4 py-3">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p className="text-sm leading-6 text-white/78">{bullet}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
 
-function CodePanel({ title, note, code }: { title: string; note?: string; code: string }) {
-  return (
-    <div className="rounded-[1.8rem] border border-white/12 bg-[linear-gradient(180deg,rgba(5,17,28,0.98),rgba(1,7,12,0.99))] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
-      <h3 className="text-lg font-black text-white">{title}</h3>
-      {note ? <p className="mt-2 text-sm leading-7 text-white/64">{note}</p> : null}
-      <pre className="mt-4 overflow-x-auto rounded-[1.15rem] border border-white/10 bg-black/45 p-4 text-xs leading-6 text-white/84">{code}</pre>
-    </div>
+      {(codeTitle && code) || (commandTitle && command) ? (
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+          {codeTitle && code ? (
+            <div className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/35">
+              <div className="border-b border-white/10 px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] text-primary/85">{codeTitle}</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words px-4 py-4 text-sm leading-7 text-white/78">{code}</pre>
+            </div>
+          ) : null}
+          {commandTitle && command ? (
+            <div className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/35">
+              <div className="border-b border-white/10 px-4 py-3 text-sm font-bold uppercase tracking-[0.18em] text-primary/85">{commandTitle}</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words px-4 py-4 text-sm leading-7 text-white/78">{command}</pre>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
   )
 }
 
 export function InriMiningWindowsPage() {
   return (
     <InriShell>
-      <main className="bg-black text-white">
-        <section className="border-b border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_28%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
-          <div className="mx-auto max-w-[1480px] px-4 py-14 sm:px-6 lg:px-8 xl:py-20">
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_440px]">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
-                  Mining Windows
-                </div>
-                <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-5xl xl:text-[4.2rem]">
-                  Windows CPU Miner for <span className="text-primary">INRI CHAIN</span>
-                </h1>
-                <p className="mt-5 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">
-                  Start mining in the same clean sequence used by the INRI Windows route: prepare the folders, create the local mining account, place the correct files, add chaindata and then launch the miner.
-                </p>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <InriLinkButton href={windowsLauncher}>Download Windows launcher</InriLinkButton>
-                  <InriLinkButton href={windowsInstaller} variant="secondary">PowerShell installer</InriLinkButton>
-                  <InriLinkButton href={gethZipUrl} variant="secondary">Official geth ZIP</InriLinkButton>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/72">
-                  {quickFacts.map(([label, value]) => (
-                    <div key={label} className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 font-semibold">
-                      <span className="text-white/45">{label}:</span> {value}
-                    </div>
-                  ))}
-                </div>
+      <main className="min-h-screen bg-black text-white">
+        <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(17,143,240,0.22),transparent_36%),linear-gradient(180deg,#07111e_0%,#04070d_100%)]">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+            <div className="max-w-4xl">
+              <p className="text-sm font-extrabold uppercase tracking-[0.28em] text-primary/90">Mining Windows</p>
+              <h1 className="mt-5 text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">Windows CPU Miner</h1>
+              <p className="mt-4 inline-flex rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-extrabold uppercase tracking-[0.22em] text-primary">
+                Fork at block 6000000
+              </p>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-white/72 sm:text-lg">
+                Start mining INRI tokens in the same order miners already know: clean everything, create the mining account,
+                place the correct files, initialize the chain, prepare the batch file, add chaindata and then start mining.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <InriLinkButton href="/pool">Open Pool</InriLinkButton>
+                <InriLinkButton href="/wallets" variant="secondary">
+                  Wallets
+                </InriLinkButton>
+                <InriLinkButton href="/explorer" variant="secondary">
+                  Explorer
+                </InriLinkButton>
               </div>
-
-              <aside className="rounded-[2rem] border-[1.6px] border-white/14 bg-[linear-gradient(180deg,rgba(6,18,30,0.98),rgba(1,6,12,0.99))] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Before you start</p>
-                <div className="mt-5 grid gap-3">
-                  {requiredFiles.map((item) => (
-                    <div key={item} className="flex items-start gap-3 rounded-[1.15rem] border border-white/10 bg-white/[0.035] px-4 py-3">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      <p className="break-all text-sm leading-6 text-white/74">{item}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 rounded-[1.25rem] border border-amber-400/20 bg-amber-400/10 px-4 py-4">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                    <p className="text-sm leading-6 text-white/76">
-                      Keep the correct fork 6000000 package and do not rerun the chain initialization after a correct sync unless you really want to wipe local blockchain data.
-                    </p>
-                  </div>
-                </div>
-              </aside>
             </div>
           </div>
         </section>
 
-        <section className="py-10 sm:py-12">
-          <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-5 xl:grid-cols-2">
-              {steps.map((step) => (
-                <StepCard key={step.title} {...step} />
-              ))}
+        <section className="py-10">
+          <div className="mx-auto grid max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-[1.18fr,0.82fr] lg:px-8">
+            <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6 shadow-[0_22px_70px_rgba(0,0,0,0.2)] sm:p-8">
+              <div className="flex items-center gap-3 text-primary">
+                <Pickaxe className="h-5 w-5" />
+                <p className="text-sm font-extrabold uppercase tracking-[0.22em]">Correct order from zero to mining on Windows</p>
+              </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {steps.map((step, index) => (
+                  <div key={step.title} className="rounded-[1.4rem] border border-white/10 bg-[#091425] p-5">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary/80">{index === 0 ? 'Required first' : `Phase ${index + 1}`}</p>
+                    <h2 className="mt-3 text-xl font-black text-white">{step.title}</h2>
+                    <p className="mt-3 text-sm leading-7 text-white/68">{step.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/10 bg-[#091425] p-6 shadow-[0_22px_70px_rgba(0,0,0,0.2)] sm:p-8">
+              <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-primary/90">Before you start</p>
+              <div className="mt-5 space-y-4">
+                {[
+                  'This route is for the Windows CPU miner and follows the same logic the current INRI network guide already teaches.',
+                  'The mining account created here is local to geth. It is not MetaMask and it is not your browser wallet.',
+                  'Do not re-run the init step after you already synced, because that can wipe your local chain data.',
+                  'Use the pool page if you want a pool route. This page is focused on the Windows node-based setup path.',
+                ].map((item) => (
+                  <div key={item} className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-4 text-sm leading-7 text-white/74">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="border-t border-white/8 py-10 sm:py-12">
-          <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-              <div className="space-y-6">
-                <CodePanel
-                  title="Folder structure"
-                  note="Keep the main route clean and predictable so the miner can be supported more easily."
-                  code={`C:\\INRI\\
-├─ geth-inri-windows
-├─ genesis.json
-├─ password.txt
-├─ wallet.txt
-├─ miner_real.bat
-└─ data\\chaindata`}
-                />
-                <CodePanel
-                  title="Only these values normally change"
-                  note="The Windows batch should mainly ask you to replace the payout address and choose the thread count."
-                  code={`set COINBASE=0x0000000000000000000000000000000000000000
-set THREADS=4`}
-                />
-              </div>
+        <section className="pb-16">
+          <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+            {steps.map((step) => (
+              <StepCard key={step.title} {...step} />
+            ))}
+          </div>
+        </section>
 
-              <div className="rounded-[2rem] border border-white/12 bg-[linear-gradient(180deg,rgba(7,18,29,0.97),rgba(3,8,15,0.99))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.32)]">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Next routes</p>
-                <div className="mt-4 grid gap-3">
-                  {[
-                    { title: 'Pool', text: 'Watch miner activity, payments, blocks and top miners after setup.', href: '/pool' },
-                    { title: 'Wallets', text: 'Prepare a payout wallet before starting the miner.', href: '/wallets' },
-                    { title: 'Mining Ubuntu', text: 'Open the Linux route if you want the Ubuntu installer path.', href: '/mining-ubuntu' },
-                    { title: 'Explorer', text: 'Verify addresses and network blocks.', href: '/explorer' },
-                  ].map((item) => (
-                    <Link key={item.title} href={item.href} className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-4 transition hover:border-primary/40 hover:bg-primary/[0.08]">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-black text-white">{item.title}</span>
-                        <ArrowRight className="h-4 w-4 text-primary" />
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-white/60">{item.text}</p>
-                    </Link>
-                  ))}
+        <section className="pb-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,#091425,#060b13)] p-6 sm:p-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-primary/90">Final check</p>
+                  <h2 className="mt-3 text-3xl font-black text-white">How to know if you are really mining on the original network</h2>
+                  <p className="mt-4 text-base leading-8 text-white/72">
+                    After the batch starts, watch the node output for peer connections, sync progress, imported blocks and mining
+                    activity. Keep your wallet address noted in C:\\INRI\\wallet.txt and compare activity against the public explorer
+                    and pool pages when needed.
+                  </p>
                 </div>
-                <a
-                  href={chaindataUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-5 flex items-center justify-between rounded-[1.2rem] border border-primary/24 bg-primary/10 px-4 py-4 transition hover:bg-primary/15"
-                >
-                  <div>
-                    <p className="text-sm font-black text-white">Chaindata reference</p>
-                    <p className="mt-1 text-sm leading-6 text-white/60">Use the published chaindata route when a fresh sync needs acceleration.</p>
+                <div className="flex flex-wrap gap-3">
+                  <InriLinkButton href="/explorer">Open Explorer</InriLinkButton>
+                  <InriLinkButton href="/pool" variant="secondary">
+                    Pool Page
+                  </InriLinkButton>
+                </div>
+              </div>
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {[
+                  { title: 'Wallet file', text: 'Keep the generated address written down and easy to find.' },
+                  { title: 'Final folder', text: 'C:\\INRI\\ should contain your binary, genesis, password, batch and wallet note.' },
+                  { title: 'Run as admin', text: 'The final miner batch should be started with Administrator permissions.' },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-[1.25rem] border border-white/10 bg-black/30 p-5">
+                    <h3 className="text-lg font-black text-white">{item.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-white/68">{item.text}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-primary" />
-                </a>
+                ))}
+              </div>
+              <div className="mt-6">
+                <Link href="/mining-ubuntu" className="inline-flex items-center gap-2 text-sm font-bold text-primary">
+                  Prefer Ubuntu instead?
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
           </div>
