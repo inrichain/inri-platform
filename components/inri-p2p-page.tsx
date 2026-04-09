@@ -1,58 +1,94 @@
-import { InriShell, InriLinkButton } from '@/components/inri-site-shell'
+import Link from 'next/link'
+import { ArrowUpRight, ShieldCheck, Wallet, Workflow } from 'lucide-react'
+import { InriP2PClient } from '@/components/inri-p2p-client'
+import { InriShell } from '@/components/inri-site-shell'
+
+const stats = [
+  { label: 'Contract', value: '0xF6e3...98f01', note: 'Escrow contract on INRI CHAIN' },
+  { label: 'Network', value: 'Chain 3777', note: 'Runs on the INRI mainnet' },
+  { label: 'Buyer fee', value: '0.2% INRI', note: 'Deducted only on release' },
+]
+
+const highlights = [
+  {
+    icon: ShieldCheck,
+    title: 'Escrow on-chain',
+    text: 'Seller deposits INRI into escrow and the release stays on-chain.',
+  },
+  {
+    icon: Wallet,
+    title: 'Wallet-native flow',
+    text: 'Users connect the wallet, create offers, accept, mark paid and release without leaving the site.',
+  },
+  {
+    icon: Workflow,
+    title: 'Dispute controls',
+    text: 'The app already includes buyer paid flow, disputes, moderator votes and owner resolution paths.',
+  },
+]
 
 export function InriP2PPage() {
   return (
     <InriShell>
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(19,164,255,0.08),_transparent_28%),linear-gradient(180deg,#02060b_0%,#000000_100%)]">
-        <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_35%),linear-gradient(180deg,#07111d_0%,#04070d_100%)]">
-          <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 xl:px-12 2xl:px-16 lg:py-18">
-            <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-              <div className="max-w-4xl">
-                <p className="text-sm font-extrabold uppercase tracking-[0.28em] text-primary/85">INRI CHAIN</p>
-                <h1 className="mt-4 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-[3.5rem]">P2P Escrow Market</h1>
-                <p className="mt-5 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-                  Buy and sell INRI with on-chain escrow, off-chain payment instructions, buyer fee deduction on release,
-                  dispute tools and direct wallet interaction inside the site.
+      <main className="bg-black text-white">
+        <section className="mx-auto flex max-w-[1500px] flex-col gap-8 px-4 pb-16 pt-10 sm:px-8 xl:px-12 2xl:px-16">
+          <div className="rounded-[2.4rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,rgba(6,14,25,0.98),rgba(0,0,0,1))] px-6 py-7 shadow-[0_32px_120px_rgba(0,0,0,0.38)] sm:px-8 sm:py-8">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-[820px]">
+                <div className="inline-flex rounded-full border border-primary/20 bg-primary/[0.10] px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
+                  P2P • Escrow Market
+                </div>
+                <h1 className="mt-4 text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl xl:text-[3.65rem]">
+                  Buy and sell INRI through a native escrow flow inside the new site.
+                </h1>
+                <p className="mt-4 max-w-[760px] text-base leading-8 text-white/62 sm:text-lg">
+                  Create offers, accept deals, mark payments, release escrow and manage disputes without leaving the new INRI experience.
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3 xl:justify-end">
-                <InriLinkButton href="/apps/inri-p2p.html" variant="secondary" noTranslate>
-                  Open full screen
-                </InriLinkButton>
-                <InriLinkButton href="https://wallet.inri.life" external noTranslate>
-                  INRI Wallet
-                </InriLinkButton>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="https://wallet.inri.life"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/28 bg-primary px-5 text-[14px] font-black text-black transition hover:brightness-105"
+                >
+                  Open INRI Wallet
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/explorer"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-5 text-[14px] font-black text-white transition hover:border-primary/45 hover:bg-primary/[0.08]"
+                >
+                  Explorer
+                </Link>
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {[
-                ['Escrow on-chain', 'Seller deposits INRI into escrow and releases only after confirming the off-chain payment.'],
-                ['Buyer fee 0.2%', 'The buyer fee is deducted in INRI on release, with withdrawable net balance tracked in the app.'],
-                ['Dispute tools', 'Paid and dispute alerts, moderator voting and owner resolution are already part of the flow.'],
-              ].map(([title, text]) => (
-                <div key={title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.18)] backdrop-blur-sm">
-                  <h2 className="text-lg font-extrabold text-white">{title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/65">{text}</p>
+            <div className="mt-7 grid gap-4 lg:grid-cols-3">
+              {stats.map((item) => (
+                <div key={item.label} className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-4">
+                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-white/42">{item.label}</div>
+                  <div className="mt-2 text-xl font-black text-white">{item.value}</div>
+                  <div className="mt-1 text-sm leading-6 text-white/46">{item.note}</div>
                 </div>
               ))}
             </div>
           </div>
-        </section>
 
-        <section className="pb-12 pt-8 sm:pb-16">
-          <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-            <div className="rounded-[2rem] border border-primary/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(0,0,0,0.98))] p-2 shadow-[0_30px_100px_rgba(0,0,0,0.45),0_0_0_1px_rgba(19,164,255,0.05)] sm:p-3">
-              <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black">
-                <iframe
-                  src="/apps/inri-p2p.html"
-                  title="INRI P2P"
-                  className="block h-[1450px] w-full bg-black md:h-[1320px] xl:h-[1220px]"
-                />
+          <div className="grid gap-4 lg:grid-cols-3">
+            {highlights.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] px-5 py-5">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/24 bg-primary/[0.10] text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h2 className="mt-4 text-lg font-black text-white">{title}</h2>
+                <p className="mt-2 text-sm leading-7 text-white/56">{text}</p>
               </div>
-            </div>
+            ))}
           </div>
+
+          <InriP2PClient />
         </section>
       </main>
     </InriShell>

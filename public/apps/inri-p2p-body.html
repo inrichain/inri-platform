@@ -1,0 +1,244 @@
+<div class="wrap">
+    <div class="p2pHero"><div class="p2pText">P2P</div></div>
+
+    <header class="top">
+      <div class="brand">
+        <div class="logo" title="INRI">
+          <img loading="lazy" src="https://raw.githubusercontent.com/inrichain/logo-/main/Logo.png" onerror="this.style.display='none'"/>
+        </div>
+        <div class="title">
+          <h1>INRI P2P — Escrow Market</h1>
+          <div class="sub">Escrow on-chain • Payment off-chain • Buyer fee 0.2% in INRI (deducted on release) • Alerts for PAID/DISPUTE</div>
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end">
+        <a class="btn btn-ghost" href="https://www.inri.life/" target="_self" rel="noopener">
+          <span class="btnLogo"><img src="https://raw.githubusercontent.com/inrichain/logo-/main/Logo.png" alt="INRI"></span>
+          Back to INRI.life
+        </a>
+
+        <div class="pill" id="netPill">Network: —</div>
+        <div class="pill mono" id="contractPill">Contract: —</div>
+        <div class="pill">Alerts <span class="badge" id="alertBadge" style="display:none">0</span></div>
+
+        <button class="btn btn-ghost" id="btnOpenMM" style="display:none">Open MetaMask</button>
+        <button class="btn btn-ghost" id="btnOpenTW" style="display:none">Open Trust</button>
+
+        <button class="btn btn-pri" id="btnConnect">Connect Wallet</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <div class="tabRow">
+        <button class="tab active" id="tabCreate">Create</button>
+        <button class="tab" id="tabMarket">Market</button>
+      </div>
+
+      <div class="row" style="justify-content:flex-end">
+        <span class="pill"><b id="paidCount">0</b> paid</span>
+        <span class="pill"><b id="disputeCount">0</b> disputes</span>
+        <span class="pill"><b id="doneCount">0</b> finalized</span>
+        <button class="btn btn-ghost" id="btnRefreshTop">Refresh</button>
+      </div>
+    </div>
+
+    <div class="panelWrap">
+      <aside class="card" id="createPanel">
+        <h2>Create Offer</h2>
+        <div class="hint">
+          Seller deposits <b>INRI</b>. Buyer pays <b>USDT/USDC</b> off-chain and submits <b>TxID</b>.<br>
+          <b>Buyer fee: 0.2% in INRI</b> (deducted when seller releases; buyer withdraws net INRI).
+        </div>
+
+        <div class="field">
+          <label>INRI Amount (native)</label>
+          <input id="inAmount" type="number" step="0.0001" placeholder="e.g. 1000" />
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;min-width:160px">
+            <label>Pay Asset</label>
+            <select id="payAsset">
+              <option value="USDT">USDT</option>
+              <option value="USDC">USDC</option>
+            </select>
+          </div>
+          <div class="field" style="flex:1;min-width:180px">
+            <label>Pay Network</label>
+            <select id="payNetwork"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Price per 1 INRI (USDT/USDC)</label>
+            <input id="pricePer" type="number" step="0.000001" placeholder="e.g. 0.05" />
+            <div class="muted2">Off-chain total = INRI × price</div>
+          </div>
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Total to pay off-chain (auto)</label>
+            <div class="pill mono" id="totalPill">—</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Buyer fee (0.2%) in INRI</label>
+            <div class="pill mono" id="feePill">—</div>
+          </div>
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Buyer receives (net INRI)</label>
+            <div class="pill mono" id="netInriPill">—</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Seller Receive Address (on selected network)</label>
+          <input id="payTo" placeholder="0x... / T... / any account id" />
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Payment Window (minutes)</label>
+            <input id="payWindow" type="number" step="1" value="30" min="5" max="1440" />
+          </div>
+          <div class="field" style="flex:1;min-width:200px">
+            <label>Preview</label>
+            <div class="pill" id="previewPill">—</div>
+          </div>
+        </div>
+
+        <button class="btn btn-pri" id="btnCreate" style="width:100%">Create Offer (deposit INRI)</button>
+      </aside>
+
+      <main class="card" id="marketPanel">
+        <div class="toolbar">
+          <div class="row">
+            <span class="pill"><b id="count">0</b> offers</span>
+            <span class="pill mono">chainId 3777</span>
+            <span class="pill"><span class="muted2">Activity</span> <span class="mono" id="activityPill">—</span></span>
+          </div>
+
+          <div class="search">
+            <select id="filter">
+              <option value="all">All</option>
+              <option value="open">Open</option>
+              <option value="locked">Locked</option>
+              <option value="paid">Paid</option>
+              <option value="disputed">Disputed</option>
+              <option value="finalized">Finalized</option>
+              <option value="mine">Mine</option>
+            </select>
+            <input id="q" placeholder="Search: id / seller / buyer / txid / network / asset / payTo" />
+            <button class="btn btn-ghost" id="btnRefresh">Refresh</button>
+          </div>
+        </div>
+
+        <ul class="offers" id="offers"></ul>
+
+        <div class="marketFooter">
+          <div>
+            <div class="muted2" id="syncInfo">Tip: Connect wallet for best sync.</div>
+            <div class="muted2" id="rpcMode">Provider mode: —</div>
+          </div>
+
+          <div class="walletBox">
+            <div class="walletLeft">
+              <div class="muted">Wallet</div>
+              <div class="mono" id="meAddr">—</div>
+              <div class="muted" style="margin-top:6px">Withdrawable (net)</div>
+              <div class="pill mono" id="withdrawPill">—</div>
+              <div class="muted2" style="margin-top:6px">Fee: 0.2% in INRI (deducted on release)</div>
+            </div>
+
+            <div class="walletRight">
+              <button class="btn btn-ok" id="btnWithdraw" style="display:none">Withdraw</button>
+              <button class="btn btn-ghost" id="btnClearSaved">Clear saved offers (this device)</button>
+              <div class="row">
+                <button class="btn btn-ghost" id="prev">◀</button>
+                <div class="pill" id="pageInfo">1 / 1</div>
+                <button class="btn btn-ghost" id="next">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="backdrop" id="backdrop">
+    <div class="modal">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <h3 id="mTitle">Offer</h3>
+          <div class="sub" id="mSub">—</div>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-ghost" id="mClose">✕</button>
+        </div>
+      </div>
+
+      <div class="modalGrid" style="margin-top:10px">
+        <div class="card" style="background:rgba(0,0,0,.18)">
+          <h2 style="margin:0 0 8px 0">Details</h2>
+          <div id="mDetails" class="muted"></div>
+          <div class="hr"></div>
+          <div class="hint" id="mPayHint">—</div>
+          <div class="row" id="mLogos" style="flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+        </div>
+
+        <div class="card" style="background:rgba(0,0,0,.18)">
+          <h2 style="margin:0 0 8px 0">Actions</h2>
+
+          <div class="field">
+            <label>TxID (required to mark as paid)</label>
+            <input id="mTxid" placeholder="Paste transaction hash / txid here" />
+            <div class="muted2">Only the buyer can mark as paid.</div>
+          </div>
+
+          <div class="row">
+            <button class="btn btn-pri" id="btnAccept">Accept</button>
+            <button class="btn btn-ok" id="btnPaid">I Paid</button>
+            <button class="btn btn-ok" id="btnRelease">Release (Seller)</button>
+            <button class="btn btn-bad" id="btnDispute">Open Dispute</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <button class="btn btn-ghost" id="btnReclaim">Reclaim (Seller)</button>
+            <button class="btn btn-bad" id="btnCancel">Cancel (Seller)</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <!-- ✅ DISPUTE TOOLS (OWNER + MODS) -->
+          <div class="card" style="background:rgba(0,0,0,.12)">
+            <div class="muted" style="margin-bottom:6px">Moderator / Owner dispute tools</div>
+            <div class="mini" id="mRoleLine">Role: —</div>
+            <div class="mini" id="mModsLine">Mods: — • Threshold: — • Votes: buyer — / seller — • You voted: —</div>
+
+            <div class="row" style="margin-top:10px">
+              <button class="btn btn-warn" id="btnVoteBuyer">Vote: Release to Buyer</button>
+              <button class="btn btn-warn" id="btnVoteSeller">Vote: Refund to Seller</button>
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <button class="btn btn-ok" id="btnOwnerRelease">OWNER: Release</button>
+              <button class="btn btn-bad" id="btnOwnerRefund">OWNER: Refund</button>
+            </div>
+
+            <div class="mini" style="margin-top:8px">
+              Owner can resolve anytime. Mods can vote only if enabled. (Contract functions: <span class="mono">resolveDisputeOwner</span> / <span class="mono">voteDispute</span>)
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="muted2" id="mNote">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
