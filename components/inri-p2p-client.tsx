@@ -24,7 +24,8 @@ function patchStyle(styleText: string): string {
 :host{display:block}
 :host *, :host *::before, :host *::after{box-sizing:border-box}
 :host a{color:inherit;text-decoration:none}
-:host .wrap{max-width:none;margin:0;padding:0;gap:14px}
+:host .wrap{max-width:none;margin:0;padding:0;gap:16px}
+:host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 :host .p2pHero{display:none!important}
 :host .top{
   position:static;
@@ -48,6 +49,9 @@ function patchStyle(styleText: string): string {
   gap:10px;
   flex-wrap:wrap;
 }
+:host .top .pill{border-color:rgba(19,164,255,.16);background:rgba(255,255,255,.045)}
+:host .top .btn-pri{min-width:164px;justify-content:center}
+:host .top .mono{color:#fff}
 :host .tabs,
 :host .card,
 :host .offer,
@@ -60,10 +64,10 @@ function patchStyle(styleText: string): string {
   box-shadow:none!important;
 }
 :host .tabs{
-  border:1.35px solid rgba(255,255,255,.10);
+  border:1.35px solid rgba(19,164,255,.16);
   border-radius:24px;
-  background:linear-gradient(180deg,rgba(8,16,28,.92),rgba(3,8,14,.92));
-  padding:14px 16px;
+  background:radial-gradient(circle at top left,rgba(19,164,255,.09),transparent 26%),linear-gradient(180deg,rgba(8,16,28,.96),rgba(2,7,14,.96));
+  padding:16px 18px;
   backdrop-filter:blur(14px);
 }
 :host .tab{
@@ -79,33 +83,37 @@ function patchStyle(styleText: string): string {
 :host .panelWrap{grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:16px}
 @media(max-width:1100px){:host .panelWrap{grid-template-columns:1fr}}
 :host .card{
-  border:1.35px solid rgba(255,255,255,.10);
+  border:1.35px solid rgba(19,164,255,.16);
   border-radius:28px;
-  background:radial-gradient(circle at top left,rgba(19,164,255,.07),transparent 28%),linear-gradient(180deg,rgba(8,15,26,.96),rgba(2,6,12,.96));
-  padding:20px;
+  background:radial-gradient(circle at top left,rgba(19,164,255,.085),transparent 28%),linear-gradient(180deg,rgba(7,15,28,.98),rgba(1,5,10,.98));
+  padding:22px;
   backdrop-filter:blur(16px);
 }
-:host .card h2{font-size:18px;margin:0 0 12px 0;color:#fff}
+:host .card h2{font-size:18px;margin:0 0 14px 0;color:#fff;font-weight:900;letter-spacing:-0.02em}
 :host .hint{
-  border:1.25px solid rgba(19,164,255,.22);
-  background:linear-gradient(180deg,rgba(19,164,255,.10),rgba(19,164,255,.04));
-  padding:14px 16px;
+  border:1.25px solid rgba(19,164,255,.26);
+  background:linear-gradient(180deg,rgba(19,164,255,.12),rgba(19,164,255,.05));
+  padding:15px 16px;
   border-radius:18px;
   font-size:12.5px;
-  line-height:1.55;
+  line-height:1.6;
+  color:rgba(255,255,255,.80);
 }
+:host .hint b{color:#fff}
 :host label{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.62)}
 :host input,
 :host select{
-  min-height:50px;
+  min-height:52px;
   padding:12px 14px;
-  border-radius:16px;
-  border:1.3px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.28);
+  border-radius:18px;
+  border:1.3px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.34);
   color:#fff;
   outline:none;
   font-size:14px;
 }
+:host input::placeholder{color:rgba(255,255,255,.34)}
+:host select option{background:#07111d;color:#fff}
 :host input:focus,
 :host select:focus{border-color:rgba(19,164,255,.55); box-shadow:0 0 0 1px rgba(19,164,255,.18)}
 :host .pill,
@@ -114,11 +122,12 @@ function patchStyle(styleText: string): string {
   padding:8px 12px;
   border-radius:999px;
   border:1.25px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.04);
-  color:rgba(255,255,255,.82);
+  background:rgba(255,255,255,.045);
+  color:rgba(255,255,255,.88);
   font-size:12px;
   font-weight:700;
 }
+:host .pill b,:host .chip b{color:#fff}
 :host .btn{
   min-height:44px;
   padding:10px 15px;
@@ -136,14 +145,17 @@ function patchStyle(styleText: string): string {
 :host .toolbar{gap:14px;align-items:flex-end}
 :host .search{gap:10px}
 :host .search input{width:320px}
-@media(max-width:640px){:host .search input{width:100%}}
+@media(max-width:640px){:host .search input{width:100%}
+:host .top .row,:host .tabs{justify-content:flex-start}
+:host .panelWrap{gap:14px}}
 :host .offers{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;max-height:none;overflow:visible;padding-right:0}
 :host .offer{
-  border:1.25px solid rgba(255,255,255,.10);
-  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
-  border-radius:22px;
-  padding:16px;
+  border:1.25px solid rgba(19,164,255,.14);
+  background:radial-gradient(circle at top left,rgba(19,164,255,.07),transparent 26%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+  border-radius:24px;
+  padding:18px;
 }
+:host .offer .mono,:host .offer .v,:host .offer [style*=font-weight:900]{color:#fff}
 :host .tag{min-height:34px;padding:6px 11px;border-radius:999px}
 :host .kvs{gap:10px;margin-top:10px}
 :host .kv{border-radius:16px;padding:10px;border:1.25px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03)}
@@ -162,8 +174,9 @@ function patchStyle(styleText: string): string {
 :host .modalGrid{gap:14px}
 :host .modal .card{padding:16px;border-radius:22px}
 :host .toast{border-radius:16px;padding:12px 14px;background:rgba(8,15,26,.96)}
-:host .muted{font-size:12px;color:rgba(255,255,255,.72)}
-:host .muted2{font-size:12px;color:rgba(255,255,255,.54)}
+:host .muted{font-size:12px;color:rgba(255,255,255,.76)}
+:host .muted2{font-size:12px;color:rgba(255,255,255,.64)}
+:host .right .mono,:host .kv .v,:host .walletLeft .mono{word-break:break-word}
 `
 
   return `${base}\n${overrides}`
@@ -193,7 +206,7 @@ function patchScript(scriptText: string): string {
       '__root.ownerDocument.createElement(',
     ),
     'document.addEventListener(',
-    '__root.ownerDocument.addEventListener(',
+    '__root.addEventListener(',
   )
 }
 
