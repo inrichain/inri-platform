@@ -141,8 +141,8 @@ function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text
 export function InriWalletsPage() {
   return (
     <main className="bg-black text-white">
-      <section className="border-b border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_24%),radial-gradient(circle_at_85%_0%,rgba(19,164,255,0.08),transparent_22%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
-        <div className="mx-auto max-w-[1480px] px-4 py-14 sm:px-6 sm:py-18 lg:px-8 xl:py-20">
+      <section className="inri-hero-surface bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_24%),radial-gradient(circle_at_85%_0%,rgba(19,164,255,0.08),transparent_22%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
+        <div className="inri-page-container py-14 sm:py-18 xl:py-20">
           <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.08fr)_430px]">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
@@ -201,7 +201,7 @@ export function InriWalletsPage() {
       </section>
 
       <section className="py-10 sm:py-12">
-        <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
+        <div className="inri-page-container">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {quickHighlights.map((item) => (
               <QuickCard key={item.title} icon={item.icon} title={item.title} text={item.text} />
@@ -211,7 +211,7 @@ export function InriWalletsPage() {
       </section>
 
       <section className="pb-8">
-        <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
+        <div className="inri-page-container">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Wallet directory</p>
@@ -274,7 +274,7 @@ export function InriWalletsPage() {
       </section>
 
       <section className="pb-14 pt-6 sm:pb-18">
-        <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
+        <div className="inri-page-container">
           <div className="rounded-[2rem] border-[1.6px] border-white/12 bg-[linear-gradient(180deg,rgba(6,18,30,0.96),rgba(2,8,14,0.98))] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:p-8">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:items-center">
               <div>

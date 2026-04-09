@@ -7,9 +7,7 @@ const stakingAddress = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={`overflow-hidden rounded-[2rem] border-[1.5px] border-white/12 bg-[linear-gradient(180deg,rgba(7,15,26,0.97),rgba(2,8,15,0.985))] shadow-[0_28px_90px_rgba(0,0,0,0.34)] ${className}`}
-    >
+    <div className={`inri-section-surface overflow-hidden rounded-[2rem] ${className}`}>
       {children}
     </div>
   )
@@ -19,8 +17,8 @@ export function InriStakingPage() {
   return (
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.15),_transparent_22%),linear-gradient(180deg,#02070c_0%,#000000_52%,#03111d_100%)]">
-        <section className="border-b border-white/8">
-          <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <section className="inri-hero-surface">
+          <div className="inri-page-container py-8 lg:py-10">
             <div className="mx-auto max-w-[1260px] space-y-6">
               <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
                 <div>

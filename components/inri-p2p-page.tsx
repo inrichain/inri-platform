@@ -5,12 +5,12 @@ export function InriP2PPage() {
   return (
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(19,164,255,0.08),_transparent_28%),linear-gradient(180deg,#02060b_0%,#000000_100%)]">
-        <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_35%),linear-gradient(180deg,#07111d_0%,#04070d_100%)]">
-          <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 xl:px-12 2xl:px-16 lg:py-18">
+        <section className="inri-hero-surface">
+          <div className="inri-page-container py-14 lg:py-18">
             <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-4xl">
-                <p className="text-sm font-extrabold uppercase tracking-[0.28em] text-primary/85">P2P • ESCROW MARKET</p>
-                <h1 className="mt-4 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-[3.4rem]">
+                <div className="flex flex-wrap gap-3"><span className="inri-chip text-primary">P2P • Escrow market</span><span className="inri-chip">Native INRI route</span><span className="inri-chip">Chain 3777</span></div>
+                <h1 className="mt-6 text-4xl font-black leading-[1.02] text-white sm:text-5xl lg:text-[4.05rem]">
                   Buy and sell INRI directly inside the new site.
                 </h1>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
@@ -46,7 +46,7 @@ export function InriP2PPage() {
         </section>
 
         <section className="pb-12 pt-8 sm:pb-16">
-          <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
+          <div className="inri-page-container">
             <InriP2PClient />
           </div>
         </section>

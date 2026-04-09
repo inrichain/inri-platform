@@ -81,8 +81,8 @@ export function InriLegalPage({
   return (
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_26%),linear-gradient(180deg,#02060b_0%,#000000_42%,#020812_100%)]">
-        <section className="border-b border-white/8">
-          <div className="mx-auto max-w-[1480px] px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+        <section className="inri-hero-surface">
+          <div className="inri-page-container py-14 lg:py-18">
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1.18fr)_430px] xl:items-start">
               <div>
                 <div className="flex flex-wrap gap-3">
@@ -139,7 +139,7 @@ export function InriLegalPage({
         </section>
 
         <section className="py-10 sm:py-12">
-          <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
+          <div className="inri-page-container">
             <div className="grid gap-8 xl:grid-cols-[300px_minmax(0,1fr)]">
               <aside className="xl:sticky xl:top-[132px] xl:self-start">
                 <div className="rounded-[2rem] border border-white/12 bg-[linear-gradient(180deg,rgba(7,18,29,0.97),rgba(3,8,15,0.99))] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.32)]">

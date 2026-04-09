@@ -201,3 +201,62 @@ html, body { background: #000; }
 .notranslate {
   translate: no;
 }
+
+
+.inri-page-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .inri-page-container { padding-left: 2rem; padding-right: 2rem; }
+}
+
+@media (min-width: 1280px) {
+  .inri-page-container { padding-left: 3rem; padding-right: 3rem; }
+}
+
+@media (min-width: 1536px) {
+  .inri-page-container { padding-left: 4rem; padding-right: 4rem; }
+}
+
+.inri-hero-surface {
+  background-image: radial-gradient(circle at top left, rgba(19, 164, 255, 0.16), transparent 30%), linear-gradient(180deg, rgba(7,17,29,0.98), rgba(3,7,13,1));
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.inri-section-surface {
+  border: 1.55px solid rgba(255,255,255,0.16);
+  background: linear-gradient(180deg, rgba(7,16,27,0.96), rgba(2,7,14,0.98));
+  box-shadow: 0 26px 80px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.inri-soft-card {
+  border: 1.45px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018));
+  box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+}
+
+.inri-stat-card {
+  border: 1.45px solid rgba(255,255,255,0.14);
+  background: linear-gradient(180deg, rgba(6,16,27,0.94), rgba(3,8,15,0.98));
+  box-shadow: 0 22px 70px rgba(0,0,0,0.26);
+}
+
+.inri-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1.35px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.04);
+  padding: 0.5rem 0.85rem;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(237,247,255,0.78);
+}

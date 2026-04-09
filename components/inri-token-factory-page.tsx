@@ -31,7 +31,7 @@ const notes: NoteCard[] = [
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(7,15,26,0.96),rgba(2,8,15,0.985))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] ${className}`}>
+    <div className={`inri-section-surface rounded-[2rem] ${className}`}>
       {children}
     </div>
   )
@@ -41,8 +41,8 @@ export function InriTokenFactoryPage() {
   return (
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_20%),linear-gradient(180deg,#02070c_0%,#000000_48%,#03111d_100%)]">
-        <section className="border-b border-white/8">
-          <div className="mx-auto max-w-[1320px] px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+        <section className="inri-hero-surface">
+          <div className="inri-page-container py-12 lg:py-14">
             <div className="mx-auto max-w-[1100px] text-center">
               <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
                 INRI Token Factory
@@ -70,7 +70,7 @@ export function InriTokenFactoryPage() {
         </section>
 
         <section className="pb-20 pt-8">
-          <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <div className="inri-page-container">
             <div className="mx-auto grid max-w-[1180px] gap-4 lg:grid-cols-3">
               {notes.map((item) => (
                 <Surface key={item.title} className="p-5 sm:p-6">

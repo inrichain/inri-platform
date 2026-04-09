@@ -1,20 +1,27 @@
-import Link from 'next/link'
-import { InriShell } from '@/components/inri-site-shell'
+import { InriPageTemplate } from '@/components/inri-page-template'
 
 export default function Page() {
   return (
-    <InriShell>
-      <main className="flex min-h-[70vh] items-center justify-center bg-black px-4 text-white">
-        <div className="w-full max-w-2xl rounded-[2rem] border border-white/12 bg-[linear-gradient(180deg,rgba(6,18,30,0.98),rgba(1,6,12,0.99))] p-8 text-center shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Official wallet</p>
-          <h1 className="mt-4 text-4xl font-black text-white">Open the live INRI Wallet.</h1>
-          <p className="mt-4 text-base leading-8 text-white/68">The official INRI Wallet runs on wallet.inri.life. Use the button below to open the live wallet directly.</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="https://wallet.inri.life" target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-5 text-[14px] font-extrabold text-black shadow-[0_14px_34px_rgba(19,164,255,0.28),inset_0_1px_0_rgba(255,255,255,0.52)] transition hover:-translate-y-px hover:brightness-105">Open live wallet</Link>
-            <Link href="/wallets" className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]">See supported wallets</Link>
-          </div>
-        </div>
-      </main>
-    </InriShell>
+    <InriPageTemplate
+      eyebrow="INRI Wallet"
+      title="Official wallet access in the same premium language as the rest of the platform."
+      description="Use this route as the official bridge between the main INRI website and the live INRI Wallet. Users stay inside the same design system first, then open the wallet only when they are ready to connect, send, stake or interact with the ecosystem."
+      actions={[
+        { label: 'Open live wallet', href: 'https://wallet.inri.life', external: true },
+        { label: 'See supported wallets', href: '/wallets', variant: 'secondary' },
+      ]}
+      items={[
+        { title: 'Official ecosystem entry', text: 'This is the clean bridge to wallet.inri.life for users who want the native INRI experience.' },
+        { title: 'Same-site onboarding first', text: 'Keep users inside the INRI platform language before they jump into wallet actions and transactions.' },
+        { title: 'Connected with the rest of the routes', text: 'Wallet, explorer, staking, token factory and P2P now read like one platform instead of separate pages.' },
+      ]}
+      resources={[
+        { title: 'Wallets', text: 'Review all supported wallet options and network setup values.', href: '/wallets' },
+        { title: 'Staking', text: 'Go from wallet setup to staking routes without leaving the site flow.', href: '/staking' },
+        { title: 'Token Factory', text: 'Use the wallet to launch tokens inside the INRI ecosystem.', href: '/token-factory' },
+        { title: 'Open live wallet', text: 'Continue to the official wallet.', href: 'https://wallet.inri.life', external: true },
+      ]}
+      note="This route is part of the full-site sync pass so the official wallet entry now feels like the rest of the INRI platform instead of a disconnected screen."
+    />
   )
 }

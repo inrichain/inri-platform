@@ -33,7 +33,7 @@ const facts = [
 
 function FeatureCard({ title, text, icon }: { title: string; text: string; icon: ReactNode }) {
   return (
-    <div className="rounded-[1.7rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+    <div className="inri-soft-card rounded-[1.7rem] p-5">
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">{icon}</div>
       <h3 className="mt-4 text-lg font-black text-white">{title}</h3>
       <p className="mt-2 text-sm leading-7 text-white/66">{text}</p>
@@ -45,8 +45,8 @@ export function InriMiningPage() {
   return (
     <InriShell>
       <main className="bg-black text-white">
-        <section className="border-b border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.14),transparent_24%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
-          <div className="mx-auto max-w-[1480px] px-4 py-14 sm:px-6 lg:px-8 xl:py-20">
+        <section className="inri-hero-surface">
+          <div className="inri-page-container py-14 xl:py-20">
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1.06fr)_420px]">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
@@ -72,7 +72,7 @@ export function InriMiningPage() {
                 </div>
               </div>
 
-              <div className="rounded-[2rem] border-[1.6px] border-white/14 bg-[linear-gradient(180deg,rgba(6,18,30,0.98),rgba(1,6,12,0.99))] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.34)]">
+              <div className="inri-section-surface rounded-[2rem] p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Choose your route</p>
                 <div className="mt-5 grid gap-3">
                   {entryCards.map((item) => (
@@ -98,7 +98,7 @@ export function InriMiningPage() {
         </section>
 
         <section className="py-10 sm:py-12">
-          <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
+          <div className="inri-page-container">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <FeatureCard title="Windows first" text="The Windows page follows the same classic step order from the old site: clean folders, create mining account, place files, add chaindata and start mining." icon={<MonitorSmartphone className="h-5 w-5" />} />
               <FeatureCard title="Ubuntu kept simple" text="The Ubuntu page stays lighter, closer to the old route, but adds a premium layout and keeps the installer script available." icon={<Server className="h-5 w-5" />} />
