@@ -22,18 +22,40 @@ function patchStyle(styleText: string): string {
   ].join('\n')
 }
 
+function replaceEverywhere(input: string, search: string, replacement: string): string {
+  return input.split(search).join(replacement)
+}
+
 function patchBody(bodyHtml: string): string {
-  return bodyHtml.replaceAll('https://www.inri.life/', `${basePath || ''}/`)
+  return replaceEverywhere(bodyHtml, 'https://www.inri.life/', `${basePath || ''}/`)
 }
 
 function patchScript(scriptText: string): string {
-  return scriptText
-    .replace('const DAPP_URL = "https://p2p.inri.life/";', `const DAPP_URL = window.location.href.split('#')[0];`)
-    .replaceAll('document.getElementById(', '__root.getElementById(')
-    .replaceAll('document.querySelectorAll(', '__root.querySelectorAll(')
-    .replaceAll('document.querySelector(', '__root.querySelector(')
-    .replaceAll('document.createElement(', '__root.ownerDocument.createElement(')
-    .replaceAll('document.addEventListener(', '__root.ownerDocument.addEventListener(')
+  return replaceEverywhere(
+    replaceEverywhere(
+      replaceEverywhere(
+        replaceEverywhere(
+          replaceEverywhere(
+            replaceEverywhere(
+              scriptText,
+              'const DAPP_URL = "https://p2p.inri.life/";',
+              "const DAPP_URL = window.location.href.split('#')[0];",
+            ),
+            'document.getElementById(',
+            '__root.getElementById(',
+          ),
+          'document.querySelectorAll(',
+          '__root.querySelectorAll(',
+        ),
+        'document.querySelector(',
+        '__root.querySelector(',
+      ),
+      'document.createElement(',
+      '__root.ownerDocument.createElement(',
+    ),
+    'document.addEventListener(',
+    '__root.ownerDocument.addEventListener(',
+  )
 }
 
 async function ensureEthers(): Promise<void> {
