@@ -28,10 +28,11 @@ export const inriNavItems: InriNavItem[] = [
 ]
 
 const LIVE_WALLET_URL = 'https://wallet.inri.life'
+const EXPLORER_URL = 'https://explorer.inri.life'
 
 const utilityNavItems: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
-  { label: 'Explorer', href: '/explorer' },
+  { label: 'Explorer', href: EXPLORER_URL, external: true },
   { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
@@ -51,7 +52,7 @@ const footerPrimaryLinks: InriNavItem[] = [
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
   { label: 'Whitepaper', href: '/whitepaper' },
-  { label: 'Explorer', href: '/explorer' },
+  { label: 'Explorer', href: EXPLORER_URL, external: true },
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
@@ -66,7 +67,7 @@ const socialLinks = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-[15px] font-extrabold text-white/76 transition-all hover:bg-white/[0.04] hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-4'
+  'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold text-white/78 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-3'
 
 function NavLink({ item }: { item: InriNavItem }) {
   return (
@@ -129,16 +130,16 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'inri-action-primary text-black'
+      ? 'inri-button-primary'
       : variant === 'secondary'
-        ? 'inri-action-secondary text-white'
+        ? 'inri-button-secondary'
         : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap px-5 text-[14px] font-extrabold transition-all ${noTranslate ? 'notranslate' : ''} ${styles}`}
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all ${noTranslate ? 'notranslate' : ''} ${variant === 'ghost' ? 'h-auto px-0 text-[14px] font-extrabold' : 'px-5'} ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {children}
@@ -150,7 +151,7 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:-translate-y-px hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
@@ -168,12 +169,10 @@ function MobileMenu() {
             <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
               INRI Wallet
             </InriLinkButton>
-            <InriLinkButton href="/explorer" variant="secondary" noTranslate>
+            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
-            <div className="w-full">
-              <ConnectWalletButton compact />
-            </div>
+            <ConnectWalletButton compact />
           </div>
 
           <div className="grid gap-2">
@@ -197,7 +196,7 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/18 bg-[linear-gradient(180deg,rgba(0,0,0,0.98),rgba(0,0,0,0.94))] backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-primary/18 bg-black/96 backdrop-blur-2xl">
       <div className="bg-[linear-gradient(90deg,#056ec7_0%,#118ff0_52%,#056ec7_100%)] shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
         <div className="mx-auto max-w-[1600px] px-4 py-3 sm:px-8 xl:px-12 2xl:px-16">
           <p
@@ -210,7 +209,7 @@ export function InriHeader() {
       </div>
 
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid h-[86px] grid-cols-[auto_1fr_auto] items-center gap-4 md:gap-6 lg:h-[92px]">
+        <div className="grid h-[86px] grid-cols-[auto_1fr_auto] items-center gap-4 md:gap-6 lg:h-[88px]">
           <div className="min-w-0 justify-self-start">
             <Logo showText size={48} />
           </div>
@@ -225,7 +224,7 @@ export function InriHeader() {
           </div>
 
           <div className="hidden items-center justify-self-end gap-3 md:flex">
-            <InriLinkButton href="/explorer" variant="secondary" noTranslate>
+            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
             <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
@@ -289,7 +288,7 @@ export function InriFooter() {
               <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
                 INRI Wallet
               </InriLinkButton>
-              <InriLinkButton href="/explorer" variant="secondary" noTranslate>
+              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
                 Explorer
               </InriLinkButton>
             </div>

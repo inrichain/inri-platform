@@ -166,16 +166,18 @@ async function fetchSelector(signature: string) {
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`inri-panel overflow-hidden ${className}`}>{children}</div>
+    <div className={`overflow-hidden rounded-[2rem] border-[1.5px] border-white/12 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.12),transparent_30%),linear-gradient(180deg,rgba(7,15,26,0.97),rgba(2,8,15,0.99))] shadow-[0_28px_90px_rgba(0,0,0,0.34)] ${className}`}>
+      {children}
+    </div>
   )
 }
 
 function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="inri-subpanel min-w-0 p-4">
+    <div className="inri-subcard min-w-0 rounded-[1.35rem] p-4">
       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">{label}</div>
-      <div className="mt-3 break-words text-[1.55rem] font-black leading-tight text-white sm:text-[1.7rem]">{value}</div>
-      <div className="mt-2 text-sm leading-6 text-white/48">{note}</div>
+      <div className="mt-3 break-words text-[1.35rem] font-black leading-tight text-white sm:text-[1.5rem]">{value}</div>
+      <div className="mt-2 text-sm leading-6 text-white/52">{note}</div>
     </div>
   )
 }
@@ -184,12 +186,13 @@ function ActionButton({ children, className = '', ...props }: ButtonHTMLAttribut
   return (
     <button
       {...props}
-      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`inline-flex h-[52px] min-h-[52px] items-center justify-center gap-2 rounded-[1rem] border px-5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {children}
     </button>
   )
 }
+
 
 export function InriStakingClient() {
   const [selectors, setSelectors] = useState<SelectorMap>({})
@@ -574,100 +577,117 @@ export function InriStakingClient() {
   }
 
   const selectedPosition = userState?.positions[selectedPlan] || null
+  const selectedPlanInfo = PLAN_META[selectedPlan]
+  const networkLabel = networkReady ? 'INRI CHAIN ready' : chainId ? `Wrong network · ${chainId}` : 'Network not selected'
 
   return (
-    <div className="space-y-6">
-      <Surface className="p-5 sm:p-6 lg:p-7">
-        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+    <div className="space-y-8">
+      <Surface className="p-6 sm:p-7">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
           <div>
-            <div className="inri-kicker">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
               <Sparkles className="h-4 w-4" />
               Staking workspace
             </div>
-            <h2 className="mt-5 text-3xl font-black leading-tight text-white sm:text-[2.2rem]">
-              Better proportion, clearer actions and cleaner wallet flow.
+            <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-white sm:text-[2.3rem]">
+              Manage the whole staking flow from one clearer control panel.
             </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-white/62 sm:text-base">
-              Connect your wallet, confirm INRI CHAIN, pick a plan and control the full staking route from one premium layout.
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-white/62 sm:text-base">
+              Connect any compatible EVM wallet, add INRI CHAIN, review the live program stats and execute stake, claim, restake or unstake without the layout feeling compressed.
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <StatCard label="Wallet" value={shortAddress(account)} note={providerReady ? 'Connected wallet status' : 'Open this route with an EVM wallet'} />
+              <StatCard label="Network" value={networkReady ? 'INRI CHAIN' : 'Not ready'} note={networkLabel} />
+              <StatCard label="Current era" value={contractStats.currentEra.toString()} note="Year in the fixed 5-year schedule" />
+              <StatCard label="Emission / day" value={`${formatAmount(contractStats.emissionPerDay)} INRI`} note="Current scheduled emission" />
+            </div>
+          </div>
+
+          <div className="inri-sidebar-card rounded-[1.7rem] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Wallet status</div>
+                <div className="mt-2 text-xl font-black text-white">{account ? 'Wallet connected' : 'Connect a wallet'}</div>
+              </div>
+              <div className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${networkReady ? 'border-primary/30 bg-primary/[0.12] text-primary' : 'border-white/12 bg-white/[0.04] text-white/56'}`}>
+                {networkReady ? 'INRI ready' : 'Network required'}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/28 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Current address</div>
+              <div className="mt-2 break-all text-sm font-semibold text-white">{account || 'Not connected yet'}</div>
+              <div className="mt-3 text-sm leading-6 text-white/56">
+                Compatible wallets: INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet and similar EVM wallets that support custom networks.
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <ActionButton
                 onClick={connectWallet}
                 disabled={busyAction === 'connect'}
-                className="inri-action-primary px-5 text-black"
+                className="border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] hover:-translate-y-px hover:brightness-105"
               >
-                {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Wallet2 className="h-4 w-4" />}
-                {account ? 'Reconnect wallet' : 'Connect wallet'}
+                {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : account ? 'Reconnect wallet' : 'Connect wallet'}
               </ActionButton>
               <ActionButton
                 onClick={switchNetwork}
                 disabled={busyAction === 'network'}
-                className={networkReady ? 'inri-action-secondary px-5' : 'inri-action-primary px-5 text-black'}
+                className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
               >
-                {busyAction === 'network' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                {networkReady ? 'INRI CHAIN ready' : 'Switch network'}
+                {busyAction === 'network' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
               </ActionButton>
             </div>
-
-            <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              <span className={`rounded-full border px-4 py-2 font-black ${account ? 'border-emerald-400/24 bg-emerald-400/10 text-emerald-300' : 'border-white/12 bg-white/[0.03] text-white/56'}`}>
-                {account ? `Wallet ${shortAddress(account)}` : 'Wallet not connected'}
-              </span>
-              <span className={`rounded-full border px-4 py-2 font-black ${networkReady ? 'border-primary/24 bg-primary/[0.10] text-primary' : 'border-amber-400/24 bg-amber-400/10 text-amber-300'}`}>
-                {networkReady ? 'Network ready' : 'Wrong network'}
-              </span>
-              <span className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 font-black text-white/66">
-                Claim cooldown {Number(contractStats.claimCooldown / 86400n || 0n)} day
-              </span>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <StatCard label="Wallet" value={shortAddress(account)} note={providerReady ? 'Browser wallet detected' : 'Open this page in an EVM wallet'} />
-            <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="All unclaimed rewards across your plans" />
-            <StatCard label="Current era" value={contractStats.currentEra.toString()} note="Year in the fixed 5-year schedule" />
-            <StatCard label="Emission / day" value={`${formatAmount(contractStats.emissionPerDay)} INRI`} note="Current scheduled emission" />
           </div>
         </div>
       </Surface>
 
-      <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
-        <Surface className="p-5 sm:p-6 lg:p-7">
-          <div className="inri-subpanel p-4 sm:p-5">
+      <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.08fr)_380px] 2xl:items-start">
+        <div className="space-y-6">
+          <Surface className="p-6 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Staking contract</div>
                 <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{STAKING_ADDRESS}</div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button onClick={copyAddress} className="inri-action-tertiary px-4 text-sm">
+                <button
+                  onClick={copyAddress}
+                  className="inri-button-secondary min-w-[132px]"
+                >
                   <Copy className="h-4 w-4" />
                   {copied ? 'Copied' : 'Copy'}
                 </button>
-                <a href={EXPLORER_URL} target="_blank" rel="noreferrer" className="inri-action-secondary px-4 text-sm">
-                  Explorer
+                <a
+                  href={EXPLORER_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inri-button-secondary min-w-[168px]"
+                >
+                  Official explorer
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </div>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <StatCard label="Min stake" value={`${formatAmount(contractStats.minStake)} INRI`} note="Minimum entry amount" />
-              <StatCard label="Max / plan" value={`${formatAmount(contractStats.maxPerPlan)} INRI`} note="Maximum principal per plan" />
-              <StatCard label="Rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Base rewards not emitted yet" />
-            </div>
-          </div>
 
-          <div className="mt-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <StatCard label="Min stake" value={`${formatAmount(contractStats.minStake)} INRI`} note="Minimum amount required to enter" />
+              <StatCard label="Max per plan" value={`${formatAmount(contractStats.maxPerPlan)} INRI`} note="Maximum principal allowed in each plan" />
+              <StatCard label="Rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Base rewards still waiting to be emitted" />
+            </div>
+          </Surface>
+
+          <Surface className="p-6 sm:p-7">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Choose your plan</div>
-                <h3 className="mt-2 text-2xl font-black text-white">Lock period cards now match the rest of the site.</h3>
+                <h3 className="mt-2 text-2xl font-black text-white sm:text-[2rem]">Pick the lock period before sending INRI.</h3>
               </div>
-              <div className="text-sm text-white/52">Pick one plan, then stake, claim, restake or unstake below.</div>
+              <div className="text-sm leading-6 text-white/54">Penalties only apply to early unlocks.</div>
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {PLAN_META.map((plan) => {
                 const position = userState?.positions[plan.id]
                 const active = position?.active
@@ -675,87 +695,88 @@ export function InriStakingClient() {
                   <button
                     key={plan.id}
                     onClick={() => setSelectedPlan(plan.id)}
-                    className={`min-w-0 rounded-[1.65rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
+                    className={`min-w-0 rounded-[1.55rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
-                        <div className="mt-2 text-2xl font-black leading-tight text-white">{plan.days} days</div>
+                        <div className="mt-2 text-3xl font-black leading-none text-white">{plan.days} days</div>
                       </div>
-                      <div className="rounded-full border border-white/12 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
+                      <div className="rounded-full border border-white/12 bg-black/25 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
                     </div>
-                    <div className="mt-3 text-sm leading-7 text-white/56">Penalty {plan.penalty} before unlock · {plan.accent}</div>
+                    <div className="mt-4 text-sm leading-7 text-white/58">Penalty {plan.penalty} before unlock. {plan.accent}.</div>
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
                       <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${active ? 'border-primary/35 bg-primary/[0.10] text-primary' : 'border-white/12 bg-white/[0.03] text-white/50'}`}>
-                        {active ? 'Active' : 'No position'}
+                        {active ? 'Active position' : 'No position'}
                       </span>
-                      <span className="break-words text-white/42">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
+                      <span className="text-white/44">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
                     </div>
                   </button>
                 )
               })}
             </div>
-          </div>
+          </Surface>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[1.02fr_0.98fr]">
-            <div className="inri-subpanel p-5">
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Create or manage position</div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <label className="block min-w-0">
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected plan</div>
-                  <div className="inri-input mt-2 flex items-center bg-black/30">{PLAN_META[selectedPlan].title} · {PLAN_META[selectedPlan].multiplier}</div>
-                </label>
-                <label className="block min-w-0">
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Amount in INRI</div>
-                  <input
-                    inputMode="decimal"
-                    value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
-                    placeholder="100"
-                    className="inri-input mt-2"
-                  />
-                </label>
+          <Surface className="p-6 sm:p-7">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Create or manage position</div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <label className="block min-w-0">
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected plan</div>
+                    <div className="mt-2 flex h-14 items-center rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white">
+                      {selectedPlanInfo.title} · {selectedPlanInfo.multiplier}
+                    </div>
+                  </label>
+                  <label className="block min-w-0">
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Amount in INRI</div>
+                    <input
+                      inputMode="decimal"
+                      value={amount}
+                      onChange={(event) => setAmount(event.target.value)}
+                      placeholder="100"
+                      className="mt-2 h-14 w-full rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white outline-none transition placeholder:text-white/24 focus:border-primary/55"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/58">
+                  Stake native INRI into the selected plan. Claim, restake and unstake continue using the same connected wallet, so the whole staking flow stays in one place.
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <ActionButton
+                    onClick={stakeNow}
+                    disabled={busyAction === 'stake' || !providerReady}
+                    className="border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] hover:-translate-y-px hover:brightness-105"
+                  >
+                    {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake INRI'}
+                  </ActionButton>
+                  <ActionButton
+                    onClick={claimAll}
+                    disabled={busyAction === 'claim' || !userState?.canClaim}
+                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
+                  >
+                    {busyAction === 'claim' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Claim rewards'}
+                  </ActionButton>
+                  <ActionButton
+                    onClick={restake}
+                    disabled={busyAction === 'restake'}
+                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
+                  >
+                    {busyAction === 'restake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Restake rewards'}
+                  </ActionButton>
+                  <ActionButton
+                    onClick={unstake}
+                    disabled={busyAction === 'unstake'}
+                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
+                  >
+                    {busyAction === 'unstake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Unstake selected'}
+                  </ActionButton>
+                </div>
               </div>
 
-              <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/58">
-                Stake native INRI into the selected plan. The contract receives the amount directly, and claim, restake and
-                unstake actions continue from the same connected wallet.
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <ActionButton
-                  onClick={stakeNow}
-                  disabled={busyAction === 'stake' || !providerReady}
-                  className="inri-action-primary px-5 text-black"
-                >
-                  {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake INRI'}
-                </ActionButton>
-                <ActionButton
-                  onClick={claimAll}
-                  disabled={busyAction === 'claim' || !userState?.canClaim}
-                  className="inri-action-secondary px-5"
-                >
-                  {busyAction === 'claim' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Claim rewards'}
-                </ActionButton>
-                <ActionButton
-                  onClick={restake}
-                  disabled={busyAction === 'restake'}
-                  className="inri-action-tertiary px-5"
-                >
-                  {busyAction === 'restake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Restake rewards'}
-                </ActionButton>
-                <ActionButton
-                  onClick={unstake}
-                  disabled={busyAction === 'unstake'}
-                  className="inri-action-tertiary px-5"
-                >
-                  {busyAction === 'unstake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Unstake selected'}
-                </ActionButton>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="inri-subpanel p-5">
+              <div className="inri-sidebar-card rounded-[1.6rem] p-5">
                 <div className="flex items-center gap-2 text-xl font-black text-white">
                   <ShieldCheck className="h-5 w-5 text-primary" />
                   Position summary
@@ -767,51 +788,51 @@ export function InriStakingClient() {
                   <StatCard label="Can claim" value={userState?.canClaim ? 'Yes' : 'Not yet'} note={userState?.nextClaimAt ? `Next claim: ${formatTimestamp(userState.nextClaimAt)}` : 'Claim availability updates automatically'} />
                 </div>
               </div>
+            </div>
+          </Surface>
+        </div>
 
-              <div className="inri-subpanel p-5">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
-                <div className="mt-4 rounded-[1.35rem] border border-white/10 bg-black/30 p-4">
-                  <div className="flex items-start gap-3">
-                    {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
-                    <div className="min-w-0">
-                      <div className="text-base font-black text-white">{error ? 'Action needs attention' : 'Staking app online'}</div>
-                      <div className="mt-2 break-words text-sm leading-7 text-white/60">{error || status}</div>
-                    </div>
-                  </div>
-                  {txHash ? (
-                    <a
-                      href={`https://explorer.inri.life/tx/${txHash}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
-                    >
-                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
-                      <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
-                    </a>
-                  ) : null}
+        <div className="space-y-6">
+          <Surface className="p-5 sm:p-6">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Live status</div>
+            <div className="mt-4 rounded-[1.35rem] border border-white/10 bg-black/30 p-4">
+              <div className="flex items-start gap-3">
+                {error ? <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-400" /> : <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />}
+                <div className="min-w-0">
+                  <div className="text-base font-black text-white">{error ? 'Action needs attention' : 'Staking app online'}</div>
+                  <div className="mt-2 break-words text-sm leading-7 text-white/60">{error || status}</div>
                 </div>
               </div>
+              {txHash ? (
+                <a
+                  href={`https://explorer.inri.life/tx/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
+                >
+                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
+                  <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
+                </a>
+              ) : null}
             </div>
-          </div>
-        </Surface>
+          </Surface>
 
-        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <Surface className="p-5 sm:p-6">
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Program state</div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-1">
               <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note="Started once with the funded amount" />
               <StatCard label="New stakes" value={contractStats.newStakesPaused ? 'Paused' : 'Open'} note="Controls fresh stake and restake entry" />
-              <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When on, unstake has no penalty" />
-              <StatCard label="Contract balance" value={`${formatAmount(contractStats.contractBalance)} INRI`} note="Current staking contract balance" />
+              <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When enabled, unstake has no penalty" />
+              <StatCard label="Contract balance" value={`${formatAmount(contractStats.contractBalance)} INRI`} note="Current balance reported by the staking contract" />
             </div>
           </Surface>
 
           <Surface className="p-5 sm:p-6">
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Useful routes</div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-1">
               {([
                 { title: 'INRI Wallet', text: 'Open the official wallet before staking.', href: 'https://wallet.inri.life', external: true },
-                { title: 'Explorer', text: 'Inspect the staking contract and transactions.', href: '/explorer' },
+                { title: 'Official explorer', text: 'Inspect the staking contract and transactions.', href: 'https://explorer.inri.life/address/0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9', external: true },
                 { title: 'Whitepaper', text: 'Read the tokenomics and program context.', href: '/whitepaper' },
                 { title: 'Pool', text: 'Compare mining and staking side by side.', href: '/pool' },
               ] as { title: string; text: string; href: string; external?: boolean }[]).map((item) => (
@@ -819,7 +840,7 @@ export function InriStakingClient() {
                   key={item.title}
                   href={item.href}
                   {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  className="block rounded-[1.35rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
+                  className="block rounded-[1.3rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

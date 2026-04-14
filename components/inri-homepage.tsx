@@ -31,8 +31,9 @@ const routeCards: {
   {
     title: 'Explorer',
     text: 'Blocks, transactions and addresses in one place.',
-    href: '/explorer',
+    href: 'https://explorer.inri.life',
     icon: Blocks,
+    external: true,
   },
   {
     title: 'Token Factory',
@@ -115,7 +116,7 @@ export function InriHomepage() {
                   <InriLinkButton href="/mining" variant="secondary">
                     Start Mining
                   </InriLinkButton>
-                  <InriLinkButton href="/explorer" variant="secondary" noTranslate>
+                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
                     Explorer
                   </InriLinkButton>
                 </div>
@@ -142,7 +143,7 @@ export function InriHomepage() {
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <QuickRoute title="Wallet" text="Official wallet access" href="https://wallet.inri.life" />
-                  <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="/explorer" />
+                  <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="https://explorer.inri.life" external />
                   <QuickRoute title="Mining" text="Windows, Ubuntu and pool" href="/mining" />
                   <QuickRoute title="Pool" text="Join active miners" href="/pool" />
                 </div>

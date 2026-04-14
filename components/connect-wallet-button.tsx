@@ -1,22 +1,24 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCircle2, ChevronDown, Copy, ExternalLink, LogOut, RefreshCw, ShieldCheck, Wallet } from 'lucide-react'
+import { CheckCircle2, ChevronDown, Copy, ExternalLink, LogOut, ShieldCheck, Wallet } from 'lucide-react'
+
+const INRI_CHAIN_ID_HEX = '0xec1'
+const INRI_WALLET_URL = 'https://wallet.inri.life'
 
 type ProviderLike = {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
+  on?: (event: string, handler: (...args: unknown[]) => void) => void
+  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
   isMetaMask?: boolean
   isOkxWallet?: boolean
   providers?: ProviderLike[]
-  on?: (event: string, handler: (...args: unknown[]) => void) => void
-  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
-
-type ProviderEntry = {
+type WalletEntry = {
   key: string
-  provider: ProviderLike
   label: string
+  provider: ProviderLike
 }
 
 declare global {
@@ -25,192 +27,175 @@ declare global {
   }
 }
 
-const INRI_CHAIN_ID_HEX = '0xec1'
-const INRI_CHAIN = {
-  chainId: INRI_CHAIN_ID_HEX,
-  chainName: 'INRI CHAIN',
-  nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-  rpcUrls: ['https://rpc.inri.life'],
-  blockExplorerUrls: ['https://explorer.inri.life'],
-}
-
-const STORAGE_PROVIDER_KEY = 'inri-site-wallet-provider'
-const STORAGE_ADDRESS_KEY = 'inri-site-wallet-address'
-
-function shortAddress(address?: string) {
-  if (!address) return 'Connect'
+function shortAddress(address?: string | null) {
+  if (!address) return 'Connect wallet'
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-function describeError(error: unknown) {
-  if (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
-    return (error as { message: string }).message
-  }
-  return 'Wallet action failed.'
+function normalizeChainId(chainId?: string | null) {
+  return chainId?.toLowerCase() || null
+}
+
+function chainLabel(chainId?: string | null) {
+  if (!chainId) return 'Wallet not connected'
+  if (normalizeChainId(chainId) === INRI_CHAIN_ID_HEX) return 'INRI CHAIN'
+  const numeric = Number.parseInt(chainId, 16)
+  return Number.isFinite(numeric) ? `Chain ${numeric}` : chainId
+}
+
+function walletLabelFromProvider(provider: ProviderLike, index: number) {
+  if (provider.isMetaMask) return { key: 'metamask', label: 'MetaMask' }
+  if (provider.isOkxWallet) return { key: 'okx', label: 'OKX Wallet' }
+  return { key: `browser-${index}`, label: 'Browser Wallet' }
+}
+
+function uniqueWallets(entries: WalletEntry[]) {
+  const map = new Map<string, WalletEntry>()
+  entries.forEach((entry) => {
+    if (!map.has(entry.key)) map.set(entry.key, entry)
+  })
+  return Array.from(map.values())
 }
 
 export function ConnectWalletButton({ compact = false }: { compact?: boolean }) {
-  const rootRef = useRef<HTMLDivElement | null>(null)
   const [open, setOpen] = useState(false)
   const [address, setAddress] = useState<string>('')
   const [chainId, setChainId] = useState<string>('')
-  const [providerKey, setProviderKey] = useState<string>('')
-  const [busy, setBusy] = useState<string>('')
+  const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
-
-  const providers = useMemo<ProviderEntry[]>(() => {
-    const eth = typeof window !== 'undefined' ? window.ethereum : undefined
-    if (!eth) return []
-    const list = eth.providers?.length ? eth.providers : [eth]
-    const unique = new Map<string, ProviderLike>()
-    list.forEach((provider) => {
-      if (provider.isMetaMask) unique.set('metamask', provider)
-      else if (provider.isOkxWallet) unique.set('okx', provider)
-      else unique.set(`browser-${unique.size}`, provider)
-    })
-    return Array.from(unique.entries()).map(([key, provider]) => ({
-      key,
-      provider,
-      label: key === 'metamask' ? 'MetaMask' : key === 'okx' ? 'OKX Wallet' : 'Browser Wallet',
-    }))
-  }, [])
-
-  const activeProvider = useMemo(() => {
-    if (!providers.length) return typeof window !== 'undefined' ? window.ethereum : undefined
-    return providers.find((item) => item.key === providerKey)?.provider || providers[0]?.provider
-  }, [providerKey, providers])
-
-  const networkReady = chainId.toLowerCase() === INRI_CHAIN_ID_HEX
+  const [wallets, setWallets] = useState<WalletEntry[]>([])
+  const [activeProviderKey, setActiveProviderKey] = useState<string>('')
+  const rootRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const onPointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+
+    const collectInjectedWallets = () => {
+      const eth = window.ethereum
+      if (!eth) {
+        setWallets([])
+        return
+      }
+      const providers = eth.providers?.length ? eth.providers : [eth]
+      const next = providers.map((provider, index) => {
+        const meta = walletLabelFromProvider(provider, index)
+        return { key: meta.key, label: meta.label, provider }
+      })
+      setWallets(uniqueWallets(next))
     }
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!rootRef.current) return
+      if (!rootRef.current.contains(event.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', onPointerDown)
-    window.addEventListener('keydown', onEscape)
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown)
-      window.removeEventListener('keydown', onEscape)
+
+    const syncCurrentState = async () => {
+      const eth = window.ethereum
+      if (!eth) return
+      try {
+        const [accounts, nextChainId] = (await Promise.all([
+          eth.request({ method: 'eth_accounts' }),
+          eth.request({ method: 'eth_chainId' }),
+        ])) as [string[], string]
+        setAddress(accounts?.[0] || '')
+        setChainId(nextChainId || '')
+      } catch {
+        // no-op
+      }
     }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const storedProvider = window.localStorage.getItem(STORAGE_PROVIDER_KEY) || ''
-    const storedAddress = window.localStorage.getItem(STORAGE_ADDRESS_KEY) || ''
-    if (storedProvider) setProviderKey(storedProvider)
-    if (storedAddress) setAddress(storedAddress)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (providerKey) window.localStorage.setItem(STORAGE_PROVIDER_KEY, providerKey)
-    else window.localStorage.removeItem(STORAGE_PROVIDER_KEY)
-  }, [providerKey])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (address) window.localStorage.setItem(STORAGE_ADDRESS_KEY, address)
-    else window.localStorage.removeItem(STORAGE_ADDRESS_KEY)
-  }, [address])
-
-  useEffect(() => {
-    const provider = activeProvider
-    if (!provider?.on) return
 
     const handleAccountsChanged = (accounts: unknown) => {
-      const next = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : ''
-      setAddress(next)
-      if (!next) setError('Wallet disconnected in the provider.')
+      const next = Array.isArray(accounts) ? (accounts[0] as string | undefined) : undefined
+      setAddress(next || '')
     }
 
     const handleChainChanged = (nextChainId: unknown) => {
       if (typeof nextChainId === 'string') setChainId(nextChainId)
     }
 
-    provider.on('accountsChanged', handleAccountsChanged)
-    provider.on('chainChanged', handleChainChanged)
+    collectInjectedWallets()
+    syncCurrentState().catch(() => undefined)
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    window.ethereum?.on?.('accountsChanged', handleAccountsChanged)
+    window.ethereum?.on?.('chainChanged', handleChainChanged)
+
     return () => {
-      provider.removeListener?.('accountsChanged', handleAccountsChanged)
-      provider.removeListener?.('chainChanged', handleChainChanged)
+      document.removeEventListener('mousedown', closeOnOutsideClick)
+      window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged)
+      window.ethereum?.removeListener?.('chainChanged', handleChainChanged)
     }
-  }, [activeProvider])
+  }, [])
 
-  useEffect(() => {
-    const sync = async () => {
-      try {
-        if (!activeProvider) return
-        const [accounts, currentChainId] = await Promise.all([
-          activeProvider.request({ method: 'eth_accounts' }),
-          activeProvider.request({ method: 'eth_chainId' }),
-        ])
-        const first = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : ''
-        setAddress(first)
-        setChainId(typeof currentChainId === 'string' ? currentChainId : '')
-      } catch {
-        // ignore initial sync failures
-      }
+  const networkReady = normalizeChainId(chainId) === INRI_CHAIN_ID_HEX
+
+  const providerChoices = useMemo(() => {
+    if (wallets.length > 0) return wallets
+    if (typeof window !== 'undefined' && window.ethereum) {
+      return [{ key: 'default', label: 'Browser Wallet', provider: window.ethereum }]
     }
-    void sync()
-  }, [activeProvider])
+    return [] as WalletEntry[]
+  }, [wallets])
 
-  async function connect(provider?: ProviderLike, nextProviderKey = '') {
+  const currentProvider = useMemo(() => {
+    if (providerChoices.length === 0) return typeof window !== 'undefined' ? window.ethereum : undefined
+    return providerChoices.find((item) => item.key === activeProviderKey)?.provider || providerChoices[0]?.provider
+  }, [activeProviderKey, providerChoices])
+
+  async function connect(entry?: WalletEntry) {
     try {
-      setBusy('connect')
+      setBusy(true)
       setError('')
-      const target = provider || window.ethereum
+      const target = entry?.provider || currentProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
       if (!target) {
-        setError('No compatible wallet found in this browser.')
+        setError('No compatible EVM wallet was detected in this browser.')
         return
       }
-      const [accounts, currentChainId] = await Promise.all([
+      const [accounts, nextChainId] = (await Promise.all([
         target.request({ method: 'eth_requestAccounts' }),
         target.request({ method: 'eth_chainId' }),
-      ])
-      const first = Array.isArray(accounts) && typeof accounts[0] === 'string' ? accounts[0] : ''
-      if (first) {
-        setAddress(first)
-        setChainId(typeof currentChainId === 'string' ? currentChainId : '')
-        if (nextProviderKey) setProviderKey(nextProviderKey)
-        setOpen(false)
-      }
-    } catch (cause) {
-      setError(describeError(cause))
+      ])) as [string[], string]
+      const first = Array.isArray(accounts) ? accounts[0] : ''
+      setAddress(first || '')
+      setChainId(nextChainId || '')
+      if (entry?.key) setActiveProviderKey(entry.key)
+      setOpen(false)
+    } catch (e: any) {
+      setError(e?.message || 'Failed to connect wallet.')
     } finally {
-      setBusy('')
+      setBusy(false)
     }
   }
 
-  async function switchNetwork() {
+  async function switchToInriChain() {
     try {
-      setBusy('network')
+      setBusy(true)
       setError('')
-      const target = activeProvider || window.ethereum
+      const target = currentProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
       if (!target) {
-        setError('No browser wallet available.')
+        setError('No compatible wallet was detected.')
         return
       }
       try {
         await target.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
-      } catch (cause) {
-        const errorCode = typeof cause === 'object' && cause && 'code' in cause ? (cause as { code?: number }).code : undefined
-        if (errorCode === 4902) {
-          await target.request({ method: 'wallet_addEthereumChain', params: [INRI_CHAIN] })
-        } else {
-          throw cause
-        }
+      } catch {
+        await target.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: INRI_CHAIN_ID_HEX,
+            chainName: 'INRI CHAIN',
+            nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
+            rpcUrls: ['https://rpc.inri.life'],
+            blockExplorerUrls: ['https://explorer.inri.life'],
+          }],
+        })
       }
-      const currentChainId = await target.request({ method: 'eth_chainId' })
-      setChainId(typeof currentChainId === 'string' ? currentChainId : '')
-    } catch (cause) {
-      setError(describeError(cause))
+      const nextChainId = (await target.request({ method: 'eth_chainId' })) as string
+      setChainId(nextChainId || INRI_CHAIN_ID_HEX)
+    } catch (e: any) {
+      setError(e?.message || 'Unable to add INRI CHAIN to this wallet.')
     } finally {
-      setBusy('')
+      setBusy(false)
     }
   }
 
@@ -218,7 +203,6 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     setAddress('')
     setChainId('')
     setError('')
-    setProviderKey('')
     setOpen(false)
   }
 
@@ -226,124 +210,132 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     if (!address) return
     await navigator.clipboard.writeText(address)
     setCopied(true)
-    window.setTimeout(() => setCopied(false), 1200)
+    setTimeout(() => setCopied(false), 1400)
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]'
-    : 'inline-flex h-12 items-center gap-2.5 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-sm font-extrabold text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.08]'
+    ? 'inline-flex h-11 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 text-[14px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
+    : 'inline-flex h-12 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
 
   return (
     <div ref={rootRef} className="relative">
-      <button onClick={() => setOpen((value: boolean) => !value)} className={`${baseButton} notranslate`} translate="no">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/28 bg-primary/[0.12] shadow-[0_0_0_1px_rgba(19,164,255,0.08)]">
+      <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/[0.14] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]">
           <Wallet className="h-4 w-4 text-primary" />
         </span>
-        <span className="max-w-[8rem] truncate text-[14px]" translate="no">{shortAddress(address)}</span>
-        {address ? <span className={`h-2.5 w-2.5 rounded-full ${networkReady ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.12)]' : 'bg-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.12)]'}`} /> : null}
-        <ChevronDown className="h-4 w-4 text-white/66" />
+        <div className="min-w-0 text-left">
+          <div className="max-w-[10rem] truncate text-[14px] leading-none" translate="no">{shortAddress(address)}</div>
+          <div className="mt-1 max-w-[10rem] truncate text-[11px] font-bold uppercase tracking-[0.16em] text-white/44">
+            {chainLabel(chainId)}
+          </div>
+        </div>
+        <ChevronDown className="h-4 w-4 text-white/60" />
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-3 w-[min(94vw,390px)] rounded-[1.6rem] border border-white/[0.14] bg-[linear-gradient(180deg,#040912,#000000)] p-4 shadow-[0_24px_72px_rgba(0,0,0,0.48),0_0_0_1px_rgba(19,164,255,0.06)] backdrop-blur-xl">
-          <div className="flex items-start justify-between gap-3">
+        <div className="absolute right-0 z-50 mt-3 w-[min(94vw,390px)] overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">Wallet center</p>
-              <p className="mt-2 text-sm leading-6 text-white/60">
-                Connect, confirm the INRI network and keep your address ready across the site.
-              </p>
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Wallet access</p>
+              <h3 className="mt-2 text-xl font-black text-white">Connect any compatible EVM wallet.</h3>
             </div>
-            <a
-              href="https://wallet.inri.life"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3 text-xs font-black uppercase tracking-[0.14em] text-white/82 transition hover:border-primary/45 hover:bg-primary/[0.10]"
-            >
-              INRI Wallet
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            <div className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${networkReady ? 'border-primary/30 bg-primary/[0.12] text-primary' : 'border-white/12 bg-white/[0.04] text-white/56'}`}>
+              {networkReady ? 'INRI ready' : 'Custom network'}
+            </div>
           </div>
 
-          <div className="mt-4 grid gap-3">
-            <div className="rounded-[1.2rem] border border-white/[0.12] bg-white/[0.03] p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Connection</p>
-                  <p className="mt-2 text-base font-black text-white">{address ? 'Wallet connected' : 'No wallet connected'}</p>
+          {!address ? (
+            <>
+              <p className="mt-3 text-sm leading-7 text-white/62">
+                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet or another browser wallet that supports custom EVM networks.
+              </p>
+
+              <div className="mt-5 grid gap-3">
+                {providerChoices.length > 0 ? providerChoices.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => connect(item)}
+                    disabled={busy}
+                    className="inline-flex min-h-14 items-center justify-between rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
+                  >
+                    <div>
+                      <div className="text-sm font-black text-white">{busy ? 'Connecting...' : item.label}</div>
+                      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/42">Injected EVM wallet</div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-primary" />
+                  </button>
+                )) : (
+                  <a
+                    href={INRI_WALLET_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-14 items-center justify-between rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10]"
+                  >
+                    <div>
+                      <div className="text-sm font-black text-white">Open official INRI Wallet</div>
+                      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/42">No browser wallet detected</div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-primary" />
+                  </a>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mt-5 rounded-[1.2rem] border border-white/[0.14] bg-white/[0.04] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Connected address</p>
+                    <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
+                  </div>
+                  <button
+                    onClick={copyAddress}
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[0.95rem] border border-white/12 bg-black/30 px-3 text-sm font-bold text-white transition hover:border-primary/50 hover:bg-primary/[0.10]"
+                  >
+                    <Copy className="h-4 w-4" />
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
                 </div>
-                <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${address ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300' : 'border-white/12 bg-white/[0.03] text-white/56'}`}>
-                  {address ? 'Online' : 'Idle'}
-                </span>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1rem] border border-white/10 bg-black/30 p-3">
-                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/42">Address</div>
-                  <div className="mt-2 break-all text-sm font-semibold text-white">{address || 'Connect a browser wallet to continue.'}</div>
-                </div>
-                <div className="rounded-[1rem] border border-white/10 bg-black/30 p-3">
-                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/42">Network</div>
-                  <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-white">
-                    {networkReady ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <ShieldCheck className="h-4 w-4 text-primary" />}
-                    {chainId ? (networkReady ? 'INRI CHAIN ready' : `Wrong network (${chainId})`) : 'Waiting for wallet'}
+                <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Current network</p>
+                  <div className="mt-2 flex items-center gap-2 text-base font-black text-white">
+                    {networkReady ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <ShieldCheck className="h-4 w-4 text-white/56" />}
+                    {chainLabel(chainId)}
                   </div>
+                  <p className="mt-2 text-sm leading-6 text-white/56">
+                    {networkReady ? 'Ready to use staking, pool and the rest of the official INRI routes.' : 'Switch or add INRI CHAIN so the site works in the correct network.'}
+                  </p>
+                </div>
+                <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Supported wallets</p>
+                  <div className="mt-2 text-base font-black text-white">Any injected EVM wallet</div>
+                  <p className="mt-2 text-sm leading-6 text-white/56">MetaMask, OKX, Rabby, Coinbase Wallet and similar browser wallets can add INRI CHAIN.</p>
                 </div>
               </div>
-            </div>
 
-            {!address ? (
-              <div className="grid gap-3">
-                {providers.length > 0 ? providers.map((item: ProviderEntry) => (
-                  <button
-                    key={item.key}
-                    onClick={() => connect(item.provider, item.key)}
-                    disabled={busy === 'connect'}
-                    className="rounded-[1.1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-left transition hover:border-primary/45 hover:bg-primary/[0.10] disabled:opacity-50"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-black text-white">{item.label}</div>
-                        <div className="mt-1 text-xs leading-5 text-white/52">Injected browser wallet connection</div>
-                      </div>
-                      <span className="rounded-full border border-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/54">
-                        {busy === 'connect' ? 'Connecting' : 'Open'}
-                      </span>
-                    </div>
-                  </button>
-                )) : (
-                  <button
-                    onClick={() => connect()}
-                    disabled={busy === 'connect'}
-                    className="rounded-[1.1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-left transition hover:border-primary/45 hover:bg-primary/[0.10] disabled:opacity-50"
-                  >
-                    <div className="text-sm font-black text-white">Connect browser wallet</div>
-                    <div className="mt-1 text-xs leading-5 text-white/52">MetaMask, OKX Wallet or another injected wallet.</div>
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <button onClick={copyAddress} className="inri-action-secondary px-4">
-                  <Copy className="h-4 w-4" />
-                  {copied ? 'Copied' : 'Copy address'}
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  onClick={switchToInriChain}
+                  disabled={busy}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 text-sm font-black text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
+                >
+                  {busy ? 'Updating...' : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
                 </button>
-                <button onClick={switchNetwork} disabled={busy === 'network'} className="inri-action-primary px-4">
-                  {busy === 'network' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                  {networkReady ? 'INRI ready' : 'Switch to INRI'}
-                </button>
-                <a href="https://explorer.inri.life" target="_blank" rel="noreferrer" className="inri-action-tertiary px-4 text-center">
-                  <ExternalLink className="h-4 w-4" />
-                  Open explorer
-                </a>
-                <button onClick={disconnect} className="inri-action-tertiary px-4">
+                <button
+                  onClick={disconnect}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
+                >
                   <LogOut className="h-4 w-4" />
-                  Disconnect
+                  Clear session
                 </button>
               </div>
-            )}
-          </div>
+            </>
+          )}
 
-          {error ? <p className="mt-3 text-sm leading-6 text-rose-300">{error}</p> : null}
+          {error ? <p className="mt-4 text-sm leading-6 text-rose-300">{error}</p> : null}
         </div>
       ) : null}
     </div>

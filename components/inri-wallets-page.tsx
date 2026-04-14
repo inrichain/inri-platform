@@ -160,7 +160,7 @@ export function InriWalletsPage() {
                 <InriLinkButton href="https://wallet.inri.life" external noTranslate>
                   Open INRI Wallet
                 </InriLinkButton>
-                <InriLinkButton href="/explorer" variant="secondary" noTranslate>
+                <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
                   Open Explorer
                 </InriLinkButton>
               </div>
@@ -301,7 +301,7 @@ export function InriWalletsPage() {
                 <div className="mt-4 grid gap-3">
                   {[
                     { label: 'INRI Wallet', href: 'https://wallet.inri.life', external: true },
-                    { label: 'Explorer', href: '/explorer' },
+                    { label: 'Explorer', href: 'https://explorer.inri.life', external: true },
                     { label: 'Swap', href: '/swap' },
                     { label: 'Mining', href: '/mining' },
                   ].map((item) => (
