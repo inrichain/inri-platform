@@ -7,9 +7,7 @@ const stakingAddress = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`inri-section-surface overflow-hidden rounded-[2rem] ${className}`}>
-      {children}
-    </div>
+    <div className={`inri-panel overflow-hidden ${className}`}>{children}</div>
   )
 }
 
@@ -22,9 +20,7 @@ export function InriStakingPage() {
             <div className="mx-auto max-w-[1260px] space-y-6">
               <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
                 <div>
-                  <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
-                    INRI staking
-                  </div>
+                  <div className="inri-kicker">INRI staking</div>
                   <h1 className="mt-5 max-w-[760px] text-4xl font-black leading-[0.95] text-white sm:text-5xl lg:text-[3.8rem]">
                     Staking that feels closer to a premium mining app.
                   </h1>
@@ -41,7 +37,7 @@ export function InriStakingPage() {
                   </div>
                 </div>
 
-                <Surface className="p-5 sm:p-6">
+                <Surface className="p-5 sm:p-6 lg:p-7">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Program snapshot</div>
@@ -54,21 +50,21 @@ export function InriStakingPage() {
                     </div>
                   </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="inri-subpanel p-4">
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
                         <Layers3 className="h-5 w-5" />
                       </div>
                       <div className="mt-4 text-lg font-black text-white">3 lock plans</div>
                       <p className="mt-2 text-sm leading-7 text-white/56">90, 180 and 360 days with increasing effective weight.</p>
                     </div>
-                    <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="inri-subpanel p-4">
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
                         <Wallet2 className="h-5 w-5" />
                       </div>
                       <div className="mt-4 text-lg font-black text-white">Native INRI</div>
                       <p className="mt-2 text-sm leading-7 text-white/56">Stake and manage positions directly from the connected wallet.</p>
                     </div>
-                    <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="inri-subpanel p-4">
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
                         <ShieldCheck className="h-5 w-5" />
                       </div>
@@ -76,7 +72,7 @@ export function InriStakingPage() {
                       <p className="mt-2 text-sm leading-7 text-white/56">100 INRI minimum, 10,000 per plan and a 1-day claim cooldown.</p>
                     </div>
                   </div>
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-white/10 bg-black/30 px-4 py-3">
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-white/10 bg-black/30 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                     <div className="min-w-0 flex-1">
                       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">Staking contract</div>
                       <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{stakingAddress}</div>
