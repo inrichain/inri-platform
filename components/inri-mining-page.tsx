@@ -22,6 +22,12 @@ const entryCards = [
     href: '/pool',
     icon: <Pickaxe className="h-5 w-5" />,
   },
+  {
+    title: 'Mining Championship',
+    text: 'Official competition page with prize ladder, top 5 ranking and wallet search.',
+    href: '/mining-championship',
+    icon: <ShieldCheck className="h-5 w-5" />,
+  },
 ] as const
 
 const facts = [
@@ -61,6 +67,7 @@ export function InriMiningPage() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <InriLinkButton href="/mining-windows">Open Mining Windows</InriLinkButton>
                   <InriLinkButton href="/mining-ubuntu" variant="secondary">Open Mining Ubuntu</InriLinkButton>
+                  <InriLinkButton href="/mining-championship" variant="secondary">Open Championship</InriLinkButton>
                   <InriLinkButton href="/pool" variant="secondary">Open Pool</InriLinkButton>
                 </div>
                 <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/72">
@@ -104,6 +111,20 @@ export function InriMiningPage() {
               <FeatureCard title="Ubuntu kept simple" text="The Ubuntu page stays lighter, closer to the old route, but adds a premium layout and keeps the installer script available." icon={<Server className="h-5 w-5" />} />
               <FeatureCard title="Wallet before mining" text="Users should always prepare the payout address first, then move to the mining setup that matches their machine." icon={<ShieldCheck className="h-5 w-5" />} />
               <FeatureCard title="Pool after setup" text="Once the miner is live, the pool page becomes the operational place to watch activity and search miner addresses." icon={<Pickaxe className="h-5 w-5" />} />
+            </div>
+
+            <div className="mt-6 inri-section-surface rounded-[2rem] p-6 sm:p-7">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
+                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Featured campaign</div>
+                  <h2 className="mt-2 text-2xl font-black text-white sm:text-[2.1rem]">Independent Mining Championship now has its own official page.</h2>
+                  <p className="mt-3 text-sm leading-7 text-white/64">Open the dedicated route for the prize ladder, top-5 leaderboard, wallet address search and official explorer verification.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <InriLinkButton href="/mining-championship">Open Championship</InriLinkButton>
+                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>Official explorer</InriLinkButton>
+                </div>
+              </div>
             </div>
           </div>
         </section>

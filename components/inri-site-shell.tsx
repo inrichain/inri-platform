@@ -22,6 +22,7 @@ export type InriNavItem = {
 export const inriNavItems: InriNavItem[] = [
   { label: 'Wallets', href: '/wallets' },
   { label: 'Mining', href: '/mining' },
+  { label: 'Championship', href: '/mining-championship' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
   { label: 'Whitepaper', href: '/whitepaper' },
@@ -36,6 +37,7 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
+  { label: 'Mining Championship', href: '/mining-championship' },
   { label: 'Mining Windows', href: '/mining-windows' },
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
@@ -46,6 +48,7 @@ const footerPrimaryLinks: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Mining', href: '/mining' },
+  { label: 'Mining Championship', href: '/mining-championship' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
   { label: 'Swap', href: '/swap' },

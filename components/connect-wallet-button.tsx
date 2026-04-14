@@ -12,6 +12,9 @@ type ProviderLike = {
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
   isMetaMask?: boolean
   isOkxWallet?: boolean
+  isRabby?: boolean
+  isCoinbaseWallet?: boolean
+  isTrust?: boolean
   providers?: ProviderLike[]
 }
 
@@ -44,8 +47,11 @@ function chainLabel(chainId?: string | null) {
 }
 
 function walletLabelFromProvider(provider: ProviderLike, index: number) {
-  if (provider.isMetaMask) return { key: 'metamask', label: 'MetaMask' }
+  if (provider.isRabby) return { key: 'rabby', label: 'Rabby Wallet' }
+  if (provider.isCoinbaseWallet) return { key: 'coinbase', label: 'Coinbase Wallet' }
+  if (provider.isTrust) return { key: 'trust', label: 'Trust Wallet' }
   if (provider.isOkxWallet) return { key: 'okx', label: 'OKX Wallet' }
+  if (provider.isMetaMask) return { key: 'metamask', label: 'MetaMask' }
   return { key: `browser-${index}`, label: 'Browser Wallet' }
 }
 
@@ -247,7 +253,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           {!address ? (
             <>
               <p className="mt-3 text-sm leading-7 text-white/62">
-                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet or another browser wallet that supports custom EVM networks.
+                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet, Trust Wallet or another browser wallet that supports custom EVM networks.
               </p>
 
               <div className="mt-5 grid gap-3">
