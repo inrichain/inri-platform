@@ -39,7 +39,7 @@ const routeCards: {
   {
     title: 'Championship',
     text: 'Live-style ranking, wallet search and prize ladder.',
-    href: '/mining-championship',
+    href: '/mining-championship/',
     icon: Pickaxe,
   },
   {
@@ -123,7 +123,7 @@ export function InriHomepage() {
                   <InriLinkButton href="/mining" variant="secondary">
                     Start Mining
                   </InriLinkButton>
-                  <InriLinkButton href="/mining-championship" variant="secondary">
+                  <InriLinkButton href="/mining-championship/" variant="secondary">
                     Championship
                   </InriLinkButton>
                   <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
@@ -155,7 +155,7 @@ export function InriHomepage() {
                   <QuickRoute title="Wallet" text="Official wallet access" href="https://wallet.inri.life" />
                   <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="https://explorer.inri.life" external />
                   <QuickRoute title="Mining" text="Windows, Ubuntu and pool" href="/mining" />
-                  <QuickRoute title="Championship" text="Ranking, rewards and address search" href="/mining-championship" />
+                  <QuickRoute title="Championship" text="Ranking, rewards and address search" href="/mining-championship/" />
                   <QuickRoute title="Pool" text="Join active miners" href="/pool" />
                 </div>
 

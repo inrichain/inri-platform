@@ -20,7 +20,7 @@ import {
 const START_BLOCK = 1_000_000
 const END_BLOCK = 1_500_000
 const BASE_REWARD_PER_BLOCK = 0.2
-const FEED_URL = '/mining-championship.json'
+const FEED_URL = `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/mining-championship.json`
 
 const RANK_PRIZES: Record<number, number> = {
   1: 15000,
