@@ -19,7 +19,7 @@ type WalletConnectProvider = {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
   on?: (event: string, handler: (...args: any[]) => void) => void
   removeListener?: (event: string, handler: (...args: any[]) => void) => void
-  session?: unknown
+  session?: any
 }
 
 export type WalletConnectState = {
@@ -35,7 +35,9 @@ function getProjectId() {
 }
 
 function getMetadata() {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://platform.inri.life'
+  const origin =
+    typeof window !== 'undefined' ? window.location.origin : 'https://platform.inri.life'
+
   return {
     name: 'INRI CHAIN',
     description: 'Official INRI CHAIN website',
@@ -47,6 +49,7 @@ function getMetadata() {
 export function buildInriWalletConnectUrl(uri: string) {
   const returnUrl =
     typeof window !== 'undefined' ? window.location.href : 'https://platform.inri.life/'
+
   return `${INRI_WALLET_URL}/wc?uri=${encodeURIComponent(uri)}&returnUrl=${encodeURIComponent(
     returnUrl,
   )}`
@@ -75,6 +78,87 @@ function clearWalletConnectConnected() {
   } catch {}
 }
 
+function decimalChainToHex(ref?: string) {
+  const value = Number.parseInt(ref || '', 10)
+  if (!Number.isFinite(value)) return ''
+  return `0x${value.toString(16)}`
+}
+
+function getSessionNamespaces(session: any) {
+  return session?.namespaces || session?.session?.namespaces || {}
+}
+
+function getSessionAccounts(session: any): string[] {
+  const namespaces = getSessionNamespaces(session)
+  const eip155 = namespaces?.eip155
+  return Array.isArray(eip155?.accounts) ? eip155.accounts : []
+}
+
+function parseCaip10Account(account: string) {
+  const parts = String(account || '').split(':')
+  if (parts.length < 3) return null
+  const [namespace, reference, address] = parts
+  if (namespace !== 'eip155') return null
+  return {
+    namespace,
+    reference,
+    address,
+  }
+}
+
+function inferStateFromSession(session: any): WalletConnectState {
+  const accounts = getSessionAccounts(session)
+  const first = accounts[0]
+  const parsed = first ? parseCaip10Account(first) : null
+
+  return {
+    connected: Boolean(parsed?.address),
+    address: parsed?.address || '',
+    chainId: parsed?.reference ? decimalChainToHex(parsed.reference) : '',
+  }
+}
+
+async function readWalletConnectState(provider: WalletConnectProvider): Promise<WalletConnectState> {
+  let address = ''
+  let chainId = ''
+
+  try {
+    const accounts = (await provider.request({ method: 'eth_accounts' })) as string[]
+    address = Array.isArray(accounts) ? accounts[0] || '' : ''
+  } catch {
+    // no-op
+  }
+
+  try {
+    const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
+    chainId = typeof nextChainId === 'string' ? nextChainId : ''
+  } catch {
+    // no-op
+  }
+
+  const inferred = inferStateFromSession(provider.session)
+
+  return {
+    connected: Boolean(address || inferred.address),
+    address: address || inferred.address,
+    chainId: chainId || inferred.chainId,
+  }
+}
+
+async function waitForWalletConnectState(
+  provider: WalletConnectProvider,
+  attempts = 8,
+  delayMs = 250,
+): Promise<WalletConnectState> {
+  for (let i = 0; i < attempts; i += 1) {
+    const state = await readWalletConnectState(provider)
+    if (state.connected) return state
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
+  }
+
+  return readWalletConnectState(provider)
+}
+
 export async function getWalletConnectProvider() {
   if (typeof window === 'undefined') {
     throw new Error('WalletConnect is only available in the browser.')
@@ -98,17 +182,7 @@ export async function getWalletConnectProvider() {
 export async function getWalletConnectState(): Promise<WalletConnectState> {
   try {
     const provider = await getWalletConnectProvider()
-    const [accounts, chainId] = (await Promise.all([
-      provider.request({ method: 'eth_accounts' }),
-      provider.request({ method: 'eth_chainId' }),
-    ])) as [string[], string]
-
-    const address = Array.isArray(accounts) ? accounts[0] || '' : ''
-    return {
-      connected: Boolean(address),
-      address,
-      chainId: typeof chainId === 'string' ? chainId : '',
-    }
+    return await readWalletConnectState(provider)
   } catch {
     return {
       connected: false,
@@ -130,7 +204,7 @@ export async function connectWalletConnect(onDisplayUri?: (uri: string, launchUr
 
   try {
     await provider.connect()
-    const state = await getWalletConnectState()
+    const state = await waitForWalletConnectState(provider)
     if (state.connected) markWalletConnectConnected()
     return state
   } finally {
@@ -183,7 +257,7 @@ export async function subscribeWalletConnect(
   const provider = await getWalletConnectProvider()
 
   const emit = async () => {
-    const state = await getWalletConnectState()
+    const state = await readWalletConnectState(provider)
     if (state.connected) {
       markWalletConnectConnected()
     } else {
@@ -205,49 +279,12 @@ export async function subscribeWalletConnect(
     })
   }
 
-  const handleAccountsChanged = (accounts: string[]) => {
-    const address = Array.isArray(accounts) ? accounts[0] || '' : ''
-    if (address) {
-      markWalletConnectConnected()
-    } else {
-      clearWalletConnectConnected()
-    }
-    void provider
-      .request({ method: 'eth_chainId' })
-      .then((chainId) => {
-        listener({
-          connected: Boolean(address),
-          address,
-          chainId: typeof chainId === 'string' ? chainId : '',
-        })
-      })
-      .catch(() => {
-        listener({
-          connected: Boolean(address),
-          address,
-          chainId: '',
-        })
-      })
+  const handleAccountsChanged = () => {
+    void emit()
   }
 
-  const handleChainChanged = (chainId: string) => {
-    void provider
-      .request({ method: 'eth_accounts' })
-      .then((accounts) => {
-        const address = Array.isArray(accounts) ? accounts[0] || '' : ''
-        listener({
-          connected: Boolean(address),
-          address,
-          chainId: typeof chainId === 'string' ? chainId : '',
-        })
-      })
-      .catch(() => {
-        listener({
-          connected: false,
-          address: '',
-          chainId: typeof chainId === 'string' ? chainId : '',
-        })
-      })
+  const handleChainChanged = () => {
+    void emit()
   }
 
   provider.on?.('connect', handleConnect)
