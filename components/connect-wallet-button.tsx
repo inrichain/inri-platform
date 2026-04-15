@@ -264,7 +264,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       return typeof window !== 'undefined' ? window.ethereum : undefined
     }
     return (
-      providerChoices.find((item) => item.key === activeProviderKey)?.provider || providerChoices[0]?.provider
+      providerChoices.find((item) => item.key === activeProviderKey)?.provider ||
+      providerChoices[0]?.provider
     )
   }, [activeProviderKey, providerChoices])
 
@@ -274,7 +275,9 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setError('')
 
       const target =
-        entry?.provider || injectedProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+        entry?.provider ||
+        injectedProvider ||
+        (typeof window !== 'undefined' ? window.ethereum : undefined)
 
       if (!target) {
         setError('No compatible EVM wallet was detected in this browser.')
@@ -346,7 +349,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       }
 
       const target =
-        injectedProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+        injectedProvider ||
+        (typeof window !== 'undefined' ? window.ethereum : undefined)
 
       if (!target) {
         setError('No compatible wallet was detected.')
