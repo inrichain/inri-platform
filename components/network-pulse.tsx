@@ -1069,9 +1069,9 @@ export function NetworkPulse() {
         ) : null}
 
         {tab === 'audience' ? (
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1.22fr_0.78fr]">
             <Panel>
-              <SectionHead eyebrow="Live audience map" title="Realtime visitors on the site" subtitle="Only renders real country activity when a realtime endpoint is connected." />
+              <SectionHead eyebrow="Live audience map" title="Realtime visitors on the site" subtitle="Official INRI audience surface with cleaner proportions, brighter blue contrast and stronger country focus." />
               <div className="mt-6">
                 <WorldMap
                   totalLivePulse={totalLivePulse}
@@ -1085,7 +1085,7 @@ export function NetworkPulse() {
 
             <div className="grid gap-6">
               <Panel>
-                <SectionHead eyebrow="Network status" title="Current chain view" />
+                <SectionHead eyebrow="Network status" title="Current chain view" subtitle="Live mainnet health and latest chain values." />
                 <div className="mt-6 grid gap-3">
                   <MetricRow label="Chain ID" value={pulse.chainId} />
                   <MetricRow label="Network health" value={pulse.networkHealth} />
@@ -1097,7 +1097,7 @@ export function NetworkPulse() {
               </Panel>
 
               <Panel>
-                <SectionHead eyebrow="Top audience countries" title="Visitor feed by country" subtitle="Premium INRI ranking with brighter blue highlights and stronger country contrast." />
+                <SectionHead eyebrow="Top audience countries" title="Visitor feed by country" subtitle="Cleaner INRI ranking with stronger country labels and larger progress bars." />
                 <div className="mt-6 grid gap-3">
                   {(safeArray<AudiencePoint>(audience?.countries).length > 0
                     ? safeArray<AudiencePoint>(audience?.countries)
@@ -1106,15 +1106,15 @@ export function NetworkPulse() {
                     .map((node, index, array) => {
                       const activeUsers = Number(node.activeUsers || 0)
                       const topUsers = Math.max(...array.map((item) => Number(item.activeUsers || 0)), 1)
-                      const ratio = activeUsers > 0 ? Math.max(activeUsers / topUsers, 0.08) : 0.08
+                      const ratio = activeUsers > 0 ? Math.max(activeUsers / topUsers, 0.1) : 0.1
 
                       return (
-                        <div key={node.country} className="rounded-[1.45rem] border border-[#7dd6ff]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                        <div key={node.country} className="rounded-[1.45rem] border border-[#67c8ff]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="text-[11px] uppercase tracking-[0.16em] text-[#7dd6ff]">Rank #{index + 1}</p>
                               <p className="mt-2 text-lg font-bold text-white">{node.country}</p>
-                              <p className="mt-1 text-sm text-white/56">{activeUsers ? `${formatNumber(activeUsers)} active visitors` : 'Waiting for realtime audience source'}</p>
+                              <p className="mt-1 text-sm text-white/58">{activeUsers ? `${formatNumber(activeUsers)} active visitors` : 'Waiting for realtime audience source'}</p>
                             </div>
                             <span className={cx(
                               'rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]',
@@ -1125,8 +1125,8 @@ export function NetworkPulse() {
                               {activeUsers ? 'Live' : 'Offline'}
                             </span>
                           </div>
-                          <div className="mt-4 h-2 rounded-full bg-white/[0.06]">
-                            <div className="h-2 rounded-full bg-[linear-gradient(90deg,#13a4ff_0%,#7dd6ff_100%)] shadow-[0_0_16px_rgba(19,164,255,0.55)]" style={{ width: `${ratio * 100}%` }} />
+                          <div className="mt-4 h-2.5 rounded-full bg-white/[0.06]">
+                            <div className="h-2.5 rounded-full bg-[linear-gradient(90deg,#13a4ff_0%,#7dd6ff_100%)] shadow-[0_0_16px_rgba(19,164,255,0.55)]" style={{ width: `${ratio * 100}%` }} />
                           </div>
                         </div>
                       )
