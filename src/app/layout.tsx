@@ -1,10 +1,14 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 
+import { GoogleAnalyticsRouteTracker } from '@/components/google-analytics-route-tracker'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarConfigProvider } from '@/contexts/sidebar-context'
 import { ubuntu } from '@/lib/fonts'
 import { withBasePath } from '@/lib/site'
+
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-M1ZJQTCXPT'
 
 export const metadata: Metadata = {
   title: {
@@ -28,8 +32,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${ubuntu.variable} dark antialiased`} suppressHydrationWarning>
       <body className={ubuntu.className}>
         <ThemeProvider defaultTheme="dark" storageKey="inri-theme">
-          <SidebarConfigProvider>{children}</SidebarConfigProvider>
+          <SidebarConfigProvider>
+            {children}
+            <GoogleAnalyticsRouteTracker measurementId={GA_MEASUREMENT_ID} />
+          </SidebarConfigProvider>
         </ThemeProvider>
+
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_path: window.location.pathname + window.location.search,
+            });
+          `}
+        </Script>
       </body>
     </html>
   )
