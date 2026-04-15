@@ -1,7 +1,26 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCircle2, ChevronDown, Copy, ExternalLink, LogOut, ShieldCheck, Wallet } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  LogOut,
+  QrCode,
+  ShieldCheck,
+  Wallet,
+} from 'lucide-react'
+import {
+  buildInriWalletConnectUrl,
+  connectWalletConnect,
+  disconnectWalletConnect,
+  getWalletConnectProvider,
+  getWalletConnectState,
+  shouldResumeWalletConnect,
+  subscribeWalletConnect,
+  switchWalletConnectToInri,
+} from '@/lib/walletconnect-inri'
 
 const INRI_CHAIN_ID_HEX = '0xec1'
 const INRI_WALLET_URL = 'https://wallet.inri.life'
@@ -65,16 +84,36 @@ function uniqueWallets(entries: WalletEntry[]) {
   return Array.from(map.values())
 }
 
+type ConnectorType = '' | 'injected' | 'walletconnect'
+
 export function ConnectWalletButton({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false)
-  const [address, setAddress] = useState<string>('')
-  const [chainId, setChainId] = useState<string>('')
+
+  const [injectedAddress, setInjectedAddress] = useState('')
+  const [injectedChainId, setInjectedChainId] = useState('')
+
+  const [wcAddress, setWcAddress] = useState('')
+  const [wcChainId, setWcChainId] = useState('')
+
+  const [connector, setConnector] = useState<ConnectorType>('')
+
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [wallets, setWallets] = useState<WalletEntry[]>([])
-  const [activeProviderKey, setActiveProviderKey] = useState<string>('')
+  const [activeProviderKey, setActiveProviderKey] = useState('')
+
+  const [pendingWcUri, setPendingWcUri] = useState('')
+  const [pendingWcUrl, setPendingWcUrl] = useState('')
+
   const rootRef = useRef<HTMLDivElement | null>(null)
+
+  const effectiveConnector: ConnectorType =
+    connector || (wcAddress ? 'walletconnect' : injectedAddress ? 'injected' : '')
+
+  const address = effectiveConnector === 'walletconnect' ? wcAddress : injectedAddress
+  const chainId = effectiveConnector === 'walletconnect' ? wcChainId : injectedChainId
+  const networkReady = normalizeChainId(chainId) === INRI_CHAIN_ID_HEX
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -98,7 +137,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       if (!rootRef.current.contains(event.target as Node)) setOpen(false)
     }
 
-    const syncCurrentState = async () => {
+    const syncInjectedState = async () => {
       const eth = window.ethereum
       if (!eth) return
       try {
@@ -106,8 +145,14 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           eth.request({ method: 'eth_accounts' }),
           eth.request({ method: 'eth_chainId' }),
         ])) as [string[], string]
-        setAddress(accounts?.[0] || '')
-        setChainId(nextChainId || '')
+
+        const nextAddress = accounts?.[0] || ''
+        setInjectedAddress(nextAddress)
+        setInjectedChainId(nextChainId || '')
+
+        if (!wcAddress && nextAddress && !connector) {
+          setConnector('injected')
+        }
       } catch {
         // no-op
       }
@@ -115,15 +160,47 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
     const handleAccountsChanged = (accounts: unknown) => {
       const next = Array.isArray(accounts) ? (accounts[0] as string | undefined) : undefined
-      setAddress(next || '')
+      setInjectedAddress(next || '')
+      if (!wcAddress && next) setConnector('injected')
     }
 
     const handleChainChanged = (nextChainId: unknown) => {
-      if (typeof nextChainId === 'string') setChainId(nextChainId)
+      if (typeof nextChainId === 'string') setInjectedChainId(nextChainId)
+    }
+
+    let unsubscribeWalletConnect: (() => void) | null = null
+
+    const bootWalletConnect = async () => {
+      try {
+        unsubscribeWalletConnect = await subscribeWalletConnect((state) => {
+          setWcAddress(state.address || '')
+          setWcChainId(state.chainId || '')
+
+          if (state.connected) {
+            setConnector('walletconnect')
+            setError('')
+          } else if (connector === 'walletconnect') {
+            setConnector(injectedAddress ? 'injected' : '')
+          }
+        })
+
+        if (shouldResumeWalletConnect()) {
+          const state = await getWalletConnectState()
+          if (state.connected) {
+            setWcAddress(state.address)
+            setWcChainId(state.chainId)
+            setConnector('walletconnect')
+          }
+        }
+      } catch {
+        // no-op
+      }
     }
 
     collectInjectedWallets()
-    syncCurrentState().catch(() => undefined)
+    void syncInjectedState()
+    void bootWalletConnect()
+
     document.addEventListener('mousedown', closeOnOutsideClick)
     window.ethereum?.on?.('accountsChanged', handleAccountsChanged)
     window.ethereum?.on?.('chainChanged', handleChainChanged)
@@ -132,10 +209,9 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       document.removeEventListener('mousedown', closeOnOutsideClick)
       window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged)
       window.ethereum?.removeListener?.('chainChanged', handleChainChanged)
+      unsubscribeWalletConnect?.()
     }
-  }, [])
-
-  const networkReady = normalizeChainId(chainId) === INRI_CHAIN_ID_HEX
+  }, [connector, injectedAddress, wcAddress])
 
   const providerChoices = useMemo(() => {
     if (wallets.length > 0) return wallets
@@ -145,27 +221,38 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     return [] as WalletEntry[]
   }, [wallets])
 
-  const currentProvider = useMemo(() => {
-    if (providerChoices.length === 0) return typeof window !== 'undefined' ? window.ethereum : undefined
-    return providerChoices.find((item) => item.key === activeProviderKey)?.provider || providerChoices[0]?.provider
+  const injectedProvider = useMemo(() => {
+    if (providerChoices.length === 0) {
+      return typeof window !== 'undefined' ? window.ethereum : undefined
+    }
+    return (
+      providerChoices.find((item) => item.key === activeProviderKey)?.provider || providerChoices[0]?.provider
+    )
   }, [activeProviderKey, providerChoices])
 
-  async function connect(entry?: WalletEntry) {
+  async function connectInjected(entry?: WalletEntry) {
     try {
       setBusy(true)
       setError('')
-      const target = entry?.provider || currentProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+
+      const target =
+        entry?.provider || injectedProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+
       if (!target) {
         setError('No compatible EVM wallet was detected in this browser.')
         return
       }
+
       const [accounts, nextChainId] = (await Promise.all([
         target.request({ method: 'eth_requestAccounts' }),
         target.request({ method: 'eth_chainId' }),
       ])) as [string[], string]
+
       const first = Array.isArray(accounts) ? accounts[0] : ''
-      setAddress(first || '')
-      setChainId(nextChainId || '')
+      setInjectedAddress(first || '')
+      setInjectedChainId(nextChainId || '')
+      setConnector('injected')
+
       if (entry?.key) setActiveProviderKey(entry.key)
       setOpen(false)
     } catch (e: any) {
@@ -175,17 +262,60 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     }
   }
 
+  async function connectInriWallet() {
+    try {
+      setBusy(true)
+      setError('')
+      setPendingWcUri('')
+      setPendingWcUrl('')
+
+      const state = await connectWalletConnect((uri, launchUrl) => {
+        setPendingWcUri(uri)
+        setPendingWcUrl(launchUrl)
+
+        const popup = window.open(launchUrl, '_blank')
+        if (!popup) {
+          window.location.href = launchUrl
+        }
+      })
+
+      if (state.connected) {
+        setWcAddress(state.address)
+        setWcChainId(state.chainId)
+        setConnector('walletconnect')
+        setOpen(false)
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Failed to start INRI Wallet connection.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function switchToInriChain() {
     try {
       setBusy(true)
       setError('')
-      const target = currentProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+
+      if (effectiveConnector === 'walletconnect') {
+        const nextChainId = await switchWalletConnectToInri()
+        setWcChainId(nextChainId || INRI_CHAIN_ID_HEX)
+        return
+      }
+
+      const target =
+        injectedProvider || (typeof window !== 'undefined' ? window.ethereum : undefined)
+
       if (!target) {
         setError('No compatible wallet was detected.')
         return
       }
+
       try {
-        await target.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
+        await target.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: INRI_CHAIN_ID_HEX }],
+        })
       } catch {
         await target.request({
           method: 'wallet_addEthereumChain',
@@ -200,8 +330,9 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           ],
         })
       }
+
       const nextChainId = (await target.request({ method: 'eth_chainId' })) as string
-      setChainId(nextChainId || INRI_CHAIN_ID_HEX)
+      setInjectedChainId(nextChainId || INRI_CHAIN_ID_HEX)
     } catch (e: any) {
       setError(e?.message || 'Unable to add INRI CHAIN to this wallet.')
     } finally {
@@ -209,11 +340,28 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     }
   }
 
-  function disconnect() {
-    setAddress('')
-    setChainId('')
+  async function disconnect() {
     setError('')
     setOpen(false)
+
+    if (effectiveConnector === 'walletconnect' || wcAddress) {
+      try {
+        await disconnectWalletConnect()
+      } catch {
+        // no-op
+      }
+      setWcAddress('')
+      setWcChainId('')
+      setPendingWcUri('')
+      setPendingWcUrl('')
+    }
+
+    if (effectiveConnector === 'injected' || injectedAddress) {
+      setInjectedAddress('')
+      setInjectedChainId('')
+    }
+
+    setConnector('')
   }
 
   async function copyAddress() {
@@ -221,6 +369,44 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     await navigator.clipboard.writeText(address)
     setCopied(true)
     setTimeout(() => setCopied(false), 1400)
+  }
+
+  async function copyPendingUri() {
+    if (!pendingWcUri) return
+    await navigator.clipboard.writeText(pendingWcUri)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1400)
+  }
+
+  async function reopenInriWallet() {
+    try {
+      const provider = await getWalletConnectProvider()
+      const uri = pendingWcUri || ''
+      const launchUrl = uri ? buildInriWalletConnectUrl(uri) : pendingWcUrl
+
+      if (launchUrl) {
+        const popup = window.open(launchUrl, '_blank')
+        if (!popup) {
+          window.location.href = launchUrl
+        }
+        return
+      }
+
+      if (provider) {
+        const state = await getWalletConnectState()
+        if (state.connected) {
+          setWcAddress(state.address)
+          setWcChainId(state.chainId)
+          setConnector('walletconnect')
+          setOpen(false)
+          return
+        }
+      }
+
+      window.open(INRI_WALLET_URL, '_blank')
+    } catch {
+      window.open(INRI_WALLET_URL, '_blank')
+    }
   }
 
   const baseButton = compact
@@ -249,7 +435,9 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           <div
             className={`${compact ? 'text-[10px]' : 'text-[11px]'} mt-1 w-full truncate font-bold uppercase tracking-[0.14em] text-white/44`}
           >
-            {chainLabel(chainId)}
+            {effectiveConnector === 'walletconnect'
+              ? `WalletConnect • ${chainLabel(chainId)}`
+              : chainLabel(chainId)}
           </div>
         </div>
 
@@ -259,9 +447,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       {open ? (
         <div
           className={`absolute z-50 mt-3 overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${
-            compact
-              ? 'left-0 right-0 w-auto'
-              : 'right-0 w-[min(94vw,390px)]'
+            compact ? 'left-0 right-0 w-auto' : 'right-0 w-[min(94vw,390px)]'
           }`}
         >
           <div className="flex items-start justify-between gap-4">
@@ -270,7 +456,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                 Wallet access
               </p>
               <h3 className="mt-2 text-lg font-black text-white sm:text-xl">
-                Connect any compatible EVM wallet.
+                Connect INRI Wallet or any compatible EVM wallet.
               </h3>
             </div>
             <div
@@ -287,16 +473,64 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           {!address ? (
             <>
               <p className="mt-3 text-sm leading-7 text-white/62">
-                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet, Trust Wallet or another
-                browser wallet that supports custom EVM networks.
+                INRI Wallet uses WalletConnect for site connection. Browser wallets like MetaMask,
+                Rabby, OKX, Coinbase Wallet and Trust Wallet still work directly in the browser.
               </p>
 
               <div className="mt-5 grid gap-3">
+                <button
+                  onClick={connectInriWallet}
+                  disabled={busy}
+                  type="button"
+                  className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 py-3 text-left text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-black">
+                      {busy ? 'Opening INRI Wallet...' : 'Connect with INRI Wallet'}
+                    </div>
+                    <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-black/70">
+                      WalletConnect official flow
+                    </div>
+                  </div>
+                  <QrCode className="h-4 w-4 shrink-0" />
+                </button>
+
+                {pendingWcUrl ? (
+                  <div className="rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] p-4">
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                      Waiting for approval
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-white/62">
+                      The wallet should open in a new tab. Approve the connection there, then return
+                      here.
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <button
+                        onClick={reopenInriWallet}
+                        type="button"
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:border-primary/55 hover:bg-primary/[0.10]"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open wallet again
+                      </button>
+
+                      <button
+                        onClick={copyPendingUri}
+                        type="button"
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:border-primary/55 hover:bg-primary/[0.10]"
+                      >
+                        <Copy className="h-4 w-4" />
+                        {copied ? 'Copied' : 'Copy WC URI'}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
                 {providerChoices.length > 0 ? (
                   providerChoices.map((item) => (
                     <button
                       key={item.key}
-                      onClick={() => connect(item)}
+                      onClick={() => connectInjected(item)}
                       disabled={busy}
                       type="button"
                       className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
@@ -306,7 +540,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                           {busy ? 'Connecting...' : item.label}
                         </div>
                         <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
-                          Injected EVM wallet
+                          Injected browser wallet
                         </div>
                       </div>
                       <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
@@ -324,7 +558,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                         Open official INRI Wallet
                       </div>
                       <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
-                        No browser wallet detected
+                        No injected browser wallet detected
                       </div>
                     </div>
                     <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
@@ -375,12 +609,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
                 <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
-                    Supported wallets
+                    Connection type
                   </p>
-                  <div className="mt-2 text-base font-black text-white">Any injected EVM wallet</div>
+                  <div className="mt-2 text-base font-black text-white">
+                    {effectiveConnector === 'walletconnect' ? 'INRI Wallet via WalletConnect' : 'Browser wallet'}
+                  </div>
                   <p className="mt-2 text-sm leading-6 text-white/56">
-                    MetaMask, OKX, Rabby, Coinbase Wallet and similar browser wallets can add INRI
-                    CHAIN.
+                    {effectiveConnector === 'walletconnect'
+                      ? 'This session was approved by the official INRI Wallet.'
+                      : 'This session uses an injected EVM wallet in the current browser.'}
                   </p>
                 </div>
               </div>
