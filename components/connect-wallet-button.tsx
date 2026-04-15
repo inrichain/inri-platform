@@ -30,9 +30,11 @@ declare global {
   }
 }
 
-function shortAddress(address?: string | null) {
+function shortAddress(address?: string | null, compact = false) {
   if (!address) return 'Connect wallet'
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
+  return compact
+    ? `${address.slice(0, 4)}...${address.slice(-4)}`
+    : `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 function normalizeChainId(chainId?: string | null) {
@@ -187,13 +189,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       } catch {
         await target.request({
           method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: INRI_CHAIN_ID_HEX,
-            chainName: 'INRI CHAIN',
-            nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-            rpcUrls: ['https://rpc.inri.life'],
-            blockExplorerUrls: ['https://explorer.inri.life'],
-          }],
+          params: [
+            {
+              chainId: INRI_CHAIN_ID_HEX,
+              chainName: 'INRI CHAIN',
+              nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
+              rpcUrls: ['https://rpc.inri.life'],
+              blockExplorerUrls: ['https://explorer.inri.life'],
+            },
+          ],
         })
       }
       const nextChainId = (await target.request({ method: 'eth_chainId' })) as string
@@ -220,32 +224,62 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-4 text-[14px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
-    : 'inline-flex h-12 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
+    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
+    : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
 
   return (
-    <div ref={rootRef} className="relative">
-      <button onClick={() => setOpen((v) => !v)} className={`${baseButton} notranslate`} translate="no">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/[0.14] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]">
+    <div ref={rootRef} className={compact ? 'relative w-full' : 'relative'}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`${baseButton} notranslate`}
+        translate="no"
+        type="button"
+      >
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/[0.14] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]">
           <Wallet className="h-4 w-4 text-primary" />
         </span>
-        <div className="min-w-0 text-left">
-          <div className="max-w-[10rem] truncate text-[14px] leading-none" translate="no">{shortAddress(address)}</div>
-          <div className="mt-1 max-w-[10rem] truncate text-[11px] font-bold uppercase tracking-[0.16em] text-white/44">
+
+        <div className="min-w-0 flex-1 text-left">
+          <div
+            className={`${compact ? 'text-[13px]' : 'text-[14px]'} w-full truncate leading-none`}
+            translate="no"
+          >
+            {shortAddress(address, compact)}
+          </div>
+          <div
+            className={`${compact ? 'text-[10px]' : 'text-[11px]'} mt-1 w-full truncate font-bold uppercase tracking-[0.14em] text-white/44`}
+          >
             {chainLabel(chainId)}
           </div>
         </div>
-        <ChevronDown className="h-4 w-4 text-white/60" />
+
+        <ChevronDown className="h-4 w-4 shrink-0 text-white/60" />
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-3 w-[min(94vw,390px)] overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl">
+        <div
+          className={`absolute z-50 mt-3 overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${
+            compact
+              ? 'left-0 right-0 w-auto'
+              : 'right-0 w-[min(94vw,390px)]'
+          }`}
+        >
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Wallet access</p>
-              <h3 className="mt-2 text-xl font-black text-white">Connect any compatible EVM wallet.</h3>
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">
+                Wallet access
+              </p>
+              <h3 className="mt-2 text-lg font-black text-white sm:text-xl">
+                Connect any compatible EVM wallet.
+              </h3>
             </div>
-            <div className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${networkReady ? 'border-primary/30 bg-primary/[0.12] text-primary' : 'border-white/12 bg-white/[0.04] text-white/56'}`}>
+            <div
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${
+                networkReady
+                  ? 'border-primary/30 bg-primary/[0.12] text-primary'
+                  : 'border-white/12 bg-white/[0.04] text-white/56'
+              }`}
+            >
               {networkReady ? 'INRI ready' : 'Custom network'}
             </div>
           </div>
@@ -253,35 +287,47 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           {!address ? (
             <>
               <p className="mt-3 text-sm leading-7 text-white/62">
-                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet, Trust Wallet or another browser wallet that supports custom EVM networks.
+                Use INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet, Trust Wallet or another
+                browser wallet that supports custom EVM networks.
               </p>
 
               <div className="mt-5 grid gap-3">
-                {providerChoices.length > 0 ? providerChoices.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => connect(item)}
-                    disabled={busy}
-                    className="inline-flex min-h-14 items-center justify-between rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
-                  >
-                    <div>
-                      <div className="text-sm font-black text-white">{busy ? 'Connecting...' : item.label}</div>
-                      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/42">Injected EVM wallet</div>
-                    </div>
-                    <ExternalLink className="h-4 w-4 text-primary" />
-                  </button>
-                )) : (
+                {providerChoices.length > 0 ? (
+                  providerChoices.map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => connect(item)}
+                      disabled={busy}
+                      type="button"
+                      className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-black text-white">
+                          {busy ? 'Connecting...' : item.label}
+                        </div>
+                        <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
+                          Injected EVM wallet
+                        </div>
+                      </div>
+                      <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+                    </button>
+                  ))
+                ) : (
                   <a
                     href={INRI_WALLET_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-14 items-center justify-between rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10]"
+                    className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10]"
                   >
-                    <div>
-                      <div className="text-sm font-black text-white">Open official INRI Wallet</div>
-                      <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/42">No browser wallet detected</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-black text-white">
+                        Open official INRI Wallet
+                      </div>
+                      <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
+                        No browser wallet detected
+                      </div>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-primary" />
+                    <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
                   </a>
                 )}
               </div>
@@ -291,11 +337,14 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
               <div className="mt-5 rounded-[1.2rem] border border-white/[0.14] bg-white/[0.04] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Connected address</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                      Connected address
+                    </p>
                     <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
                   </div>
                   <button
                     onClick={copyAddress}
+                    type="button"
                     className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[0.95rem] border border-white/12 bg-black/30 px-3 text-sm font-bold text-white transition hover:border-primary/50 hover:bg-primary/[0.10]"
                   >
                     <Copy className="h-4 w-4" />
@@ -306,19 +355,33 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Current network</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                    Current network
+                  </p>
                   <div className="mt-2 flex items-center gap-2 text-base font-black text-white">
-                    {networkReady ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <ShieldCheck className="h-4 w-4 text-white/56" />}
-                    {chainLabel(chainId)}
+                    {networkReady ? (
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 text-white/56" />
+                    )}
+                    <span className="truncate">{chainLabel(chainId)}</span>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-white/56">
-                    {networkReady ? 'Ready to use staking, pool and the rest of the official INRI routes.' : 'Switch or add INRI CHAIN so the site works in the correct network.'}
+                    {networkReady
+                      ? 'Ready to use staking, pool and the rest of the official INRI routes.'
+                      : 'Switch or add INRI CHAIN so the site works in the correct network.'}
                   </p>
                 </div>
+
                 <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Supported wallets</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                    Supported wallets
+                  </p>
                   <div className="mt-2 text-base font-black text-white">Any injected EVM wallet</div>
-                  <p className="mt-2 text-sm leading-6 text-white/56">MetaMask, OKX, Rabby, Coinbase Wallet and similar browser wallets can add INRI CHAIN.</p>
+                  <p className="mt-2 text-sm leading-6 text-white/56">
+                    MetaMask, OKX, Rabby, Coinbase Wallet and similar browser wallets can add INRI
+                    CHAIN.
+                  </p>
                 </div>
               </div>
 
@@ -326,12 +389,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                 <button
                   onClick={switchToInriChain}
                   disabled={busy}
+                  type="button"
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 text-sm font-black text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
                 >
                   {busy ? 'Updating...' : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
                 </button>
+
                 <button
                   onClick={disconnect}
+                  type="button"
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
                 >
                   <LogOut className="h-4 w-4" />
