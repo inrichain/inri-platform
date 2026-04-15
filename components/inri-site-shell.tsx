@@ -60,7 +60,6 @@ const footerPrimaryLinks: InriNavItem[] = [
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
-
 function uniqueNavItems(items: InriNavItem[]) {
   const seen = new Set<string>()
   return items.filter((item) => {
@@ -112,7 +111,9 @@ function UtilityMenu() {
         sideOffset={14}
         className="w-60 rounded-[1.2rem] border border-white/[0.12] bg-[linear-gradient(180deg,#040912,#000000)] p-2 text-white shadow-[0_22px_70px_rgba(0,0,0,0.5),0_0_0_1px_rgba(19,164,255,0.06)]"
       >
-        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">More pages</DropdownMenuLabel>
+        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
+          More pages
+        </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/[0.08]" />
         {utilityNavItems.map((item) => (
           <DropdownMenuItem
@@ -120,7 +121,12 @@ function UtilityMenu() {
             asChild
             className="rounded-[0.95rem] px-3 py-3 text-sm font-semibold text-white/82 transition hover:bg-primary/[0.09] hover:text-white"
           >
-            <Link href={item.href} translate="no" className="notranslate flex items-center justify-between gap-3" {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}>
+            <Link
+              href={item.href}
+              translate="no"
+              className="notranslate flex items-center justify-between gap-3"
+              {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+            >
               <span>{item.label}</span>
               <span className="text-primary/70">↗</span>
             </Link>
@@ -155,7 +161,9 @@ export function InriLinkButton({
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all ${noTranslate ? 'notranslate' : ''} ${variant === 'ghost' ? 'h-auto px-0 text-[14px] font-extrabold' : 'px-5'} ${styles}`}
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all ${
+        noTranslate ? 'notranslate' : ''
+      } ${variant === 'ghost' ? 'h-auto px-0 text-[14px] font-extrabold' : 'px-5'} ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {children}
@@ -172,37 +180,49 @@ function MobileMenu() {
           <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[88vw] border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md">
-        <SheetHeader className="border-b border-white/[0.10] px-5 py-5 text-left">
+
+      <SheetContent
+        side="right"
+        className="flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md"
+      >
+        <SheetHeader className="shrink-0 border-b border-white/[0.10] px-5 py-5 text-left">
           <SheetTitle className="text-left text-white">
             <Logo showText size={52} />
           </SheetTitle>
-          <SheetDescription className="pt-2 text-left text-white/55">Wallet access, network routes and main chain entry points.</SheetDescription>
+          <SheetDescription className="pt-2 text-left text-white/55">
+            Wallet access, network routes and main chain entry points.
+          </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col gap-6 px-5 py-5">
-          <div className="grid gap-3">
-            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-              INRI Wallet
-            </InriLinkButton>
-            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-              Explorer
-            </InriLinkButton>
-            <ConnectWalletButton compact />
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+          <div className="flex flex-col gap-6 pb-24">
+            <div className="grid gap-3">
+              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
+                INRI Wallet
+              </InriLinkButton>
 
-          <div className="grid gap-2">
-            {mobileNavItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                translate="no"
-                className="notranslate rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
-                {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-              >
-                {item.label}
-              </Link>
-            ))}
+              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
+                Explorer
+              </InriLinkButton>
+
+              <div className="w-full min-w-0">
+                <ConnectWalletButton compact />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              {mobileNavItems.map((item, index) => (
+                <Link
+                  key={`${item.label}-${item.href}-${index}`}
+                  href={item.href}
+                  translate="no"
+                  className="notranslate block w-full rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
+                  {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </SheetContent>
@@ -275,7 +295,15 @@ export function InriShell({ children }: { children: ReactNode }) {
   )
 }
 
-function FooterSocialIcon({ href, label, children }: { href: string; label: string; children: ReactNode }) {
+function FooterSocialIcon({
+  href,
+  label,
+  children,
+}: {
+  href: string
+  label: string
+  children: ReactNode
+}) {
   return (
     <Link
       href={href}
@@ -297,9 +325,12 @@ export function InriFooter() {
           <div className="space-y-6">
             <Logo showText size={56} />
             <div className="max-w-2xl space-y-3">
-              <p className="text-base font-semibold text-white/92">A black-and-blue gateway to the INRI mainnet.</p>
+              <p className="text-base font-semibold text-white/92">
+                A black-and-blue gateway to the INRI mainnet.
+              </p>
               <p className="max-w-[60ch] text-sm leading-7 text-white/58">
-                Explore the wallet, pool, mining routes, explorer and whitepaper from one refined network surface.
+                Explore the wallet, pool, mining routes, explorer and whitepaper from one refined
+                network surface.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -314,7 +345,9 @@ export function InriFooter() {
 
           <div className="grid gap-8 sm:grid-cols-2 xl:pl-10">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">Main routes</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">
+                Main routes
+              </p>
               <div className="mt-5 grid gap-3">
                 {footerPrimaryLinks.map((link) => (
                   <Link
@@ -331,11 +364,17 @@ export function InriFooter() {
             </div>
 
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">Community</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">
+                Community
+              </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 {socialLinks.map((link) => (
                   <FooterSocialIcon key={link.label} href={link.href} label={link.label}>
-                    {link.icon ? <link.icon className="h-4 w-4" /> : <span className="text-sm font-bold">{link.text}</span>}
+                    {link.icon ? (
+                      <link.icon className="h-4 w-4" />
+                    ) : (
+                      <span className="text-sm font-bold">{link.text}</span>
+                    )}
                   </FooterSocialIcon>
                 ))}
                 <FooterSocialIcon href="mailto:contact@inri.life" label="Email">
