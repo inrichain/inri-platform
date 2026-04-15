@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { withBasePath } from '@/lib/site'
+import { LiveAudienceLeafletMap } from '@/components/live-audience-leaflet-map'
 import {
   Activity,
   ArrowUpRight,
@@ -489,108 +490,14 @@ function WorldMap({
   updatedAt: string
   audience: AudiencePayload | null
 }) {
-  const points = safeArray<AudiencePoint>(audience?.countries)
-  const maxUsers = Math.max(...points.map((item) => Number(item.activeUsers || 0)), 1)
-
-  const projected = points.map((item) => ({
-    ...item,
-    x: ((Number(item.lng || 0) + 180) / 360) * 100,
-    y: ((90 - Number(item.lat || 0)) / 180) * 100,
-  }))
-
   return (
-    <div className="rounded-[1.75rem] border-[1.45px] border-white/[0.18] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(3,8,14,0.98),rgba(0,0,0,0.99))] p-4 sm:p-5">
-      <div className="relative overflow-hidden rounded-[1.55rem] border-[1.4px] border-white/[0.16] bg-black/38 p-4 sm:p-5">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.045)_1px,transparent_1px)] bg-[size:30px_30px] opacity-45" />
-        <div className="absolute -left-10 top-6 h-48 w-48 rounded-full bg-primary/12 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-5">
-          <div className="relative min-h-[360px] flex-1 overflow-hidden rounded-[1.45rem] border-[1.35px] border-white/[0.14] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.10),transparent_30%),rgba(0,0,0,0.35)]">
-            <svg viewBox="0 0 1100 620" className="absolute inset-0 h-full w-full opacity-90">
-              <defs>
-                <linearGradient id="audience-land" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(19,164,255,0.14)" />
-                  <stop offset="100%" stopColor="rgba(19,164,255,0.04)" />
-                </linearGradient>
-                <linearGradient id="audience-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgba(19,164,255,0)" />
-                  <stop offset="50%" stopColor="rgba(19,164,255,0.82)" />
-                  <stop offset="100%" stopColor="rgba(19,164,255,0)" />
-                </linearGradient>
-              </defs>
-              <path d="M102 170C160 112 236 104 314 130C364 146 418 172 440 216C402 236 356 252 324 266C270 290 212 302 150 300C132 270 122 242 116 212C112 194 108 178 102 170Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M298 312C340 322 364 350 372 388C380 432 364 480 334 532C292 518 276 478 280 438C284 392 288 344 298 312Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M492 166C534 144 578 148 616 168C638 182 652 202 652 220C624 230 604 244 584 268C560 266 544 258 528 248C506 234 494 210 492 166Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M540 262C600 248 650 270 678 312C706 352 706 414 686 472C628 494 564 488 524 458C486 430 470 386 472 340C474 308 498 274 540 262Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M642 174C718 138 812 140 888 170C940 192 986 232 1000 280C954 296 918 294 872 314C828 334 766 332 714 316C690 294 676 262 666 232C658 210 650 190 642 174Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M818 422C854 406 900 412 930 440C948 458 958 482 954 506C916 518 878 520 844 510C818 500 796 480 796 454C796 440 802 430 818 422Z" fill="url(#audience-land)" stroke="rgba(19,164,255,0.15)" strokeWidth="2" />
-              <path d="M190 205 Q440 100 678 198" fill="none" stroke="url(#audience-line)" strokeWidth="2" opacity="0.7" />
-              <path d="M288 410 Q500 228 676 298" fill="none" stroke="url(#audience-line)" strokeWidth="1.8" opacity="0.64" />
-              <path d="M548 236 Q734 188 846 250" fill="none" stroke="url(#audience-line)" strokeWidth="1.7" opacity="0.64" />
-            </svg>
-
-            {projected.length > 0 ? projected.map((point, index) => (
-              <div key={`${point.country}-${index}`} className="absolute" style={{ left: `${point.x}%`, top: `${point.y}%` }}>
-                <div className="absolute -inset-4 rounded-full border border-primary/28 animate-ping" style={{ animationDuration: '3.2s', animationDelay: `${index * 0.22}s` }} />
-                <div
-                  className="relative rounded-full bg-primary shadow-[0_0_28px_rgba(19,164,255,0.95)]"
-                  style={{ width: `${10 + (Number(point.activeUsers) / maxUsers) * 14}px`, height: `${10 + (Number(point.activeUsers) / maxUsers) * 14}px`, marginLeft: '-10px', marginTop: '-10px' }}
-                />
-              </div>
-            )) : (
-              <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-                <div className="max-w-md rounded-[1.35rem] border-[1.35px] border-white/[0.14] bg-black/58 px-5 py-5 backdrop-blur-sm">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.20em] text-primary">Live audience map</p>
-                  <p className="mt-3 text-sm leading-7 text-white/66">
-                    No realtime audience endpoint is connected yet. Add a secure analytics endpoint and this panel will show live countries on the site.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="grid w-full gap-3 lg:max-w-[290px]">
-            <div className="rounded-[1.35rem] border-[1.35px] border-white/[0.14] bg-black/46 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">Live pulse</p>
-              <p className="mt-2 text-3xl font-bold tabular-nums text-white">{formatNumber(totalLivePulse)}</p>
-              <p className="mt-2 text-sm text-white/58">Peers + connected miners</p>
-            </div>
-            <div className="rounded-[1.35rem] border-[1.35px] border-white/[0.14] bg-black/46 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">Network peers</p>
-              <p className="mt-2 text-3xl font-bold tabular-nums text-white">{formatNumber(totalPeers)}</p>
-              <p className="mt-2 text-sm text-white/58">rpc-chain + rpc + bootnodes</p>
-            </div>
-            <div className="rounded-[1.35rem] border-[1.35px] border-white/[0.14] bg-black/46 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">Pool miners</p>
-              <p className="mt-2 text-3xl font-bold tabular-nums text-white">{formatNumber(poolMiners)}</p>
-              <p className="mt-2 text-sm text-white/58">PPLNS + SOLO connected</p>
-            </div>
-            <div className="rounded-[1.35rem] border-[1.35px] border-white/[0.14] bg-black/46 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">Audience refresh</p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-white">{audience?.updatedAt || updatedAt}</p>
-              <p className="mt-2 text-sm text-white/58">Realtime timestamp</p>
-            </div>
-          </div>
-        </div>
-
-        {projected.length > 0 ? (
-          <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {projected
-              .slice()
-              .sort((a, b) => Number(b.activeUsers) - Number(a.activeUsers))
-              .slice(0, 4)
-              .map((item) => (
-                <div key={item.country} className="rounded-[1.25rem] border-[1.25px] border-white/[0.14] bg-black/45 px-4 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">{item.country}</p>
-                  <p className="mt-2 text-2xl font-bold tabular-nums text-white">{formatNumber(Number(item.activeUsers || 0))}</p>
-                  <p className="mt-2 text-sm text-white/58">Active visitors</p>
-                </div>
-              ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
+    <LiveAudienceLeafletMap
+      audience={audience}
+      totalLivePulse={totalLivePulse}
+      totalPeers={totalPeers}
+      poolMiners={poolMiners}
+      updatedAt={updatedAt}
+    />
   )
 }
 
