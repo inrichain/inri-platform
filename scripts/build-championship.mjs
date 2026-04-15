@@ -249,7 +249,10 @@ async function main() {
           source = 'pool-solo'
         } else if (blockMiner) {
           if (env.poolPayoutAddress && blockMiner === env.poolPayoutAddress) {
-            if (env.debug) log(`Block ${blockNumber} mined by pool payout address without solo attribution; keeping chain address`) 
+            if (env.debug) {
+              log(`Block ${blockNumber} mined by pool payout address without solo attribution; skipping this block so the pool wallet never enters the ranking`)
+            }
+            continue
           }
           finalMiner = blockMiner
         }
