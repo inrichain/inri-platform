@@ -12,6 +12,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import {
+  buildInriWalletConnectUrl,
   connectWalletConnect,
   disconnectWalletConnect,
   getWalletConnectState,
@@ -102,6 +103,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   const [activeProviderKey, setActiveProviderKey] = useState('')
 
   const [pendingWcUri, setPendingWcUri] = useState('')
+  const [pendingWcUrl, setPendingWcUrl] = useState('')
 
   const rootRef = useRef<HTMLDivElement | null>(null)
 
@@ -264,13 +266,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setBusy(true)
       setError('')
       setPendingWcUri('')
+      setPendingWcUrl('')
 
-      const state = await connectWalletConnect((uri) => {
+      const state = await connectWalletConnect((uri, launchUrl) => {
         setPendingWcUri(uri)
+        setPendingWcUrl(launchUrl)
 
-        const popup = window.open(INRI_WALLET_URL, '_blank')
+        const popup = window.open(launchUrl, '_blank')
         if (!popup) {
-          window.location.href = INRI_WALLET_URL
+          window.location.href = launchUrl
         }
       })
 
@@ -348,6 +352,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setWcAddress('')
       setWcChainId('')
       setPendingWcUri('')
+      setPendingWcUrl('')
     }
 
     if (effectiveConnector === 'injected' || injectedAddress) {
@@ -373,6 +378,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   function openInriWallet() {
+    if (pendingWcUri) {
+      const launchUrl = buildInriWalletConnectUrl(pendingWcUri)
+      const popup = window.open(launchUrl, '_blank')
+      if (!popup) {
+        window.location.href = launchUrl
+      }
+      return
+    }
+
     const popup = window.open(INRI_WALLET_URL, '_blank')
     if (!popup) {
       window.location.href = INRI_WALLET_URL
@@ -465,13 +479,13 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                   <QrCode className="h-4 w-4 shrink-0" />
                 </button>
 
-                {pendingWcUri ? (
+                {pendingWcUrl ? (
                   <div className="rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
                       Waiting for approval
                     </p>
                     <p className="mt-2 text-sm leading-6 text-white/62">
-                      Open the INRI Wallet, go to WalletConnect, paste the URI and approve the connection.
+                      The INRI Wallet should open automatically. Approve the connection there, then return here.
                     </p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <button
