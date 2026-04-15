@@ -12,10 +12,8 @@ import {
   Wallet,
 } from 'lucide-react'
 import {
-  buildInriWalletConnectUrl,
   connectWalletConnect,
   disconnectWalletConnect,
-  getWalletConnectProvider,
   getWalletConnectState,
   shouldResumeWalletConnect,
   subscribeWalletConnect,
@@ -104,7 +102,6 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   const [activeProviderKey, setActiveProviderKey] = useState('')
 
   const [pendingWcUri, setPendingWcUri] = useState('')
-  const [pendingWcUrl, setPendingWcUrl] = useState('')
 
   const rootRef = useRef<HTMLDivElement | null>(null)
 
@@ -267,15 +264,13 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setBusy(true)
       setError('')
       setPendingWcUri('')
-      setPendingWcUrl('')
 
-      const state = await connectWalletConnect((uri, launchUrl) => {
+      const state = await connectWalletConnect((uri) => {
         setPendingWcUri(uri)
-        setPendingWcUrl(launchUrl)
 
-        const popup = window.open(launchUrl, '_blank')
+        const popup = window.open(INRI_WALLET_URL, '_blank')
         if (!popup) {
-          window.location.href = launchUrl
+          window.location.href = INRI_WALLET_URL
         }
       })
 
@@ -353,7 +348,6 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setWcAddress('')
       setWcChainId('')
       setPendingWcUri('')
-      setPendingWcUrl('')
     }
 
     if (effectiveConnector === 'injected' || injectedAddress) {
@@ -378,40 +372,20 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     setTimeout(() => setCopied(false), 1400)
   }
 
-  async function reopenInriWallet() {
-    try {
-      const provider = await getWalletConnectProvider()
-      const uri = pendingWcUri || ''
-      const launchUrl = uri ? buildInriWalletConnectUrl(uri) : pendingWcUrl
-
-      if (launchUrl) {
-        const popup = window.open(launchUrl, '_blank')
-        if (!popup) {
-          window.location.href = launchUrl
-        }
-        return
-      }
-
-      if (provider) {
-        const state = await getWalletConnectState()
-        if (state.connected) {
-          setWcAddress(state.address)
-          setWcChainId(state.chainId)
-          setConnector('walletconnect')
-          setOpen(false)
-          return
-        }
-      }
-
-      window.open(INRI_WALLET_URL, '_blank')
-    } catch {
-      window.open(INRI_WALLET_URL, '_blank')
+  function openInriWallet() {
+    const popup = window.open(INRI_WALLET_URL, '_blank')
+    if (!popup) {
+      window.location.href = INRI_WALLET_URL
     }
   }
 
   const baseButton = compact
     ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
     : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
+
+  const panelClass = compact
+    ? 'left-0 right-0 w-auto min-[520px]:left-auto min-[520px]:right-0 min-[520px]:w-[390px]'
+    : 'right-0 w-[min(94vw,390px)]'
 
   return (
     <div ref={rootRef} className={compact ? 'relative w-full' : 'relative'}>
@@ -446,18 +420,19 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
       {open ? (
         <div
-          className={`absolute z-50 mt-3 overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${
-            compact ? 'left-0 right-0 w-auto' : 'right-0 w-[min(94vw,390px)]'
-          }`}
+          className={`absolute z-50 mt-3 overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${panelClass}`}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">
                 Wallet access
               </p>
-              <h3 className="mt-2 text-lg font-black text-white sm:text-xl">
-                Connect INRI Wallet or any compatible EVM wallet.
+              <h3 className="mt-2 text-lg font-black text-white">
+                Connect INRI Wallet
               </h3>
+              <p className="mt-2 text-sm leading-6 text-white/62">
+                INRI Wallet uses WalletConnect. Browser wallets still work directly in the browser.
+              </p>
             </div>
             <div
               className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${
@@ -472,11 +447,6 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
           {!address ? (
             <>
-              <p className="mt-3 text-sm leading-7 text-white/62">
-                INRI Wallet uses WalletConnect for site connection. Browser wallets like MetaMask,
-                Rabby, OKX, Coinbase Wallet and Trust Wallet still work directly in the browser.
-              </p>
-
               <div className="mt-5 grid gap-3">
                 <button
                   onClick={connectInriWallet}
@@ -489,29 +459,28 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                       {busy ? 'Opening INRI Wallet...' : 'Connect with INRI Wallet'}
                     </div>
                     <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-black/70">
-                      WalletConnect official flow
+                      WalletConnect
                     </div>
                   </div>
                   <QrCode className="h-4 w-4 shrink-0" />
                 </button>
 
-                {pendingWcUrl ? (
+                {pendingWcUri ? (
                   <div className="rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
                       Waiting for approval
                     </p>
                     <p className="mt-2 text-sm leading-6 text-white/62">
-                      The wallet should open in a new tab. Approve the connection there, then return
-                      here.
+                      Open the INRI Wallet, go to WalletConnect, paste the URI and approve the connection.
                     </p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <button
-                        onClick={reopenInriWallet}
+                        onClick={openInriWallet}
                         type="button"
                         className="inline-flex h-11 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:border-primary/55 hover:bg-primary/[0.10]"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        Open wallet again
+                        Open wallet
                       </button>
 
                       <button
