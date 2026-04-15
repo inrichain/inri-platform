@@ -23,6 +23,7 @@ import {
 
 const INRI_CHAIN_ID_HEX = '0xec1'
 const INRI_WALLET_URL = 'https://wallet.inri.life'
+const INJECTED_DISMISSED_KEY = 'inri_injected_disconnected_v1'
 
 type ProviderLike = {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
@@ -85,11 +86,32 @@ function uniqueWallets(entries: WalletEntry[]) {
 
 type ConnectorType = '' | 'injected' | 'walletconnect'
 
+function getInjectedDismissed() {
+  if (typeof window === 'undefined') return false
+  try {
+    return localStorage.getItem(INJECTED_DISMISSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function setInjectedDismissed(value: boolean) {
+  if (typeof window === 'undefined') return
+  try {
+    if (value) {
+      localStorage.setItem(INJECTED_DISMISSED_KEY, '1')
+    } else {
+      localStorage.removeItem(INJECTED_DISMISSED_KEY)
+    }
+  } catch {}
+}
+
 export function ConnectWalletButton({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false)
 
   const [injectedAddress, setInjectedAddress] = useState('')
   const [injectedChainId, setInjectedChainId] = useState('')
+  const [injectedDismissed, setInjectedDismissedState] = useState(false)
 
   const [wcAddress, setWcAddress] = useState('')
   const [wcChainId, setWcChainId] = useState('')
@@ -117,6 +139,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    setInjectedDismissedState(getInjectedDismissed())
+
     const collectInjectedWallets = () => {
       const eth = window.ethereum
       if (!eth) {
@@ -139,6 +163,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     const syncInjectedState = async () => {
       const eth = window.ethereum
       if (!eth) return
+
       try {
         const [accounts, nextChainId] = (await Promise.all([
           eth.request({ method: 'eth_accounts' }),
@@ -146,6 +171,13 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
         ])) as [string[], string]
 
         const nextAddress = accounts?.[0] || ''
+
+        if (getInjectedDismissed()) {
+          setInjectedAddress('')
+          setInjectedChainId('')
+          return
+        }
+
         setInjectedAddress(nextAddress)
         setInjectedChainId(nextChainId || '')
 
@@ -158,12 +190,19 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     }
 
     const handleAccountsChanged = (accounts: unknown) => {
+      if (getInjectedDismissed()) {
+        setInjectedAddress('')
+        setInjectedChainId('')
+        return
+      }
+
       const next = Array.isArray(accounts) ? (accounts[0] as string | undefined) : undefined
       setInjectedAddress(next || '')
       if (!wcAddress && next) setConnector('injected')
     }
 
     const handleChainChanged = (nextChainId: unknown) => {
+      if (getInjectedDismissed()) return
       if (typeof nextChainId === 'string') setInjectedChainId(nextChainId)
     }
 
@@ -248,6 +287,10 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       ])) as [string[], string]
 
       const first = Array.isArray(accounts) ? accounts[0] : ''
+
+      setInjectedDismissed(false)
+      setInjectedDismissedState(false)
+
       setInjectedAddress(first || '')
       setInjectedChainId(nextChainId || '')
       setConnector('injected')
@@ -355,7 +398,9 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setPendingWcUrl('')
     }
 
-    if (effectiveConnector === 'injected' || injectedAddress) {
+    if (effectiveConnector === 'injected' || injectedAddress || !injectedDismissed) {
+      setInjectedDismissed(true)
+      setInjectedDismissedState(true)
       setInjectedAddress('')
       setInjectedChainId('')
     }
@@ -595,12 +640,14 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                     Connection type
                   </p>
                   <div className="mt-2 text-base font-black text-white">
-                    {effectiveConnector === 'walletconnect' ? 'INRI Wallet via WalletConnect' : 'Browser wallet'}
+                    {effectiveConnector === 'walletconnect'
+                      ? 'INRI Wallet via WalletConnect'
+                      : 'Browser wallet'}
                   </div>
                   <p className="mt-2 text-sm leading-6 text-white/56">
                     {effectiveConnector === 'walletconnect'
                       ? 'This session was approved by the official INRI Wallet.'
-                      : 'This session uses an injected EVM wallet in the current browser.'}
+                      : 'This session is shown as disconnected locally. To fully revoke access, disconnect the dApp inside your browser wallet.'}
                   </p>
                 </div>
               </div>
@@ -621,7 +668,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
                 >
                   <LogOut className="h-4 w-4" />
-                  Clear session
+                  {effectiveConnector === 'walletconnect' ? 'Disconnect wallet' : 'Forget this site'}
                 </button>
               </div>
             </>
