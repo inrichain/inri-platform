@@ -14,7 +14,6 @@ const STORAGE_KEY = 'inri_wc_connected_v1'
 
 type WalletConnectProvider = {
   connect: () => Promise<unknown>
-  enable?: () => Promise<unknown>
   disconnect: () => Promise<void>
   request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
   on?: (event: string, handler: (...args: any[]) => void) => void
@@ -84,37 +83,26 @@ function decimalChainToHex(ref?: string) {
   return `0x${value.toString(16)}`
 }
 
-function getSessionNamespaces(session: any) {
-  return session?.namespaces || session?.session?.namespaces || {}
-}
-
-function getSessionAccounts(session: any): string[] {
-  const namespaces = getSessionNamespaces(session)
-  const eip155 = namespaces?.eip155
-  return Array.isArray(eip155?.accounts) ? eip155.accounts : []
-}
-
-function parseCaip10Account(account: string) {
-  const parts = String(account || '').split(':')
-  if (parts.length < 3) return null
-  const [namespace, reference, address] = parts
-  if (namespace !== 'eip155') return null
-  return {
-    namespace,
-    reference,
-    address,
-  }
-}
-
 function inferStateFromSession(session: any): WalletConnectState {
-  const accounts = getSessionAccounts(session)
+  const namespaces = session?.namespaces || session?.session?.namespaces || {}
+  const accounts = Array.isArray(namespaces?.eip155?.accounts) ? namespaces.eip155.accounts : []
   const first = accounts[0]
-  const parsed = first ? parseCaip10Account(first) : null
+
+  if (!first || typeof first !== 'string') {
+    return { connected: false, address: '', chainId: '' }
+  }
+
+  const parts = first.split(':')
+  if (parts.length < 3) {
+    return { connected: false, address: '', chainId: '' }
+  }
+
+  const [, reference, address] = parts
 
   return {
-    connected: Boolean(parsed?.address),
-    address: parsed?.address || '',
-    chainId: parsed?.reference ? decimalChainToHex(parsed.reference) : '',
+    connected: Boolean(address),
+    address: address || '',
+    chainId: decimalChainToHex(reference),
   }
 }
 
@@ -148,14 +136,13 @@ async function readWalletConnectState(provider: WalletConnectProvider): Promise<
 async function waitForWalletConnectState(
   provider: WalletConnectProvider,
   attempts = 8,
-  delayMs = 250,
+  delayMs = 300,
 ): Promise<WalletConnectState> {
   for (let i = 0; i < attempts; i += 1) {
     const state = await readWalletConnectState(provider)
     if (state.connected) return state
     await new Promise((resolve) => setTimeout(resolve, delayMs))
   }
-
   return readWalletConnectState(provider)
 }
 
@@ -192,7 +179,9 @@ export async function getWalletConnectState(): Promise<WalletConnectState> {
   }
 }
 
-export async function connectWalletConnect(onDisplayUri?: (uri: string, launchUrl: string) => void) {
+export async function connectWalletConnect(
+  onDisplayUri?: (uri: string, launchUrl: string) => void,
+) {
   const provider = await getWalletConnectProvider()
 
   const handleDisplayUri = (uri: string) => {
