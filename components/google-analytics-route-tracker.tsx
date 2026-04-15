@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 declare global {
   interface Window {
@@ -15,18 +15,16 @@ type Props = {
 
 export function GoogleAnalyticsRouteTracker({ measurementId }: Props) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     if (!window.gtag) return
 
-    const search = searchParams?.toString()
-    const url = search ? `${pathname}?${search}` : pathname
+    const url = `${window.location.pathname}${window.location.search}`
 
     window.gtag('config', measurementId, {
       page_path: url,
     })
-  }, [pathname, searchParams, measurementId])
+  }, [pathname, measurementId])
 
   return null
 }
