@@ -1,22 +1,47 @@
 {
-  "mode": "preview",
-  "updatedAt": "2026-04-14T22:20:00Z",
-  "currentBlock": 1104286,
+  "mode": "live",
+  "updatedAt": "2026-04-15T01:00:51.235Z",
+  "currentBlock": 1020453,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
+  "lastScannedBlock": 1004999,
+  "backfillComplete": false,
   "participants": [
-    { "address": "0x4A1b6f7D0f1E7f9A4B6E3a0D4eB31C7B0A99E101", "blocks": 1286, "nickname": "Solo Alpha", "lastBlock": 1104265 },
-    { "address": "0x7D9912d77c03c01F18F7e3e0992F0e79416A8822", "blocks": 1119, "nickname": "Night Hash", "lastBlock": 1104233 },
-    { "address": "0x0C84d96f2D49398Df0eCA44C8D58A74D5c155633", "blocks": 978, "nickname": "CPU Storm", "lastBlock": 1104219 },
-    { "address": "0xA61a4c39d4b0dA7685b9d7438E9d0647c5b67A40", "blocks": 841, "nickname": "INRI Forge", "lastBlock": 1104201 },
-    { "address": "0x9d6cD5A45E2b612A0bB65E23B5b5e4C98D8A1177", "blocks": 790, "nickname": "Hash River", "lastBlock": 1104186 },
-    { "address": "0x3f7C4f9E4B57cAAc4fEd7D1e72eaB7BecD2f5411", "blocks": 689, "nickname": "Solo South", "lastBlock": 1104172 },
-    { "address": "0x219aA1675b22b9c66B76850F2b95d4a85Bd930c7", "blocks": 611, "nickname": "Blue Rack", "lastBlock": 1104161 },
-    { "address": "0xB82f67aA7706f2B57e617b0E6232F83f3d1bAa18", "blocks": 577, "nickname": "Node Pilot", "lastBlock": 1104150 },
-    { "address": "0x53c42B197c34F7093571A403CAf33B4FbB0A7724", "blocks": 551, "nickname": "Core Miner", "lastBlock": 1104139 },
-    { "address": "0xEA9C6B9697D8E3e1ce0A9A1e5cE4864f38B9857B", "blocks": 498, "nickname": "Final Push", "lastBlock": 1104111 },
-    { "address": "0x71B945C7cDC9A74af8aE5c4B6499d3fD3B1fBB84", "blocks": 442, "nickname": "GPU Ladder", "lastBlock": 1104091 },
-    { "address": "0x5caD4eF4B0A1840Bd5D35F18d4e372AAc100A56b", "blocks": 403, "nickname": "Quiet Solo", "lastBlock": 1104068 }
+    {
+      "address": "0x85eebfe1b1db893dc90079c785c7c70e78fb3028",
+      "blocks": 2124,
+      "lastBlock": 1004999,
+      "chainSoloBlocks": 2124,
+      "poolSoloBlocks": 0
+    },
+    {
+      "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
+      "blocks": 2093,
+      "lastBlock": 1004995,
+      "chainSoloBlocks": 2093,
+      "poolSoloBlocks": 0
+    },
+    {
+      "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
+      "blocks": 162,
+      "lastBlock": 1000596,
+      "chainSoloBlocks": 162,
+      "poolSoloBlocks": 0
+    },
+    {
+      "address": "0x1c62c247d1e89634a89b6ab2d126631b4bfb2da5",
+      "blocks": 1,
+      "lastBlock": 1001784,
+      "chainSoloBlocks": 1,
+      "poolSoloBlocks": 0
+    },
+    {
+      "address": "0x9c47178afc21580a92fafd3d942917fb1d2d0e65",
+      "blocks": 1,
+      "lastBlock": 1001713,
+      "chainSoloBlocks": 1,
+      "poolSoloBlocks": 0
+    }
   ]
 }
