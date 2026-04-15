@@ -70,13 +70,30 @@ jobs:
         run: node scripts/build-championship.mjs
 
       - name: Commit updated championship feed/cache
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/mining-championship.json .github/data/mining-championship-cache.json
           git diff --cached --quiet && exit 0
-          git commit -m "chore: update championship feed"
-          git push
+          git commit -m "chore: update championship feed" || exit 0
+
+          pushed=0
+          for i in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort || true; sleep 5; continue; }
+
+            if git push origin HEAD:main; then
+              pushed=1
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$pushed" -ne 1 ]; then
+            echo "Warning: could not push championship cache/feed back to repo after retries. Continuing deploy."
+          fi
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
