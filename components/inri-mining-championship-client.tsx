@@ -168,12 +168,12 @@ export function InriMiningChampionshipClient() {
         const json = (await response.json()) as ChampionshipFeed
         if (active && json && Array.isArray(json.participants)) {
           setFeed({ ...FALLBACK_FEED, ...json })
-          setLoadError(json.mode === 'preview' ? 'Preview feed loaded. Replace public/mining-championship.json with official data to go live.' : '')
+          setLoadError(json.mode === 'preview' ? 'Championship feed loaded with setup data. Publish the official ranking JSON to switch this page to full live mode.' : '')
         }
       } catch {
         if (active) {
           setFeed(FALLBACK_FEED)
-          setLoadError('Using preview feed until the official championship JSON is updated.')
+          setLoadError('Championship feed is still using setup data until the official ranking JSON is updated.')
         }
       } finally {
         if (active) setLoading(false)
@@ -278,7 +278,7 @@ export function InriMiningChampionshipClient() {
             <div
               className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] ${feed.mode === 'live' ? 'border-emerald-400/30 bg-emerald-400/12 text-emerald-200' : 'border-amber-300/30 bg-amber-300/12 text-amber-200'}`}
             >
-              {feed.mode === 'live' ? 'Live feed' : 'Preview feed'}
+              {feed.mode === 'live' ? 'Live feed' : 'Setup feed'}
             </div>
           </div>
           <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/[0.06]">

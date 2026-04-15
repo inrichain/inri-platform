@@ -60,6 +60,19 @@ const footerPrimaryLinks: InriNavItem[] = [
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
+
+function uniqueNavItems(items: InriNavItem[]) {
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    const key = `${item.label}::${item.href}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems])
+
 const socialLinks = [
   { label: 'X', href: 'https://x.com/inrichain', text: 'X' },
   { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: Instagram },
@@ -179,7 +192,7 @@ function MobileMenu() {
           </div>
 
           <div className="grid gap-2">
-            {[...inriNavItems, ...utilityNavItems].map((item) => (
+            {mobileNavItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
@@ -204,7 +217,7 @@ export function InriHeader() {
         <div className="mx-auto max-w-[1600px] px-4 py-3 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[14px] font-extrabold uppercase tracking-[0.26em] text-white/92 sm:text-[15px]"
+            className="notranslate text-center text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/92 sm:text-[13px] lg:text-[15px] lg:tracking-[0.24em]"
           >
             Mainnet • Proof-of-Work • Chain 3777
           </p>
@@ -212,9 +225,9 @@ export function InriHeader() {
       </div>
 
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid h-[86px] grid-cols-[auto_1fr_auto] items-center gap-4 md:gap-6 lg:h-[88px]">
+        <div className="grid min-h-[74px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:min-h-[82px] md:gap-6 lg:min-h-[88px] lg:py-0">
           <div className="min-w-0 justify-self-start">
-            <Logo showText size={48} />
+            <Logo showText size={42} />
           </div>
 
           <div className="hidden min-w-0 items-center justify-center lg:flex">
@@ -237,9 +250,11 @@ export function InriHeader() {
           </div>
 
           <div className="flex items-center justify-self-end gap-2 md:hidden">
-            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-              Wallet
-            </InriLinkButton>
+            <div className="hidden min-[430px]:block">
+              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate variant="secondary">
+                Wallet
+              </InriLinkButton>
+            </div>
             <MobileMenu />
           </div>
         </div>

@@ -131,7 +131,7 @@ export function InriLegalPage({
                   ))}
                 </div>
                 <div className="mt-6 rounded-[1.4rem] border border-primary/20 bg-primary/[0.07] p-4 text-sm leading-7 text-white/78">
-                  This route now uses the actual legal text provided for the site instead of placeholder copy, while keeping the same black-and-blue visual language used across the INRI platform.
+                  This route uses the official legal text for the site while keeping the same black-and-blue visual language used across the INRI platform.
                 </div>
               </div>
             </div>

@@ -420,7 +420,7 @@ function TabButton({ active, label, onClick }: { active: boolean; label: string;
     <button
       onClick={onClick}
       className={cx(
-        'rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.16em] transition',
+        'min-w-max shrink-0 snap-start rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.16em] transition',
         active
           ? 'border-primary/55 bg-primary text-black shadow-[0_16px_44px_rgba(19,164,255,0.28)]'
           : 'border-white/[0.16] bg-white/[0.03] text-white/76 hover:border-primary/40 hover:bg-primary/10 hover:text-white'
@@ -551,7 +551,7 @@ function WorldMap({
         </div>
 
         <div className="relative mt-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-5">
-          <div className="relative min-h-[380px] flex-1 overflow-hidden rounded-[1.55rem] border border-[#7dd6ff]/16 bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.18),transparent_26%),linear-gradient(180deg,rgba(3,9,16,0.96),rgba(0,0,0,0.66))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="relative min-h-[300px] flex-1 overflow-hidden rounded-[1.55rem] sm:min-h-[380px] border border-[#7dd6ff]/16 bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.18),transparent_26%),linear-gradient(180deg,rgba(3,9,16,0.96),rgba(0,0,0,0.66))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
               <span className="rounded-full border border-[#67c8ff]/30 bg-black/55 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7dd6ff]">Live audience map</span>
               {projected.length > 0 ? (
@@ -614,7 +614,7 @@ function WorldMap({
             )}
           </div>
 
-          <div className="grid w-full gap-3 xl:max-w-[312px]">
+          <div className="grid w-full gap-3 sm:grid-cols-2 xl:max-w-[312px] xl:grid-cols-1">
             {infoCards.map((card) => (
               <div key={card.label} className="rounded-[1.4rem] border border-[#7dd6ff]/18 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <div className="flex items-start justify-between gap-3">
@@ -893,8 +893,8 @@ export function NetworkPulse() {
 
   return (
     <section className="border-t border-white/[0.10] bg-black">
-      <div className="inri-page-container py-16 lg:py-18">
-        <Panel className="p-6 sm:p-8">
+      <div className="inri-page-container py-12 sm:py-16 lg:py-18">
+        <Panel className="p-5 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary/90">Live network data</p>
@@ -912,7 +912,7 @@ export function NetworkPulse() {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-2">
+          <div className="mt-8 -mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabButton active={tab === 'overview'} label="Overview" onClick={() => setTab('overview')} />
             <TabButton active={tab === 'explorer'} label="Explorer" onClick={() => setTab('explorer')} />
             <TabButton active={tab === 'audience'} label="Live map" onClick={() => setTab('audience')} />
@@ -924,8 +924,8 @@ export function NetworkPulse() {
             <Panel>
               <SectionHead eyebrow="Recent blocks" title="Latest mainnet blocks" subtitle="Recent intervals and the latest confirmed blocks." />
 
-              <div className="mt-6 rounded-[1.6rem] border-[1.15px] border-white/[0.16] bg-black/35 p-4">
-                <div className="grid grid-cols-5 gap-3 sm:gap-4">
+              <div className="mt-6 overflow-x-auto rounded-[1.6rem] border-[1.15px] border-white/[0.16] bg-black/35 p-4">
+                <div className="grid min-w-[520px] grid-cols-5 gap-3 sm:gap-4">
                   {chartBlocks.slice(-5).map((item) => (
                     <div key={item.block} className="flex flex-col items-center gap-2">
                       <div className="relative flex h-36 w-full items-end justify-center rounded-[1.2rem] border border-white/[0.12] bg-white/[0.02] px-2 py-2">

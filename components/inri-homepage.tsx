@@ -94,8 +94,8 @@ export function InriHomepage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(19,164,255,0.22),transparent_26%),radial-gradient(circle_at_86%_14%,rgba(19,164,255,0.12),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.99))]" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.045)_1px,transparent_1px)] bg-[size:56px_56px] opacity-28" />
 
-          <div className="relative inri-page-container py-14 lg:py-18">
-            <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-center">
+          <div className="relative inri-page-container py-12 sm:py-14 lg:py-18">
+            <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   {['Mainnet', 'PoW', 'Chain 3777', 'EVM'].map((item) => (
@@ -109,14 +109,14 @@ export function InriHomepage() {
                   ))}
                 </div>
 
-                <h1 className="mt-8 max-w-4xl text-balance text-4xl font-bold leading-[0.94] text-white sm:text-6xl lg:text-[5.15rem]">
+                <h1 className="mt-7 max-w-4xl text-balance text-[2.2rem] font-bold leading-[0.96] text-white sm:text-[3.6rem] lg:text-[5.15rem]">
                   Proof-of-Work mainnet with live blocks, active miners and real access.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-white/66 sm:text-lg">
                   INRI CHAIN keeps wallet, explorer, mining, pool and staking close to real network activity instead of hiding them behind too much interface noise.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
+                <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
                   <InriLinkButton href="https://wallet.inri.life" external noTranslate>
                     Open INRI Wallet
                   </InriLinkButton>
@@ -151,7 +151,7 @@ export function InriHomepage() {
                   </span>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="mt-6 grid gap-3 md:grid-cols-2">
                   <QuickRoute title="Wallet" text="Official wallet access" href="https://wallet.inri.life" />
                   <QuickRoute title="Explorer" text="Blocks, txs and addresses" href="https://explorer.inri.life" external />
                   <QuickRoute title="Mining" text="Windows, Ubuntu and pool" href="/mining" />
@@ -159,7 +159,7 @@ export function InriHomepage() {
                   <QuickRoute title="Pool" text="Join active miners" href="/pool" />
                 </div>
 
-                <div className="mt-5 rounded-[1.55rem] border-[1.45px] border-white/[0.16] bg-black/30 p-4">
+                <div className="mt-5 rounded-[1.55rem] border-[1.45px] border-white/[0.16] bg-black/30 p-4 sm:p-5">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Home focus</p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {['Latest blocks', 'Peer count', 'Pool miners', 'Gas + difficulty'].map((item) => (

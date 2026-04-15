@@ -36,7 +36,7 @@ type InriPageTemplateProps = {
 export function InriPageTemplate({
   eyebrow = 'INRI CHAIN',
   title = 'INRI Page',
-  description = 'This page is being adapted to the new official INRI website style.',
+  description = 'Official INRI route in the same visual system used across the platform.',
   actions = [],
   items = [],
   resources = [],
@@ -47,21 +47,21 @@ export function InriPageTemplate({
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_26%),linear-gradient(180deg,#02060b_0%,#000000_42%,#020812_100%)]">
         <section className="inri-hero-surface">
-          <div className="inri-page-container py-16 lg:py-20">
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_420px] xl:items-end">
-              <div>
-                <div className="flex flex-wrap gap-3">
+          <div className="inri-page-container py-12 sm:py-14 lg:py-18">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_390px] xl:items-end">
+              <div className="min-w-0">
+                <div className="flex flex-wrap gap-2.5">
                   <span className="inri-chip text-primary">{eyebrow}</span>
                   <span className="inri-chip">Official route</span>
                   <span className="inri-chip">INRI platform</span>
                 </div>
-                <h1 className="mt-6 max-w-5xl text-balance text-4xl font-black leading-[1.02] text-white sm:text-5xl lg:text-[4.1rem]">
+                <h1 className="mt-5 max-w-5xl text-balance text-[2rem] font-black leading-[1.02] text-white sm:text-[2.8rem] lg:text-[4.1rem]">
                   {title}
                 </h1>
-                <p className="mt-6 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">{description}</p>
+                <p className="mt-5 max-w-3xl text-[15px] leading-7 text-white/68 sm:text-lg sm:leading-8">{description}</p>
 
                 {actions.length > 0 ? (
-                  <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
                     {actions.map((action) => (
                       <InriLinkButton
                         key={`${action.label}-${action.href}`}
@@ -76,18 +76,17 @@ export function InriPageTemplate({
                 ) : null}
               </div>
 
-              <div className="inri-section-surface rounded-[2rem] p-6">
+              <div className="inri-section-surface rounded-[1.8rem] p-5 sm:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Page summary</p>
-                <h2 className="mt-3 text-3xl font-black text-white">Keep every route in the same visual system.</h2>
+                <h2 className="mt-3 text-2xl font-black text-white sm:text-[2rem]">Production-ready visual language.</h2>
                 <p className="mt-4 text-sm leading-7 text-white/66">
-                  This page now follows the same black-and-blue product language used on the home route: stronger hierarchy,
-                  cleaner cards and consistent action paths.
+                  This route follows the same INRI layout rules used across the home page, wallet flow, explorer links and mining sections.
                 </p>
                 <div className="mt-5 grid gap-3">
                   {[
-                    'Matching hero and content rhythm',
-                    'Shared premium cards and resources',
-                    'Cleaner spacing on desktop and mobile',
+                    'Cleaner mobile spacing and button rhythm',
+                    'Shared premium cards, actions and resources',
+                    'Consistent black-and-blue INRI branding',
                   ].map((item) => (
                     <div key={item} className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/76">
                       {item}
@@ -100,12 +99,12 @@ export function InriPageTemplate({
         </section>
 
         {items.length > 0 ? (
-          <section className="py-12">
+          <section className="py-10 sm:py-12">
             <div className="inri-page-container">
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
-                  <div key={item.title} className="inri-soft-card rounded-[1.65rem] p-6 backdrop-blur-sm">
-                    <h3 className="text-2xl font-black text-white">{item.title}</h3>
+                  <div key={item.title} className="inri-soft-card rounded-[1.5rem] p-5 backdrop-blur-sm sm:p-6">
+                    <h3 className="text-xl font-black text-white sm:text-2xl">{item.title}</h3>
                     <p className="mt-3 text-sm leading-7 text-white/70">{item.text}</p>
                   </div>
                 ))}
@@ -114,30 +113,30 @@ export function InriPageTemplate({
           </section>
         ) : null}
 
-        <section className="pb-20">
+        <section className="pb-16 sm:pb-20">
           <div className="inri-page-container">
-            <div className="inri-section-surface rounded-[2rem] p-6 sm:p-8 lg:p-10">
+            <div className="inri-section-surface rounded-[1.8rem] p-5 sm:p-8 lg:p-10">
               {children ? children : null}
 
               {resources.length > 0 ? (
                 <>
-                  <div className="mt-2 flex items-center justify-between gap-4">
+                  <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-black uppercase tracking-[0.22em] text-primary/80">Resources</p>
                       <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">Useful routes for this section</h2>
                     </div>
                   </div>
 
-                  <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {resources.map((resource) => (
                       <Link
                         key={`${resource.title}-${resource.href}`}
                         href={resource.href}
                         {...(resource.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                        className="group inri-soft-card rounded-[1.5rem] p-6 transition hover:border-primary/35 hover:bg-primary/[0.06]"
+                        className="group inri-soft-card rounded-[1.4rem] p-5 transition hover:border-primary/35 hover:bg-primary/[0.06]"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <h3 className="text-xl font-black text-white">{resource.title}</h3>
+                          <h3 className="text-lg font-black text-white sm:text-xl">{resource.title}</h3>
                           <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
                         </div>
                         <p className="mt-3 text-sm leading-7 text-white/65">{resource.text}</p>
@@ -152,7 +151,7 @@ export function InriPageTemplate({
               ) : null}
 
               {note ? (
-                <div className="mt-8 rounded-[1.5rem] border border-primary/20 bg-primary/10 p-6 text-sm leading-7 text-white/80">
+                <div className="mt-8 rounded-[1.35rem] border border-primary/20 bg-primary/10 p-5 text-sm leading-7 text-white/80 sm:p-6">
                   {note}
                 </div>
               ) : null}
