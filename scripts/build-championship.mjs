@@ -234,7 +234,7 @@ async function main() {
     const poolMap = await fetchPoolAttributions(env.startBlock, effectiveEnd)
 
     if (fromBlock <= toBlock) {
-      log(`Scanning blocks ${fromBlock} → ${toBlock} (chain head ${chainCurrentBlock})`)
+      log(`Scanning blocks ${fromBlock} -> ${toBlock} (chain head ${chainCurrentBlock})`)
 
       for (let blockNumber = fromBlock; blockNumber <= toBlock; blockNumber += 1) {
         const block = await getBlock(blockNumber)
@@ -250,7 +250,7 @@ async function main() {
         } else if (blockMiner) {
           if (env.poolPayoutAddress && blockMiner === env.poolPayoutAddress) {
             if (env.debug) {
-              log(`Block ${blockNumber} mined by pool payout address without solo attribution; skipping this block so the pool wallet never enters the ranking`)
+              log(`Block ${blockNumber} matched pool payout address and has no solo attribution. Skipping.`)
             }
             continue
           }
@@ -261,9 +261,11 @@ async function main() {
 
         const participant = ensureParticipant(cache.participants, finalMiner)
         if (!participant) continue
+
         participant.address = finalMiner
         participant.blocks += 1
         participant.lastBlock = Math.max(toNumber(participant.lastBlock), blockNumber)
+
         if (source === 'pool-solo') {
           participant.poolSoloBlocks = toNumber(participant.poolSoloBlocks) + 1
         } else {
@@ -311,6 +313,7 @@ async function main() {
     log('Keeping existing championship JSON and cache so the site still deploys.')
     await writeJson(FEED_PATH, fallbackFeed)
     await writeJson(CACHE_PATH, fallbackCache)
+    process.exitCode = 1
   }
 }
 
