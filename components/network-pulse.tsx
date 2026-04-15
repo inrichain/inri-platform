@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { withBasePath } from '@/lib/site'
-import { LiveAudienceLeafletMap } from '@/components/live-audience-leaflet-map'
 import {
   Activity,
   ArrowUpRight,
@@ -490,14 +489,171 @@ function WorldMap({
   updatedAt: string
   audience: AudiencePayload | null
 }) {
+  const points = safeArray<AudiencePoint>(audience?.countries)
+  const maxUsers = Math.max(...points.map((item) => Number(item.activeUsers || 0)), 1)
+
+  const projected = points.map((item) => ({
+    ...item,
+    x: ((Number(item.lng || 0) + 180) / 360) * 100,
+    y: ((90 - Number(item.lat || 0)) / 180) * 100,
+  }))
+
+  const topCountries = projected
+    .slice()
+    .sort((a, b) => Number(b.activeUsers) - Number(a.activeUsers))
+    .slice(0, 4)
+
+  const infoCards = [
+    {
+      label: 'Live pulse',
+      value: formatNumber(totalLivePulse),
+      foot: 'Peers + connected miners',
+      icon: Zap,
+    },
+    {
+      label: 'Network peers',
+      value: formatNumber(totalPeers),
+      foot: 'rpc-chain + rpc + bootnodes',
+      icon: Network,
+    },
+    {
+      label: 'Pool miners',
+      value: formatNumber(poolMiners),
+      foot: 'PPLNS + SOLO connected',
+      icon: Pickaxe,
+    },
+    {
+      label: 'Audience refresh',
+      value: audience?.updatedAt || updatedAt,
+      foot: 'Last country snapshot published',
+      icon: Activity,
+    },
+  ]
+
   return (
-    <LiveAudienceLeafletMap
-      audience={audience}
-      totalLivePulse={totalLivePulse}
-      totalPeers={totalPeers}
-      poolMiners={poolMiners}
-      updatedAt={updatedAt}
-    />
+    <div className="rounded-[1.85rem] border border-[#2bafff]/28 bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.24),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04111e_0%,#02070d_55%,#010305_100%)] p-4 shadow-[0_0_0_1px_rgba(19,164,255,0.06),0_34px_90px_rgba(0,0,0,0.55),0_0_65px_rgba(19,164,255,0.12)] sm:p-5">
+      <div className="relative overflow-hidden rounded-[1.6rem] border border-[#7dd6ff]/16 bg-[linear-gradient(180deg,rgba(3,9,16,0.96),rgba(1,3,7,0.98))] p-4 sm:p-5">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.05)_1px,transparent_1px)] bg-[size:28px_28px] opacity-55" />
+        <div className="absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(125,214,255,0.72),transparent)]" />
+        <div className="absolute -left-8 top-8 h-44 w-44 rounded-full bg-[#13a4ff]/16 blur-3xl" />
+        <div className="absolute right-0 top-14 h-52 w-52 rounded-full bg-[#0a7ed2]/18 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-[#7dd6ff]/10 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-[#7dd6ff]/15 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-4 py-3 backdrop-blur-sm">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#67c8ff]">INRI live audience</p>
+            <p className="mt-1 text-sm text-white/70">Blue-grid map surface with premium country pulse in the official INRI style.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full border border-[#67c8ff]/40 bg-[#13a4ff]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7dd6ff]">Blue core</span>
+            <span className="rounded-full border border-[#67c8ff]/28 bg-black/35 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/72">Refresh ~ 5 min</span>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-5">
+          <div className="relative min-h-[380px] flex-1 overflow-hidden rounded-[1.55rem] border border-[#7dd6ff]/16 bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.18),transparent_26%),linear-gradient(180deg,rgba(3,9,16,0.96),rgba(0,0,0,0.66))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#67c8ff]/30 bg-black/55 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7dd6ff]">Live audience map</span>
+              {projected.length > 0 ? (
+                <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">Realtime countries detected</span>
+              ) : null}
+            </div>
+
+            <svg viewBox="0 0 1100 620" className="absolute inset-0 h-full w-full opacity-95">
+              <defs>
+                <radialGradient id="inri-ocean" cx="50%" cy="38%" r="70%">
+                  <stop offset="0%" stopColor="rgba(10,44,72,0.64)" />
+                  <stop offset="55%" stopColor="rgba(3,16,29,0.72)" />
+                  <stop offset="100%" stopColor="rgba(1,5,10,0.92)" />
+                </radialGradient>
+                <linearGradient id="audience-land" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(12,28,42,0.95)" />
+                  <stop offset="100%" stopColor="rgba(8,19,30,0.88)" />
+                </linearGradient>
+                <linearGradient id="audience-line" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(19,164,255,0)" />
+                  <stop offset="50%" stopColor="rgba(125,214,255,0.78)" />
+                  <stop offset="100%" stopColor="rgba(19,164,255,0)" />
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="1100" height="620" fill="url(#inri-ocean)" />
+              <path d="M102 170C160 112 236 104 314 130C364 146 418 172 440 216C402 236 356 252 324 266C270 290 212 302 150 300C132 270 122 242 116 212C112 194 108 178 102 170Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M298 312C340 322 364 350 372 388C380 432 364 480 334 532C292 518 276 478 280 438C284 392 288 344 298 312Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M492 166C534 144 578 148 616 168C638 182 652 202 652 220C624 230 604 244 584 268C560 266 544 258 528 248C506 234 494 210 492 166Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M540 262C600 248 650 270 678 312C706 352 706 414 686 472C628 494 564 488 524 458C486 430 470 386 472 340C474 308 498 274 540 262Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M642 174C718 138 812 140 888 170C940 192 986 232 1000 280C954 296 918 294 872 314C828 334 766 332 714 316C690 294 676 262 666 232C658 210 650 190 642 174Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M818 422C854 406 900 412 930 440C948 458 958 482 954 506C916 518 878 520 844 510C818 500 796 480 796 454C796 440 802 430 818 422Z" fill="url(#audience-land)" stroke="rgba(125,214,255,0.18)" strokeWidth="2" />
+              <path d="M190 205 Q440 100 678 198" fill="none" stroke="url(#audience-line)" strokeWidth="2.1" opacity="0.82" />
+              <path d="M288 410 Q500 228 676 298" fill="none" stroke="url(#audience-line)" strokeWidth="1.9" opacity="0.72" />
+              <path d="M548 236 Q734 188 846 250" fill="none" stroke="url(#audience-line)" strokeWidth="1.8" opacity="0.7" />
+            </svg>
+
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_38%,rgba(0,0,0,0.16)_100%)]" />
+
+            {projected.length > 0 ? projected.map((point, index) => {
+              const size = 12 + (Number(point.activeUsers) / maxUsers) * 18
+              return (
+                <div key={`${point.country}-${index}`} className="absolute" style={{ left: `${point.x}%`, top: `${point.y}%` }}>
+                  <div className="absolute -inset-5 rounded-full border border-[#67c8ff]/30 animate-ping" style={{ animationDuration: '3.2s', animationDelay: `${index * 0.22}s` }} />
+                  <div className="absolute -inset-8 rounded-full bg-[#13a4ff]/14 blur-xl" />
+                  <div
+                    className="relative rounded-full border border-[#d8f5ff]/75 bg-[radial-gradient(circle_at_30%_30%,#a8ecff_0%,#3fc3ff_34%,#118fe8_68%,#0b3f77_100%)] shadow-[0_0_0_4px_rgba(19,164,255,0.14),0_0_38px_rgba(19,164,255,0.95)]"
+                    style={{ width: `${size}px`, height: `${size}px`, marginLeft: `${-size / 2}px`, marginTop: `${-size / 2}px` }}
+                  />
+                </div>
+              )
+            }) : (
+              <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                <div className="max-w-md rounded-[1.45rem] border border-[#7dd6ff]/18 bg-[linear-gradient(180deg,rgba(0,0,0,0.64),rgba(0,0,0,0.50))] px-5 py-5 shadow-[0_0_0_1px_rgba(19,164,255,0.06),0_0_38px_rgba(19,164,255,0.10)] backdrop-blur-sm">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.20em] text-[#67c8ff]">INRI realtime audience</p>
+                  <p className="mt-3 text-sm leading-7 text-white/68">
+                    Premium live view powered by Google Analytics and refreshed automatically by GitHub Actions.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid w-full gap-3 xl:max-w-[312px]">
+            {infoCards.map((card) => (
+              <div key={card.label} className="rounded-[1.4rem] border border-[#7dd6ff]/18 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/44">{card.label}</p>
+                    <p className="mt-2 text-3xl font-bold tabular-nums text-white">{card.value}</p>
+                  </div>
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#67c8ff]/24 bg-[#13a4ff]/10 text-[#7dd6ff] shadow-[0_0_22px_rgba(19,164,255,0.22)]">
+                    <card.icon className="h-4.5 w-4.5" />
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-white/58">{card.foot}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {(topCountries.length > 0 ? topCountries : [{ country: 'No live audience data', activeUsers: 0 } as AudiencePoint]).map((item, index) => {
+            const activeUsers = Number(item.activeUsers || 0)
+            const ratio = maxUsers > 0 ? Math.max(activeUsers / maxUsers, 0.08) : 0.08
+            return (
+              <div key={item.country} className="rounded-[1.3rem] border border-[#7dd6ff]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[#7dd6ff]">Top country #{index + 1}</p>
+                  <span className="rounded-full border border-[#67c8ff]/28 bg-[#13a4ff]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7dd6ff]">{activeUsers ? 'Live' : 'Waiting'}</span>
+                </div>
+                <p className="mt-3 text-lg font-bold text-white">{item.country}</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums text-white">{formatNumber(activeUsers)}</p>
+                <div className="mt-4 h-2 rounded-full bg-white/[0.06]">
+                  <div className="h-2 rounded-full bg-[linear-gradient(90deg,#13a4ff_0%,#6fd4ff_100%)] shadow-[0_0_18px_rgba(19,164,255,0.5)]" style={{ width: `${ratio * 100}%` }} />
+                </div>
+                <p className="mt-2 text-sm text-white/56">{activeUsers ? 'Active visitors on the live map.' : 'Waiting for realtime audience source.'}</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -941,23 +1097,40 @@ export function NetworkPulse() {
               </Panel>
 
               <Panel>
-                <SectionHead eyebrow="Top audience countries" title="Visitor feed by country" />
+                <SectionHead eyebrow="Top audience countries" title="Visitor feed by country" subtitle="Premium INRI ranking with brighter blue highlights and stronger country contrast." />
                 <div className="mt-6 grid gap-3">
                   {(safeArray<AudiencePoint>(audience?.countries).length > 0
                     ? safeArray<AudiencePoint>(audience?.countries)
                     : [{ country: 'No live audience data', activeUsers: 0 } as AudiencePoint])
                     .slice(0, 6)
-                    .map((node) => (
-                      <div key={node.country} className="flex items-center justify-between gap-4 rounded-[1.35rem] border-[1.15px] border-white/[0.16] bg-white/[0.03] px-4 py-3.5">
-                        <div>
-                          <p className="text-base font-bold text-white">{node.country}</p>
-                          <p className="mt-1 text-sm text-white/54">{node.activeUsers ? `${formatNumber(Number(node.activeUsers || 0))} active visitors` : 'Waiting for realtime audience source'}</p>
+                    .map((node, index, array) => {
+                      const activeUsers = Number(node.activeUsers || 0)
+                      const topUsers = Math.max(...array.map((item) => Number(item.activeUsers || 0)), 1)
+                      const ratio = activeUsers > 0 ? Math.max(activeUsers / topUsers, 0.08) : 0.08
+
+                      return (
+                        <div key={node.country} className="rounded-[1.45rem] border border-[#7dd6ff]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-[#7dd6ff]">Rank #{index + 1}</p>
+                              <p className="mt-2 text-lg font-bold text-white">{node.country}</p>
+                              <p className="mt-1 text-sm text-white/56">{activeUsers ? `${formatNumber(activeUsers)} active visitors` : 'Waiting for realtime audience source'}</p>
+                            </div>
+                            <span className={cx(
+                              'rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]',
+                              activeUsers
+                                ? 'border border-[#67c8ff]/32 bg-[#13a4ff]/10 text-[#7dd6ff]'
+                                : 'border border-white/14 bg-white/[0.04] text-white/58'
+                            )}>
+                              {activeUsers ? 'Live' : 'Offline'}
+                            </span>
+                          </div>
+                          <div className="mt-4 h-2 rounded-full bg-white/[0.06]">
+                            <div className="h-2 rounded-full bg-[linear-gradient(90deg,#13a4ff_0%,#7dd6ff_100%)] shadow-[0_0_16px_rgba(19,164,255,0.55)]" style={{ width: `${ratio * 100}%` }} />
+                          </div>
                         </div>
-                        <span className="rounded-full border border-primary/28 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                          {node.activeUsers ? 'Live' : 'Offline'}
-                        </span>
-                      </div>
-                    ))}
+                      )
+                    })}
                 </div>
               </Panel>
             </div>
