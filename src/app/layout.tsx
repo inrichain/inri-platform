@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Suspense } from 'react'
 import './globals.css'
 
 import { GoogleAnalyticsRouteTracker } from '@/components/google-analytics-route-tracker'
@@ -34,7 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider defaultTheme="dark" storageKey="inri-theme">
           <SidebarConfigProvider>
             {children}
-            <GoogleAnalyticsRouteTracker measurementId={GA_MEASUREMENT_ID} />
+            <Suspense fallback={null}>
+              <GoogleAnalyticsRouteTracker measurementId={GA_MEASUREMENT_ID} />
+            </Suspense>
           </SidebarConfigProvider>
         </ThemeProvider>
 
