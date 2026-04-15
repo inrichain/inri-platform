@@ -104,6 +104,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        env:
+          CUSTOM_DOMAIN: platform.inri.life
         run: pnpm build
 
       - name: Upload artifact
