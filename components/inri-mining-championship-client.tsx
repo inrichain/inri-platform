@@ -168,12 +168,12 @@ export function InriMiningChampionshipClient() {
         const json = (await response.json()) as ChampionshipFeed
         if (active && json && Array.isArray(json.participants)) {
           setFeed({ ...FALLBACK_FEED, ...json })
-          setLoadError(json.mode === 'preview' ? 'Championship feed loaded with setup data. Publish the official ranking JSON to switch this page to full live mode.' : '')
+          setLoadError(json.mode === 'preview' ? 'Preview feed loaded. Replace public/mining-championship.json with official data to go live.' : '')
         }
       } catch {
         if (active) {
           setFeed(FALLBACK_FEED)
-          setLoadError('Championship feed is still using setup data until the official ranking JSON is updated.')
+          setLoadError('Using preview feed until the official championship JSON is updated.')
         }
       } finally {
         if (active) setLoading(false)
@@ -208,7 +208,7 @@ export function InriMiningChampionshipClient() {
   const totalSoloBlocks = participants.reduce((sum, item) => sum + item.blocks, 0)
   const progress = Math.max(0, Math.min(100, ((currentBlock - startBlock) / Math.max(1, endBlock - startBlock)) * 100))
   const blocksRemaining = Math.max(0, endBlock - currentBlock)
-  const topFive = participants.slice(0, 5)
+  const topTen = participants.slice(0, 10)
   const searchResult = query.trim()
     ? participants.find((item) => item.address.toLowerCase() === query.trim().toLowerCase())
     : null
@@ -278,7 +278,7 @@ export function InriMiningChampionshipClient() {
             <div
               className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] ${feed.mode === 'live' ? 'border-emerald-400/30 bg-emerald-400/12 text-emerald-200' : 'border-amber-300/30 bg-amber-300/12 text-amber-200'}`}
             >
-              {feed.mode === 'live' ? 'Live feed' : 'Setup feed'}
+              {feed.mode === 'live' ? 'Live feed' : 'Preview feed'}
             </div>
           </div>
           <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/[0.06]">
@@ -307,7 +307,7 @@ export function InriMiningChampionshipClient() {
         <div className="inri-section-surface rounded-[2rem] p-6 sm:p-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Top 5 live board</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Top 10 live board</div>
               <h3 className="mt-2 text-2xl font-black text-white">Current championship leaders</h3>
             </div>
             <div className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/64">
@@ -316,7 +316,7 @@ export function InriMiningChampionshipClient() {
           </div>
 
           <div className="mt-6 grid gap-3">
-            {topFive.map((item) => (
+            {topTen.map((item) => (
               <div key={item.address} className="inri-subcard rounded-[1.35rem] p-4 sm:p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
