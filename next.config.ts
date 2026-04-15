@@ -2,7 +2,10 @@ import type { NextConfig } from 'next'
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === 'true'
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? ''
-const basePath = isGitHubActions && repoName ? `/${repoName}` : ''
+const customDomain = process.env.CUSTOM_DOMAIN?.trim() || ''
+
+const shouldUseRepoBasePath = isGitHubActions && !customDomain && !!repoName
+const basePath = shouldUseRepoBasePath ? `/${repoName}` : ''
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -25,7 +28,7 @@ const nextConfig: NextConfig = {
         output: 'export',
         trailingSlash: true,
         basePath,
-        assetPrefix: basePath ? `${basePath}/` : '',
+        assetPrefix: basePath ? `${basePath}/` : undefined,
       }
     : {
         async headers() {
