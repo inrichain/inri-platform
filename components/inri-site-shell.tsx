@@ -172,37 +172,42 @@ function MobileMenu() {
           <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[88vw] border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md">
-        <SheetHeader className="border-b border-white/[0.10] px-5 py-5 text-left">
+      <SheetContent
+        side="right"
+        className="flex h-dvh w-[88vw] flex-col overflow-hidden border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md"
+      >
+        <SheetHeader className="shrink-0 border-b border-white/[0.10] px-5 py-5 pr-14 text-left">
           <SheetTitle className="text-left text-white">
             <Logo showText size={52} />
           </SheetTitle>
           <SheetDescription className="pt-2 text-left text-white/55">Wallet access, network routes and main chain entry points.</SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col gap-6 px-5 py-5">
-          <div className="grid gap-3">
-            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-              INRI Wallet
-            </InriLinkButton>
-            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-              Explorer
-            </InriLinkButton>
-            <ConnectWalletButton compact />
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 pb-8">
+          <div className="flex flex-col gap-6">
+            <div className="grid gap-3">
+              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
+                INRI Wallet
+              </InriLinkButton>
+              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
+                Explorer
+              </InriLinkButton>
+              <ConnectWalletButton compact />
+            </div>
 
-          <div className="grid gap-2">
-            {mobileNavItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                translate="no"
-                className="notranslate rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
-                {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <div className="grid gap-2 pb-4">
+              {mobileNavItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  translate="no"
+                  className="notranslate rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
+                  {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </SheetContent>
