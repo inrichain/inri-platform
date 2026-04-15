@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-04-15T02:48:02.088Z",
-  "currentBlock": 1020956,
+  "updatedAt": "2026-04-15T02:49:23.770Z",
+  "currentBlock": 1020960,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1020956,
+  "lastScannedBlock": 1020960,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,9 +17,9 @@
     },
     {
       "address": "0x85eebfe1b1db893dc90079c785c7c70e78fb3028",
-      "blocks": 7487,
-      "lastBlock": 1020956,
-      "chainSoloBlocks": 7487,
+      "blocks": 7490,
+      "lastBlock": 1020959,
+      "chainSoloBlocks": 7490,
       "poolSoloBlocks": 0
     },
     {
