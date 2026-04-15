@@ -67,11 +67,11 @@ function chainLabel(chainId?: string | null) {
 }
 
 function walletLabelFromProvider(provider: ProviderLike, index: number) {
-  if (provider.isRabby) return { key: 'rabby', label: 'Rabby Wallet' }
-  if (provider.isCoinbaseWallet) return { key: 'coinbase', label: 'Coinbase Wallet' }
-  if (provider.isTrust) return { key: 'trust', label: 'Trust Wallet' }
-  if (provider.isOkxWallet) return { key: 'okx', label: 'OKX Wallet' }
-  if (provider.isMetaMask) return { key: 'metamask', label: 'MetaMask' }
+  if (provider.isRabby) return { key: 'rabby', label: 'Browser Wallet' }
+  if (provider.isCoinbaseWallet) return { key: 'coinbase', label: 'Browser Wallet' }
+  if (provider.isTrust) return { key: 'trust', label: 'Browser Wallet' }
+  if (provider.isOkxWallet) return { key: 'okx', label: 'Browser Wallet' }
+  if (provider.isMetaMask) return { key: 'metamask', label: 'Browser Wallet' }
   return { key: `browser-${index}`, label: 'Browser Wallet' }
 }
 
@@ -523,7 +523,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                           {busy ? 'Connecting...' : item.label}
                         </div>
                         <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
-                          Injected browser wallet
+                          Compatible EVM browser wallet
                         </div>
                       </div>
                       <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
