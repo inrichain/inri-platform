@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastScannedBlock": 1029228,
+  "lastScannedBlock": 1029547,
   "participants": {
     "0x2878ad14e2252119ad793df7d54e93914e141414": {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -18,9 +18,9 @@
     },
     "0x85eebfe1b1db893dc90079c785c7c70e78fb3028": {
       "address": "0x85eebfe1b1db893dc90079c785c7c70e78fb3028",
-      "blocks": 13351,
-      "lastBlock": 1029227,
-      "chainSoloBlocks": 13351,
+      "blocks": 13595,
+      "lastBlock": 1029547,
+      "chainSoloBlocks": 13595,
       "poolSoloBlocks": 0
     },
     "0x9c47178afc21580a92fafd3d942917fb1d2d0e65": {
@@ -39,10 +39,10 @@
     },
     "0xba1e5248ccbe84d311698914e81bb39f22fb347a": {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
-      "blocks": 214,
-      "lastBlock": 1029142,
+      "blocks": 216,
+      "lastBlock": 1029524,
       "chainSoloBlocks": 2,
-      "poolSoloBlocks": 212
+      "poolSoloBlocks": 214
     },
     "0xa09e04dbf9d49298d765b67003b26a65f5d6cd75": {
       "address": "0xa09e04dbf9d49298d765b67003b26a65f5d6cd75",
@@ -53,24 +53,24 @@
     },
     "0x76fbba0c04185d5ce5241f93f322a22394045695": {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 183,
-      "lastBlock": 1029165,
+      "blocks": 187,
+      "lastBlock": 1029443,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 183
+      "poolSoloBlocks": 187
     },
     "0x3d4e2f29e967ebead8dfe578e639089431a6c354": {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 561,
-      "lastBlock": 1029181,
+      "blocks": 568,
+      "lastBlock": 1029513,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 561
+      "poolSoloBlocks": 568
     },
     "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6": {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
-      "blocks": 1650,
-      "lastBlock": 1029207,
+      "blocks": 1680,
+      "lastBlock": 1029529,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 1650
+      "poolSoloBlocks": 1680
     },
     "0x0867abe69f7d0edf368d11a9f36213f91c2613a0": {
       "address": "0x0867abe69f7d0edf368d11a9f36213f91c2613a0",
