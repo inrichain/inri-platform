@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-04-17T16:34:38.479Z",
-  "currentBlock": 1037638,
+  "updatedAt": "2026-04-17T17:27:25.361Z",
+  "currentBlock": 1037873,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1037638,
+  "lastScannedBlock": 1037873,
   "backfillComplete": true,
   "participants": [
     {
@@ -24,9 +24,9 @@
     },
     {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 5574,
-      "lastBlock": 1037638,
-      "chainSoloBlocks": 5574,
+      "blocks": 5772,
+      "lastBlock": 1037873,
+      "chainSoloBlocks": 5772,
       "poolSoloBlocks": 0
     },
     {
@@ -38,17 +38,17 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 893,
-      "lastBlock": 1037620,
+      "blocks": 903,
+      "lastBlock": 1037844,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 893
+      "poolSoloBlocks": 903
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
-      "blocks": 296,
-      "lastBlock": 1037587,
+      "blocks": 297,
+      "lastBlock": 1037848,
       "chainSoloBlocks": 2,
-      "poolSoloBlocks": 294
+      "poolSoloBlocks": 295
     },
     {
       "address": "0x0867abe69f7d0edf368d11a9f36213f91c2613a0",
@@ -59,10 +59,10 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 236,
-      "lastBlock": 1037616,
+      "blocks": 241,
+      "lastBlock": 1037734,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 236
+      "poolSoloBlocks": 241
     },
     {
       "address": "0x23f7c2dc53c44d680dabc307b77435f25390888b",
