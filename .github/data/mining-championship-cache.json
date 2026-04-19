@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastScannedBlock": 1050518,
+  "lastScannedBlock": 1050724,
   "participants": {
     "0x2878ad14e2252119ad793df7d54e93914e141414": {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -11,9 +11,9 @@
     },
     "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42": {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 15282,
-      "lastBlock": 1050517,
-      "chainSoloBlocks": 15282,
+      "blocks": 15415,
+      "lastBlock": 1050724,
+      "chainSoloBlocks": 15415,
       "poolSoloBlocks": 0
     },
     "0x85eebfe1b1db893dc90079c785c7c70e78fb3028": {
@@ -53,24 +53,24 @@
     },
     "0x76fbba0c04185d5ce5241f93f322a22394045695": {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 329,
-      "lastBlock": 1050398,
+      "blocks": 334,
+      "lastBlock": 1050643,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 329
+      "poolSoloBlocks": 334
     },
     "0x3d4e2f29e967ebead8dfe578e639089431a6c354": {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 1409,
-      "lastBlock": 1050392,
+      "blocks": 1415,
+      "lastBlock": 1050697,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 1409
+      "poolSoloBlocks": 1415
     },
     "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6": {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
-      "blocks": 2820,
-      "lastBlock": 1050488,
+      "blocks": 2842,
+      "lastBlock": 1050693,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 2820
+      "poolSoloBlocks": 2842
     },
     "0x0867abe69f7d0edf368d11a9f36213f91c2613a0": {
       "address": "0x0867abe69f7d0edf368d11a9f36213f91c2613a0",
@@ -109,10 +109,10 @@
     },
     "0xcb3b222b0168e4a4da705ca7c5ffa453afbd20b1": {
       "address": "0xcb3b222b0168e4a4da705ca7c5ffa453afbd20b1",
-      "blocks": 169,
-      "lastBlock": 1050409,
+      "blocks": 179,
+      "lastBlock": 1050675,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 169
+      "poolSoloBlocks": 179
     }
   }
 }
