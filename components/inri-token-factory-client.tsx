@@ -126,8 +126,8 @@ function Surface({ children, className = '' }: { children: ReactNode; className?
 
 function StatusPill({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`rounded-full border px-4 py-3 ${accent ? 'border-primary/26 bg-primary/[0.10]' : 'border-white/10 bg-white/[0.03]'}`}>
-      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">{label}</div>
+    <div className={`rounded-full border px-4 py-2.5 ${accent ? 'border-primary/26 bg-primary/[0.10]' : 'border-white/10 bg-white/[0.03]'}`}>
+      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">{label}</div>
       <div className={`mt-1 text-sm font-black ${accent ? 'text-primary' : 'text-white'}`}>{value}</div>
     </div>
   )
@@ -158,7 +158,7 @@ function InputField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className={`mt-2 h-14 w-full rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white outline-none transition placeholder:text-white/20 focus:border-primary/55 ${uppercase ? 'uppercase' : ''}`}
+        className={`mt-2 h-14 w-full rounded-[1.15rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-4 text-base font-semibold text-white outline-none transition placeholder:text-white/20 focus:border-primary/55 focus:bg-primary/[0.04] ${uppercase ? 'uppercase' : ''}`}
       />
       <div className="mt-2 text-sm leading-6 text-white/44">{helper}</div>
     </label>
@@ -528,8 +528,8 @@ export function InriTokenFactoryClient() {
   }
 
   return (
-    <Surface className="p-4 sm:p-6 lg:p-8">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <Surface className="overflow-hidden p-4 sm:p-6 lg:p-7">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           <div className="flex flex-wrap gap-3">
             <StatusPill label="Wallet" value={shortAddress(account)} accent={Boolean(account)} />
@@ -544,18 +544,18 @@ export function InriTokenFactoryClient() {
             </div>
           ) : null}
 
-          <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="mt-5 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Launch form</div>
-                <h2 className="mt-2 text-2xl font-black text-white">Create the token from one clean panel</h2>
+                <h2 className="mt-2 text-2xl font-black text-white">Launch panel</h2>
               </div>
-              <div className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70">
+              <div className="rounded-full border border-primary/16 bg-primary/[0.08] px-4 py-2.5 text-sm font-semibold text-white/78">
                 {account
                   ? networkReady
                     ? 'Wallet connected in header • INRI CHAIN ready'
                     : 'Wallet connected in header • switch to INRI CHAIN in the top menu'
-                  : 'Use the Connect Wallet button in the top header'}
+                  : 'Connect wallet in the top header'}
               </div>
             </div>
 
@@ -593,7 +593,7 @@ export function InriTokenFactoryClient() {
               />
             </div>
 
-            <div className="mt-5 rounded-[1.2rem] border border-primary/16 bg-primary/[0.08] p-4 text-sm leading-7 text-white/78">
+            <div className="mt-5 rounded-[1.3rem] border border-primary/20 bg-[linear-gradient(180deg,rgba(19,164,255,0.10),rgba(19,164,255,0.04))] p-4 text-sm leading-7 text-white/78">
               Review the token details carefully before launch. The initial supply is sent to the connected wallet when creation succeeds.
             </div>
 
@@ -602,7 +602,7 @@ export function InriTokenFactoryClient() {
                 type="button"
                 onClick={createToken}
                 disabled={isCreating}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inri-button-primary min-w-[190px] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isCreating ? (
                   <>
@@ -617,23 +617,22 @@ export function InriTokenFactoryClient() {
                 type="button"
                 onClick={() => setForm(initialForm)}
                 disabled={isCreating}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inri-button-secondary min-w-[150px] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Clear form
               </button>
             </div>
           </div>
         </div>
-
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <div className="flex items-center gap-2 text-white">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              <h3 className="text-xl font-black">Launch preview</h3>
+              <h3 className="text-xl font-black">Launch summary</h3>
             </div>
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 grid gap-3">
               {previewItems.map((item) => (
-                <div key={item.label} className="rounded-[1.1rem] border border-white/10 bg-black/26 px-4 py-4">
+                <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-4 py-4">
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/46">{item.label}</div>
                   <div className="mt-2 text-base font-bold text-white">{item.value}</div>
                 </div>
@@ -641,36 +640,17 @@ export function InriTokenFactoryClient() {
             </div>
           </div>
 
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Factory contract</div>
-            <div className="mt-3 break-all font-mono text-sm font-bold text-white">{FACTORY_ADDRESS}</div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={copyFactory}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                <Copy className="h-4 w-4" />
-                {copied ? 'Copied' : 'Copy'}
-              </button>
-              <Link
-                href={`https://explorer.inri.life/address/${FACTORY_ADDRESS}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/14 bg-white/[0.04] px-4 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-              >
-                Explorer
-                <ExternalLink className="h-4 w-4" />
-              </Link>
+          <div className="rounded-[1.6rem] border border-primary/16 bg-[linear-gradient(180deg,rgba(19,164,255,0.09),rgba(255,255,255,0.02))] p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-1 h-4 w-4 text-primary" />
+              <div>
+                <div className="text-sm font-semibold text-white/82">{status}</div>
+                <div className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-white/42">Factory contract</div>
+                <div className="mt-2 break-all font-mono text-xs text-white/70">{FACTORY_ADDRESS}</div>
+              </div>
             </div>
-          </div>
-
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-white/78">{status}</span>
-            </div>
-            {error ? <p className="mt-3 text-sm font-semibold leading-7 text-rose-300">{error}</p> : null}
+            {error ? <p className="mt-4 text-sm font-semibold leading-7 text-rose-300">{error}</p> : null}
+            {gasEstimate ? <p className="mt-3 text-sm text-white/56">Estimated gas: {gasEstimate}</p> : null}
             {txHash ? (
               <div className="mt-4 text-sm text-white/72">
                 <div className="font-bold text-white">Transaction</div>
@@ -680,25 +660,26 @@ export function InriTokenFactoryClient() {
               </div>
             ) : null}
             {createdToken ? (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  href={`https://explorer.inri.life/address/${createdToken}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.04] px-5 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10"
-                >
+              <div className="mt-5 grid gap-3">
+                <Link href={`https://explorer.inri.life/address/${createdToken}`} target="_blank" rel="noreferrer" className="inri-button-secondary text-sm">
                   Open token on explorer
                   <ExternalLink className="h-4 w-4" />
                 </Link>
-                <button
-                  type="button"
-                  onClick={addTokenToWallet}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/[0.10] px-5 text-sm font-bold text-primary transition hover:bg-primary/[0.16]"
-                >
+                <button type="button" onClick={addTokenToWallet} className="inri-button-primary text-sm">
                   Add token to wallet
                 </button>
               </div>
             ) : null}
+            <div className="mt-5 flex gap-3">
+              <button type="button" onClick={copyFactory} className="inri-button-secondary flex-1 text-sm">
+                <Copy className="h-4 w-4" />
+                {copied ? 'Copied' : 'Copy contract'}
+              </button>
+              <Link href={`https://explorer.inri.life/address/${FACTORY_ADDRESS}`} target="_blank" rel="noreferrer" className="inri-button-secondary flex-1 text-sm">
+                Explorer
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

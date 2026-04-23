@@ -7,6 +7,14 @@ declare global {
   interface Window {
     ethers?: unknown
     __INRI_WALLETCONNECT_PROVIDER__?: unknown
+    __INRI_ACTIVE_WALLET__?: {
+      connector?: string
+      address?: string
+      chainId?: string
+      provider?: unknown
+    } | null
+    __INRI_P2P_SYNC__?: (() => Promise<boolean>) | null
+    __INRI_P2P_REFRESH__?: (() => Promise<void>) | null
   }
 }
 
@@ -29,7 +37,7 @@ function patchStyle(styleText: string): string {
 :host .wrap{max-width:none;margin:0;padding:0;gap:16px}
 :host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 :host .p2pHero{display:none!important}
-:host .top{display:none!important}
+:host .top{display:flex!important;position:static!important;top:auto!important;z-index:auto!important;padding:0!important;margin:0 0 14px 0!important;border:none!important;background:transparent!important;backdrop-filter:none!important}
 :host .tabs,
 :host .card,
 :host .offer,
@@ -124,7 +132,7 @@ function patchStyle(styleText: string): string {
 :host .search{gap:10px}
 :host .search input{width:320px}
 @media(max-width:640px){:host .search input{width:100%}
-:host .tabs{justify-content:flex-start}
+:host .top .row,:host .tabs{justify-content:flex-start}
 :host .panelWrap{gap:14px}}
 :host .offers{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;max-height:none;overflow:visible;padding-right:0}
 :host .offer{
@@ -154,6 +162,12 @@ function patchStyle(styleText: string): string {
 :host .toast{border-radius:16px;padding:12px 14px;background:rgba(8,15,26,.96)}
 :host .muted{font-size:12px;color:rgba(255,255,255,.76)}
 :host .muted2{font-size:12px;color:rgba(255,255,255,.64)}
+:host .top > .brand{display:none!important}
+:host .top a.btn.btn-ghost{display:none!important}
+:host .top .row{width:100%;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+:host .top .pill{border-color:rgba(19,164,255,.16);background:rgba(255,255,255,.045)}
+:host .top .btn-pri{min-width:164px;justify-content:center}
+:host .top .mono{color:#fff}
 :host .right .mono,:host .kv .v,:host .walletLeft .mono{word-break:break-word}
 `
 
@@ -188,76 +202,59 @@ function patchScript(scriptText: string): string {
       '__root.addEventListener(',
     ),
     'if(window.ethereum) return window.ethereum;',
-    'if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
+    'if(window.__INRI_ACTIVE_WALLET__?.provider) return window.__INRI_ACTIVE_WALLET__.provider;\n    if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
   )
 
   return `${patched}
 
-async function __inriSelectProviderForSync(){
-  const candidates = []
-  if (window.__INRI_WALLETCONNECT_PROVIDER__) candidates.push(window.__INRI_WALLETCONNECT_PROVIDER__)
-  for (const item of discoveredProviders || []) {
-    if (item?.provider) candidates.push(item.provider)
-  }
-  if (window.ethereum) candidates.push(window.ethereum)
-
-  const seen = new Set()
-  for (const prov of candidates) {
-    if (!prov || seen.has(prov)) continue
-    seen.add(prov)
-    try {
-      const accounts = await prov.request?.({ method: "eth_accounts" })
-      if (Array.isArray(accounts) && accounts.length) return prov
-    } catch {}
-  }
-
-  return pickBestProvider()
+function __inriHeaderBridge(){
+  return window.__INRI_ACTIVE_WALLET__ || null
 }
 
-async function __inriBootstrapExternalWallet(){
+const __inriOriginalPickBestProvider = typeof pickBestProvider === 'function' ? pickBestProvider : null
+pickBestProvider = function(){
+  const bridge = __inriHeaderBridge()
+  if (bridge?.provider) return bridge.provider
+  if (window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__
+  return __inriOriginalPickBestProvider ? __inriOriginalPickBestProvider() : null
+}
+
+async function __inriSyncFromHeader(){
   try {
-    const prov = await __inriSelectProviderForSync()
-    if (!prov) return
+    const bridge = __inriHeaderBridge()
+    const provider = pickBestProvider()
+    if (!provider) return false
 
-    attachWalletListeners(prov)
+    const accounts = await provider.request?.({ method: 'eth_accounts' }).catch(() => [])
+    if (!Array.isArray(accounts) || !accounts.length) return false
 
-    const accounts = await prov.request?.({ method: "eth_accounts" }).catch(() => [])
-    if (!Array.isArray(accounts) || !accounts.length) return
-
-    const cid = await prov.request?.({ method: "eth_chainId" }).catch(() => "")
-    if (String(cid || "").toLowerCase() !== CHAIN_HEX.toLowerCase()) {
-      el.netPill.textContent = "Network: switch to " + CHAIN_NAME
-      return
+    if (!me) {
+      await connectWallet()
+    } else {
+      await refreshWithdrawable().catch(() => {})
+      await refreshMarket().catch(() => {})
     }
 
-    if (!rpcProvider) await buildRpcProvider()
-
-    browserProvider = new ethers.BrowserProvider(prov)
-    signer = await browserProvider.getSigner()
-    me = accounts[0]
-
-    readProvider = rpcProvider || browserProvider
-    contractRead = new ethers.Contract(CONTRACT, ABI, readProvider)
-    contractWrite = new ethers.Contract(CONTRACT, ABI, signer)
-
-    el.btnConnect.textContent = short(me)
-    el.meAddr.textContent = me
-    el.netPill.textContent = "Network: " + CHAIN_NAME
-    el.rpcMode.textContent = rpcProvider
-      ? "Provider mode: RPC(read) + Wallet(write) (" + new URL(activeRpcUrl).host + ")"
-      : "Provider mode: Wallet Provider (RPC fallback failed)"
-
-    try { await loadContractInfo() } catch {}
-    try { await detectWithdrawSupport() } catch {}
-    try { await refreshWithdrawable() } catch {}
-    try { await refreshMarket() } catch {}
-    try { startLiveActivity() } catch {}
+    if (bridge?.address && el?.meAddr) {
+      el.meAddr.textContent = bridge.address
+    }
+    if (el?.syncInfo) {
+      el.syncInfo.textContent = 'Wallet synced from the top header.'
+    }
+    return true
   } catch (err) {
-    console.warn("P2P wallet sync skipped", err)
+    console.warn('P2P header sync failed', err)
+    if (el?.syncInfo) {
+      el.syncInfo.textContent = 'Wallet sync failed. Use the sync button or the in-panel connect button.'
+    }
+    return false
   }
 }
 
-setTimeout(() => { void __inriBootstrapExternalWallet() }, 180)
+window.__INRI_P2P_SYNC__ = __inriSyncFromHeader
+window.__INRI_P2P_REFRESH__ = async () => { await refreshMarket() }
+window.addEventListener('inri:wallet-state', () => { setTimeout(() => { void __inriSyncFromHeader() }, 120) })
+setTimeout(() => { void __inriSyncFromHeader() }, 320)
 `
 }
 
@@ -288,9 +285,13 @@ export function InriP2PClient() {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string>('')
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     let cancelled = false
+
+    window.__INRI_P2P_SYNC__ = null
+    window.__INRI_P2P_REFRESH__ = null
 
     async function mountP2P() {
       try {
@@ -365,13 +366,39 @@ export function InriP2PClient() {
       if (hostRef.current?.shadowRoot) {
         hostRef.current.shadowRoot.innerHTML = ''
       }
+      window.__INRI_P2P_SYNC__ = null
+      window.__INRI_P2P_REFRESH__ = null
     }
   }, [])
 
+  const syncWallet = async () => {
+    try {
+      setSyncing(true)
+      await window.__INRI_P2P_SYNC__?.()
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const refreshMarket = async () => {
+    try {
+      setSyncing(true)
+      await window.__INRI_P2P_REFRESH__?.()
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
-      <div className="mb-5 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-white/68">
-        P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header. If a wallet is already connected there, the market now syncs it automatically here.
+      <div className="mb-5 flex flex-col gap-4 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm leading-7 text-white/68">
+          P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header. If the market does not sync automatically, use the sync button below.
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Syncing...' : 'Sync connected wallet'}</button>
+          <button type="button" onClick={refreshMarket} disabled={syncing} className="inri-button-secondary disabled:cursor-not-allowed disabled:opacity-60">Refresh market</button>
+        </div>
       </div>
       {status === 'loading' ? (
         <div className="flex min-h-[840px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/60 text-sm font-semibold text-white/72">

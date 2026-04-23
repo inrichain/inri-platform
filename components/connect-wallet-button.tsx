@@ -15,6 +15,7 @@ import {
   buildInriWalletConnectUrl,
   connectWalletConnect,
   disconnectWalletConnect,
+  getWalletConnectProvider,
   getWalletConnectState,
   shouldResumeWalletConnect,
   subscribeWalletConnect,
@@ -46,6 +47,12 @@ type WalletEntry = {
 declare global {
   interface Window {
     ethereum?: ProviderLike
+    __INRI_ACTIVE_WALLET__?: {
+      connector: ConnectorType | ''
+      address: string
+      chainId: string
+      provider?: ProviderLike
+    } | null
   }
 }
 
@@ -268,6 +275,52 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       providerChoices[0]?.provider
     )
   }, [activeProviderKey, providerChoices])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const syncActiveWalletBridge = async () => {
+      if (typeof window === 'undefined') return
+
+      let provider: ProviderLike | undefined
+
+      if (effectiveConnector === 'walletconnect' && wcAddress) {
+        try {
+          provider = (await getWalletConnectProvider()) as ProviderLike | undefined
+        } catch {
+          provider = undefined
+        }
+      } else if (effectiveConnector === 'injected' && injectedAddress) {
+        provider = injectedProvider
+      }
+
+      if (cancelled) return
+
+      window.__INRI_ACTIVE_WALLET__ = {
+        connector: effectiveConnector,
+        address: address || '',
+        chainId: chainId || '',
+        provider,
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('inri:wallet-state', {
+          detail: {
+            connector: effectiveConnector,
+            address: address || '',
+            chainId: chainId || '',
+            hasProvider: Boolean(provider),
+          },
+        }),
+      )
+    }
+
+    void syncActiveWalletBridge()
+
+    return () => {
+      cancelled = true
+    }
+  }, [effectiveConnector, address, chainId, wcAddress, injectedAddress, injectedProvider])
 
   async function connectInjected(entry?: WalletEntry) {
     try {
