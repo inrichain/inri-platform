@@ -117,7 +117,7 @@ const championshipSignals = [
 function Frame({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-[2rem] border-[1.55px] border-white/[0.20] bg-[radial-gradient(circle_at_top,rgba(19,164,255,0.10),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] shadow-[0_28px_88px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.05)] ${className}`}
+      className={`inri-premium-card ${className}`}
     >
       {children}
     </div>
@@ -139,7 +139,7 @@ function QuickRoute({
     <Link
       href={href}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-      className="group rounded-[1.45rem] border-[1.45px] border-white/[0.18] bg-black/32 px-4 py-4 transition hover:border-primary/55 hover:bg-primary/10"
+      className="group inri-premium-tile block px-4 py-4 transition hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/[0.07]"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -236,7 +236,7 @@ export function InriHomepage() {
 
         <section className="border-t border-white/[0.10] bg-black">
           <div className="inri-page-container py-10 sm:py-12 lg:py-14">
-            <div className="rounded-[2rem] border-[1.45px] border-primary/18 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_26%),linear-gradient(180deg,rgba(6,17,29,0.98),rgba(1,5,10,0.99))] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.34)] sm:p-7">
+            <div className="inri-premium-card p-5 sm:p-7">
               <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr] xl:items-center">
                 <div>
                   <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.10] px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
@@ -266,7 +266,7 @@ export function InriHomepage() {
                     return (
                       <div
                         key={item.title}
-                        className="rounded-[1.45rem] border border-white/[0.12] bg-black/28 p-4"
+                        className="inri-premium-tile p-4"
                       >
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
                           <Icon className="h-5 w-5" />
@@ -323,7 +323,7 @@ export function InriHomepage() {
                     key={item.title}
                     href={item.href}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="group rounded-[1.85rem] border-[1.45px] border-white/[0.20] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] p-5 transition hover:border-primary/55 hover:bg-primary/10"
+                    className="group inri-premium-card block p-5 transition hover:-translate-y-1 hover:border-primary/45 hover:bg-primary/[0.07]"
                   >
                     <div className="inline-flex rounded-2xl border-[1.25px] border-primary/28 bg-primary/10 p-3 text-primary">
                       <Icon className="h-5 w-5" />

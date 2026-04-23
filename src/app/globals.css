@@ -263,51 +263,51 @@ html, body { background: #000; }
 
 .inri-button-primary {
   display: inline-flex;
-  min-height: 50px;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  border-radius: 1.1rem;
-  border: 1px solid rgba(126,212,255,0.96);
-  background: linear-gradient(135deg, #0999f7 0%, #28b1ff 56%, #8fe8ff 100%);
-  padding: 0 1.45rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(126,212,255,0.82);
+  background: linear-gradient(180deg, #36b8ff 0%, #129eff 100%);
+  padding: 0 1.2rem;
   font-size: 14px;
   font-weight: 900;
   letter-spacing: 0.01em;
-  color: #021019;
-  box-shadow: 0 20px 56px rgba(19,164,255,0.32), 0 0 0 1px rgba(19,164,255,0.10), inset 0 1px 0 rgba(255,255,255,0.48);
-  transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  color: #03111a;
+  box-shadow: 0 14px 30px rgba(19,164,255,0.18), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .inri-button-primary:hover {
   transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow: 0 24px 64px rgba(19,164,255,0.36), 0 0 0 1px rgba(19,164,255,0.16), inset 0 1px 0 rgba(255,255,255,0.52);
+  filter: brightness(1.04);
+  box-shadow: 0 18px 36px rgba(19,164,255,0.24), inset 0 1px 0 rgba(255,255,255,0.34);
 }
 
 .inri-button-secondary {
   display: inline-flex;
-  min-height: 50px;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  border-radius: 1.1rem;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-  padding: 0 1.45rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
+  padding: 0 1.2rem;
   font-size: 14px;
   font-weight: 900;
   letter-spacing: 0.01em;
   color: #edf7ff;
-  box-shadow: 0 18px 42px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .inri-button-secondary:hover {
   transform: translateY(-1px);
-  border-color: rgba(19,164,255,0.58);
-  background: linear-gradient(180deg, rgba(19,164,255,0.14), rgba(19,164,255,0.06));
-  box-shadow: 0 22px 48px rgba(0,0,0,0.28), 0 0 0 1px rgba(19,164,255,0.10);
+  border-color: rgba(19,164,255,0.42);
+  background: linear-gradient(180deg, rgba(19,164,255,0.12), rgba(19,164,255,0.05));
+  box-shadow: 0 16px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(19,164,255,0.08);
 }
 
 .inri-subcard {
@@ -386,4 +386,271 @@ html, body { background: #000; }
   margin-top: 0.4rem;
   font-size: 13px;
   color: rgba(237, 247, 255, 0.76);
+}
+
+/* INRI professional polish: foundation-style spacing, cleaner buttons, better accessibility */
+html { scroll-behavior: smooth; }
+
+.inri-hero-surface {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.inri-hero-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(19,164,255,0.16), transparent 28%),
+    radial-gradient(circle at 88% 0%, rgba(125,211,252,0.09), transparent 26%),
+    linear-gradient(rgba(19,164,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19,164,255,0.035) 1px, transparent 1px);
+  background-size: auto, auto, 64px 64px, 64px 64px;
+  opacity: 0.78;
+}
+
+.inri-hero-surface > * { position: relative; z-index: 1; }
+
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card,
+.inri-sidebar-card,
+.inri-subcard {
+  border-color: rgba(125,211,252,0.16) !important;
+  background:
+    radial-gradient(circle at top left, rgba(19,164,255,0.08), transparent 28%),
+    linear-gradient(180deg, rgba(8,18,32,0.96), rgba(2,8,16,0.985)) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.045) !important;
+}
+
+.inri-button-primary,
+.inri-button-secondary {
+  min-height: 50px;
+  border-radius: 999px !important;
+  padding-inline: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.inri-button-primary {
+  border-color: rgba(139,220,255,0.82) !important;
+  background: linear-gradient(135deg, #74d8ff 0%, #23b2ff 45%, #078cff 100%) !important;
+  color: #03111a !important;
+  box-shadow: 0 18px 44px rgba(19,164,255,0.22), inset 0 1px 0 rgba(255,255,255,0.42) !important;
+}
+
+.inri-button-secondary {
+  border-color: rgba(255,255,255,0.16) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)) !important;
+  color: #edf7ff !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.055) !important;
+}
+
+.inri-button-primary:focus-visible,
+.inri-button-secondary:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(116,216,255,0.85);
+  outline-offset: 3px;
+}
+
+.inri-chip {
+  border-color: rgba(125,211,252,0.20) !important;
+  background: rgba(19,164,255,0.075) !important;
+  color: rgba(237,247,255,0.84) !important;
+}
+
+
+/* INRI Top-tier unified visual system v13 */
+:root {
+  --inri-blue: #13a4ff;
+  --inri-cyan: #78dcff;
+  --inri-navy: #061427;
+  --inri-black: #00040a;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(circle at 12% -8%, rgba(19,164,255,.22), transparent 32rem),
+    radial-gradient(circle at 92% 0%, rgba(120,220,255,.12), transparent 34rem),
+    linear-gradient(180deg,#020712 0%,#000 48%,#020712 100%) !important;
+}
+
+/* One system for every route */
+.inri-premium-main,
+main.bg-black,
+main[class*="bg-[radial-gradient"] {
+  min-height: 100vh;
+  color: #fff;
+  background:
+    radial-gradient(circle at 12% -8%, rgba(19,164,255,.18), transparent 34rem),
+    radial-gradient(circle at 88% 4%, rgba(120,220,255,.10), transparent 36rem),
+    linear-gradient(180deg,#020712 0%,#000 50%,#020712 100%) !important;
+}
+
+.inri-page-container {
+  width: 100%;
+  max-width: 1500px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) { .inri-page-container { padding-inline: 2rem; } }
+@media (min-width: 1280px) { .inri-page-container { padding-inline: 3.25rem; } }
+
+.inri-hero-surface {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(19,164,255,.26), transparent 32rem),
+    radial-gradient(circle at 88% 10%, rgba(120,220,255,.12), transparent 32rem),
+    linear-gradient(180deg, rgba(3,11,24,.98), rgba(0,0,0,.98)) !important;
+}
+
+.inri-hero-surface::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(120,220,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,220,255,.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, black, transparent 78%);
+  opacity:.7;
+}
+.inri-hero-surface > * { position: relative; z-index: 1; }
+
+/* Remove the ugly boxed feeling: all cards become softer surfaces */
+.inri-premium-hero-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card {
+  border-radius: 2rem !important;
+  border: 1px solid rgba(255,255,255,.11) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.12), transparent 22rem),
+    linear-gradient(180deg, rgba(8,19,36,.70), rgba(2,8,18,.82)) !important;
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+  backdrop-filter: blur(18px);
+}
+
+.inri-premium-hero-card {
+  border-radius: 2.25rem !important;
+  background:
+    linear-gradient(135deg, rgba(19,164,255,.18), transparent 28%),
+    linear-gradient(180deg, rgba(8,20,38,.56), rgba(2,7,15,.72)) !important;
+}
+
+.inri-premium-tile,
+article[class*="rounded"],
+div[class*="rounded-[1."][class*="border"] {
+  border-color: rgba(255,255,255,.10) !important;
+}
+
+.inri-premium-tile {
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.035);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.inri-chip {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  border-radius: 999px !important;
+  border: 1px solid rgba(120,220,255,.22) !important;
+  background: rgba(19,164,255,.08) !important;
+  padding: .42rem .82rem !important;
+  color: rgba(237,247,255,.82) !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase;
+}
+
+/* Buttons: force a premium unified style everywhere */
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary {
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .65rem !important;
+  border-radius: 999px !important;
+  padding-inline: 1.25rem !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  letter-spacing: .005em !important;
+  line-height: 1 !important;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease, color .18s ease, filter .18s ease !important;
+}
+
+.inri-button-primary {
+  color: #00101d !important;
+  border: 1px solid rgba(255,255,255,.60) !important;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #bfeeff 38%, #13a4ff 100%) !important;
+  box-shadow:
+    0 16px 42px rgba(19,164,255,.32),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+.inri-button-secondary {
+  color: rgba(255,255,255,.90) !important;
+  border: 1px solid rgba(120,220,255,.24) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.026)) !important;
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.inri-button-primary:hover,
+.inri-button-secondary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  border-color: rgba(255,255,255,.55) !important;
+}
+
+/* Wallet button */
+[data-slot],
+button[class*="rounded-[1rem]"][class*="Connect"],
+button[class*="rounded-full"] {
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.inri-input-modern,
+input,
+select,
+textarea {
+  border-radius: 1rem !important;
+}
+
+.inri-back-to-top {
+  border-radius: 999px !important;
+  border: 1px solid rgba(120,220,255,.28) !important;
+  background: linear-gradient(180deg, rgba(8,22,42,.92), rgba(0,4,10,.96)) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+@media (max-width: 640px) {
+  .inri-button-primary,
+  .inri-button-secondary { width: 100%; }
 }

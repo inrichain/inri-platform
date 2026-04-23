@@ -312,7 +312,7 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#02060f]/88 shadow-[0_18px_70px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/82 shadow-[0_12px_40px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
       <div className="border-b border-white/[0.08] bg-[linear-gradient(90deg,rgba(19,164,255,0.20),rgba(103,212,255,0.10),rgba(19,164,255,0.20))]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
           <p
@@ -333,7 +333,7 @@ export function InriHeader() {
           </div>
 
           <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <nav className="flex items-center justify-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.035] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <nav className="flex items-center justify-center gap-1">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -408,7 +408,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-12 w-12 items-center justify-center rounded-full text-white/72 transition-all hover:-translate-y-px hover:text-white"
+      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
     >
       {link.icon}
     </Link>
@@ -417,35 +417,31 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_32rem),linear-gradient(180deg,#02060f,#000)]">
-      <div className="mx-auto max-w-[1600px] px-4 py-16 sm:px-8 lg:py-20 xl:px-12 2xl:px-16">
-        <div className="grid gap-12 rounded-[2.5rem] border border-white/[0.10] bg-white/[0.025] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8 lg:grid-cols-5 lg:gap-10 lg:p-10">
-          <div className="max-w-md">
-            <Logo showText size={78} />
-            <p className="mt-6 text-sm leading-7 text-white/56 sm:text-[15px]">
-              Official network surface for wallet access, explorer, mining, staking,
-              token creation and the active championship route on INRI CHAIN.
+    <footer className="border-t border-white/[0.08] bg-black">
+      <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-18 xl:px-12 2xl:px-16">
+        <div className="grid gap-10 lg:grid-cols-[1.35fr_repeat(4,0.8fr)] lg:gap-12">
+          <div className="max-w-lg">
+            <Logo showText size={76} />
+            <p className="mt-5 max-w-[42rem] text-sm leading-7 text-white/52 sm:text-[15px]">
+              INRI CHAIN official mainnet surface: wallet, explorer, mining, staking,
+              token factory, P2P market and active ecosystem routes.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center gap-2">
               {socialLinks.map((link) => (
                 <FooterSocialIcon key={link.label} link={link} />
               ))}
-            </div>
-            <div className="mt-7 space-y-1.5 text-sm text-white/40">
-              <p>© 2026 INRI CHAIN. All rights reserved.</p>
-              <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
             </div>
           </div>
 
           {footerGroups.map((group) => (
             <div key={group.title}>
-              <h3 className="text-[1.3rem] font-bold text-white">{group.title}</h3>
-              <div className="mt-6 grid gap-4">
+              <h3 className="text-sm font-black uppercase tracking-[0.18em] text-white">{group.title}</h3>
+              <div className="mt-5 grid gap-3.5">
                 {group.links.map((item) => (
                   <Link
                     key={`${group.title}-${item.label}-${item.href}`}
                     href={item.href}
-                    className="text-[15px] font-medium text-white/64 transition hover:text-white"
+                    className="text-[15px] font-semibold text-white/52 transition hover:text-white"
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
                   >
                     {item.label}
@@ -456,21 +452,24 @@ export function InriFooter() {
           ))}
 
           <div>
-            <h3 className="text-[1.3rem] font-bold text-white">Network</h3>
-            <div className="mt-6 grid gap-4 text-[15px] text-white/64">
-              <p>Consensus</p>
-              <p className="font-semibold text-white">Proof-of-Work</p>
-              <p>Chain ID</p>
-              <p className="font-semibold text-white">3777</p>
-              <p>Compatibility</p>
-              <p className="font-semibold text-white">EVM</p>
-              <Link href="mailto:contact@inri.life" className="font-semibold text-white transition hover:text-primary">
+            <h3 className="text-sm font-black uppercase tracking-[0.18em] text-white">Network</h3>
+            <div className="mt-5 grid gap-3.5 text-[15px] text-white/52">
+              <p><span className="text-white/38">Consensus:</span> <strong className="text-white">PoW</strong></p>
+              <p><span className="text-white/38">Chain ID:</span> <strong className="text-white">3777</strong></p>
+              <p><span className="text-white/38">Runtime:</span> <strong className="text-white">EVM</strong></p>
+              <Link href="mailto:contact@inri.life" className="font-semibold text-primary transition hover:text-white">
                 contact@inri.life
               </Link>
             </div>
           </div>
         </div>
+
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/[0.08] pt-6 text-sm text-white/38 md:flex-row md:items-center md:justify-between">
+          <p>© 2026 INRI CHAIN. All rights reserved.</p>
+          <p>Mainnet · Chain 3777 · Proof-of-Work · EVM Compatible</p>
+        </div>
       </div>
     </footer>
   )
 }
+

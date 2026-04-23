@@ -147,22 +147,23 @@ function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text
 export function InriWalletsPage() {
   return (
     <main className="inri-premium-main">
-      <section className="inri-hero-surface bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_24%),radial-gradient(circle_at_85%_0%,rgba(19,164,255,0.08),transparent_22%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
-        <div className="inri-page-container py-8 sm:py-10 xl:py-11">
-          <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
+      <section className="inri-hero-surface">
+        <div className="inri-page-container py-10 sm:py-12 lg:py-16">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.46fr)] lg:items-end">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
-                Step 1 — Download your wallet
+              <div className="flex flex-wrap gap-2.5">
+                <span className="inri-chip text-primary">Wallets</span>
+                <span className="inri-chip">Onboarding</span>
+                <span className="inri-chip">Chain 3777</span>
               </div>
-              <h1 className="mt-5 max-w-4xl text-[2.5rem] font-black leading-[1.02] text-white sm:text-[3.35rem] xl:text-[3.5rem]">
-                Choose a compatible wallet for <span className="text-primary">INRI CHAIN</span>.
+              <h1 className="mt-6 max-w-5xl text-balance text-[2.4rem] font-black leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.4rem] lg:text-[5rem]">
+                Choose a wallet and enter the INRI network.
               </h1>
-              <p className="mt-5 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">
-                Download a wallet, create your address and add INRI CHAIN using the official RPC and explorer values.
-                This page keeps onboarding clear, direct and faster to scan.
+              <p className="mt-6 max-w-3xl text-base leading-8 text-white/68 sm:text-lg sm:leading-9">
+                Install a compatible EVM wallet, add INRI CHAIN and continue into explorer, mining, staking, P2P and token creation from the same official site.
               </p>
 
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
                 <InriLinkButton href="https://wallet.inri.life" external noTranslate>
                   Open INRI Wallet
                 </InriLinkButton>
@@ -170,69 +171,51 @@ export function InriWalletsPage() {
                   Open Explorer
                 </InriLinkButton>
               </div>
-
-              <div className="mt-7 flex flex-wrap gap-3 text-sm text-white/72">
-                <div className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 font-semibold">RPC: https://rpc.inri.life</div>
-                <div className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 font-semibold">Explorer: https://explorer.inri.life</div>
-                <div className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 font-semibold">Chain ID: 3777 (0xEC1)</div>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:max-w-[42rem]">
-                {quickHighlights.map((item) => (
-                  <QuickCard key={item.title} icon={item.icon} title={item.title} text={item.text} />
-                ))}
-              </div>
             </div>
 
-            <div className="inri-premium-card p-4 sm:p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Manual setup</p>
-              <h2 className="mt-3 text-[1.9rem] font-black leading-tight text-white">Add INRI CHAIN manually.</h2>
-              <p className="mt-3 text-sm leading-7 text-white/64">
-                Use these values in MetaMask, Rabby, Coinbase Wallet, Bitget, OKX or any compatible EVM wallet.
+            <div className="inri-premium-card p-5 sm:p-6">
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Network setup</p>
+              <h2 className="mt-3 text-2xl font-black text-white">Add INRI manually.</h2>
+              <p className="mt-3 text-sm leading-7 text-white/62">
+                Use these values in MetaMask, Rabby, Trust Wallet, OKX, Bitget, Coinbase Wallet or any EVM-compatible wallet.
               </p>
-
-              <div className="mt-5 rounded-[1.35rem] border border-primary/18 bg-primary/[0.07] p-4">
-                <ol className="space-y-2 text-sm leading-6 text-white/72">
-                  <li>1. Open your wallet and go to <strong className="text-white">Settings → Networks</strong>.</li>
-                  <li>2. Choose <strong className="text-white">Add network</strong> or <strong className="text-white">Add custom network</strong>.</li>
-                  <li>3. Fill the fields below and save.</li>
-                </ol>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-3">
                 {networkFields.map((field) => (
                   <div
                     key={field.label}
-                    className={`rounded-[1.1rem] border border-white/10 bg-white/[0.035] px-4 py-3 ${field.span === 'full' ? 'sm:col-span-2' : ''}`}
+                    className="inri-premium-tile px-4 py-3"
                   >
-                    <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/44">{field.label}</div>
-                    <div className="mt-1 break-all text-sm font-bold text-white">{field.value}</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">{field.label}</div>
+                    <div className="mt-1 break-all text-sm font-black text-white">{field.value}</div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {quickHighlights.map((item) => (
+              <QuickCard key={item.title} icon={item.icon} title={item.title} text={item.text} />
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="pb-8 pt-4">
+      <section className="py-10 sm:py-12">
         <div className="inri-page-container">
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Wallet directory</p>
-              <h2 className="mt-2 text-3xl font-black text-white sm:text-[2.15rem]">Choose the wallet that fits your setup.</h2>
+              <h2 className="mt-2 text-3xl font-black text-white sm:text-[2.35rem]">Supported wallet options</h2>
             </div>
-            <p className="max-w-2xl text-sm leading-7 text-white/62">
-              Desktop, mobile and hardware-friendly options. Download, add INRI CHAIN and continue directly into explorer, swap or mining.
+            <p className="max-w-2xl text-sm leading-7 text-white/58">
+              The cards below stay compact and consistent with the rest of the site: install, add INRI CHAIN and continue.
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {walletItems.map((wallet) => (
-              <article
-                key={wallet.name}
-                className="inri-premium-card flex min-h-[260px] flex-col p-5"
-              >
+              <article key={wallet.name} className="inri-premium-card flex min-h-[250px] flex-col p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/14 bg-white">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -240,34 +223,24 @@ export function InriWalletsPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-white">{wallet.name}</h3>
-                    <p className="mt-1 text-sm leading-6 text-white/60">{wallet.description}</p>
+                    <p className="mt-1 text-sm leading-6 text-white/58">{wallet.description}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   {wallet.tags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">
+                    <span key={tag} className="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white/50">
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-5 grid gap-3">
-                  <Link
-                    href={wallet.primaryHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 text-[13px] font-extrabold text-black shadow-[0_14px_34px_rgba(19,164,255,0.28),inset_0_1px_0_rgba(255,255,255,0.52)] transition hover:-translate-y-px hover:brightness-105"
-                  >
+                <div className="mt-auto grid gap-3 pt-5">
+                  <Link href={wallet.primaryHref} target="_blank" rel="noreferrer" className="inri-button-primary text-sm">
                     <Download className="h-4 w-4" />
                     {wallet.primaryLabel}
                   </Link>
-                  <Link
-                    href={wallet.secondaryHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/[0.18] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] px-4 text-[13px] font-bold text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
-                  >
+                  <Link href={wallet.secondaryHref} target="_blank" rel="noreferrer" className="inri-button-secondary text-sm">
                     <ExternalLink className="h-4 w-4" />
                     {wallet.secondaryLabel}
                   </Link>
@@ -278,51 +251,19 @@ export function InriWalletsPage() {
         </div>
       </section>
 
-      <section className="pb-10 pt-4 sm:pb-12">
+      <section className="pb-14 pt-2">
         <div className="inri-page-container">
-          <div className="inri-premium-card p-5 sm:p-6">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:items-center">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Next step</p>
-                <h2 className="mt-2 text-3xl font-black text-white sm:text-[2.05rem]">Install, add the network and move directly into the ecosystem.</h2>
-                <div className="mt-5 grid gap-3 text-sm leading-7 text-white/70">
-                  <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/[0.03] px-4 py-3">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                    <p>After saving the network, switch to <strong className="text-white">INRI CHAIN</strong> inside your wallet.</p>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/[0.03] px-4 py-3">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                    <p>Open the <strong className="text-white">Explorer</strong> to verify balances, contracts and recent blocks.</p>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/[0.03] px-4 py-3">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                    <p>Continue into <strong className="text-white">Mining</strong>, <strong className="text-white">Pool</strong> or <strong className="text-white">Swap</strong> without leaving the same site.</p>
-                  </div>
-                </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {[
+              'Create or import a wallet and save your seed phrase offline.',
+              'Add INRI CHAIN with RPC https://rpc.inri.life and Chain ID 3777.',
+              'Open explorer, mining, staking or the P2P market from the same site.',
+            ].map((text) => (
+              <div key={text} className="inri-premium-card flex items-start gap-3 p-5">
+                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                <p className="text-sm leading-7 text-white/68">{text}</p>
               </div>
-
-              <div className="rounded-[1.55rem] border border-primary/18 bg-primary/[0.07] p-5">
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Useful routes</p>
-                <div className="mt-4 grid gap-3">
-                  {[
-                    { label: 'INRI Wallet', href: 'https://wallet.inri.life', external: true },
-                    { label: 'Explorer', href: 'https://explorer.inri.life', external: true },
-                    { label: 'Swap', href: '/swap' },
-                    { label: 'Mining', href: '/mining' },
-                  ].map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center justify-between rounded-[1.1rem] border border-white/10 bg-black/20 px-4 py-3 text-sm font-bold text-white transition hover:border-primary/35 hover:bg-black/30"
-                      {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    >
-                      <span>{item.label}</span>
-                      <span className="text-primary">↗</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
