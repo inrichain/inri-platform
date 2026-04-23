@@ -1,18 +1,18 @@
 {
   "mode": "live",
-  "updatedAt": "2026-04-23T14:25:14.665Z",
-  "currentBlock": 1076872,
+  "updatedAt": "2026-04-23T16:14:56.257Z",
+  "currentBlock": 1077503,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1076872,
+  "lastScannedBlock": 1077503,
   "backfillComplete": true,
   "participants": [
     {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 34959,
-      "lastBlock": 1076872,
-      "chainSoloBlocks": 34959,
+      "blocks": 35497,
+      "lastBlock": 1077503,
+      "chainSoloBlocks": 35497,
       "poolSoloBlocks": 0
     },
     {
@@ -38,38 +38,45 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 2216,
-      "lastBlock": 1076793,
+      "blocks": 2228,
+      "lastBlock": 1077380,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 2216
+      "poolSoloBlocks": 2228
     },
     {
       "address": "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8",
-      "blocks": 856,
-      "lastBlock": 1076826,
+      "blocks": 881,
+      "lastBlock": 1077408,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 856
+      "poolSoloBlocks": 881
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 569,
-      "lastBlock": 1076740,
+      "blocks": 579,
+      "lastBlock": 1077422,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 569
+      "poolSoloBlocks": 579
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
-      "blocks": 567,
-      "lastBlock": 1076696,
+      "blocks": 568,
+      "lastBlock": 1077432,
       "chainSoloBlocks": 2,
-      "poolSoloBlocks": 565
+      "poolSoloBlocks": 566
     },
     {
       "address": "0x0867abe69f7d0edf368d11a9f36213f91c2613a0",
-      "blocks": 348,
-      "lastBlock": 1076805,
+      "blocks": 358,
+      "lastBlock": 1077478,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 348
+      "poolSoloBlocks": 358
+    },
+    {
+      "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
+      "blocks": 315,
+      "lastBlock": 1077215,
+      "chainSoloBlocks": 0,
+      "poolSoloBlocks": 315
     },
     {
       "address": "0xcb3b222b0168e4a4da705ca7c5ffa453afbd20b1",
@@ -79,18 +86,11 @@
       "poolSoloBlocks": 314
     },
     {
-      "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 310,
-      "lastBlock": 1076747,
-      "chainSoloBlocks": 0,
-      "poolSoloBlocks": 310
-    },
-    {
       "address": "0xcfb18f8bbaa3c4f869ce4c12f87d73b79ad75f5f",
-      "blocks": 60,
-      "lastBlock": 1076773,
+      "blocks": 67,
+      "lastBlock": 1077463,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 60
+      "poolSoloBlocks": 67
     },
     {
       "address": "0xa6771ece6c906745181b6a1955f514babcd33488",
