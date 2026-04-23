@@ -14,16 +14,16 @@ const stakingPoints = [
 export function InriStakingPage() {
   return (
     <InriShell>
-      <main className="inri-premium-main">
-        <section className="inri-hero-surface">
+      <main className="inri-page-shell">
+        <section className="inri-hero-showcase">
           <div className="inri-page-container py-10 sm:py-12 lg:py-16">
-            <div className="inri-premium-hero-card p-5 sm:p-7 lg:p-10">
+            <div className="inri-glass-hero p-5 sm:p-7 lg:p-10">
               <div className="grid gap-8 xl:grid-cols-[minmax(0,1.06fr)_minmax(320px,0.48fr)] xl:items-end">
                 <div>
                   <div className="flex flex-wrap gap-2.5">
-                    <span className="inri-chip text-primary">Staking</span>
-                    <span className="inri-chip">Official route</span>
-                    <span className="inri-chip">Chain 3777</span>
+                    <span className="inri-tag text-primary">Staking</span>
+                    <span className="inri-tag">Official route</span>
+                    <span className="inri-tag">Chain 3777</span>
                   </div>
                   <h1 className="mt-6 max-w-5xl text-balance text-[2.4rem] font-black leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.4rem] lg:text-[5rem]">
                     Stake INRI from a cleaner control panel.
@@ -45,7 +45,7 @@ export function InriStakingPage() {
                   {stakingPoints.map((item) => {
                     const Icon = item.icon
                     return (
-                      <div key={item.title} className="inri-premium-tile flex gap-4 p-4">
+                      <div key={item.title} className="inri-data-box flex gap-4 p-4">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
                           <Icon className="h-5 w-5" />
                         </div>
@@ -64,7 +64,7 @@ export function InriStakingPage() {
 
         <section className="pb-14 pt-6 sm:pb-18 lg:pb-20">
           <div className="inri-page-container">
-            <div className="inri-premium-card p-4 sm:p-6 lg:p-8">
+            <div className="inri-dashboard-card p-4 sm:p-6 lg:p-8">
               <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Staking controls</p>

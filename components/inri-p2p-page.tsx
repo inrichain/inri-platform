@@ -11,16 +11,16 @@ const highlights = [
 export function InriP2PPage() {
   return (
     <InriShell>
-      <main className="inri-premium-main">
-        <section className="inri-hero-surface">
+      <main className="inri-page-shell">
+        <section className="inri-hero-showcase">
           <div className="inri-page-container py-10 sm:py-12 lg:py-16">
-            <div className="inri-premium-hero-card p-5 sm:p-7 lg:p-10">
+            <div className="inri-glass-hero p-5 sm:p-7 lg:p-10">
               <div className="grid gap-8 xl:grid-cols-[minmax(0,1.06fr)_minmax(320px,0.46fr)] xl:items-end">
                 <div>
                   <div className="flex flex-wrap gap-2.5">
-                    <span className="inri-chip text-primary">P2P Market</span>
-                    <span className="inri-chip">Escrow</span>
-                    <span className="inri-chip">Chain 3777</span>
+                    <span className="inri-tag text-primary">P2P Market</span>
+                    <span className="inri-tag">Escrow</span>
+                    <span className="inri-tag">Chain 3777</span>
                   </div>
                   <h1 className="mt-6 max-w-5xl text-balance text-[2.4rem] font-black leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.4rem] lg:text-[5rem]">
                     Trade INRI peer-to-peer with a cleaner market surface.
@@ -30,7 +30,7 @@ export function InriP2PPage() {
                   </p>
                 </div>
 
-                <div className="inri-premium-card p-5 sm:p-6">
+                <div className="inri-dashboard-card p-5 sm:p-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
                     <RefreshCw className="h-5 w-5" />
                   </div>
@@ -47,7 +47,7 @@ export function InriP2PPage() {
               {highlights.map((item) => {
                 const Icon = item.icon
                 return (
-                  <div key={item.title} className="inri-premium-card p-5">
+                  <div key={item.title} className="inri-dashboard-card p-5">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
