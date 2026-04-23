@@ -42,30 +42,6 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
 ]
 
-const footerStartLinks: InriNavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
-  { label: 'Wallets', href: '/wallets' },
-  { label: 'Explorer', href: EXPLORER_URL, external: true },
-]
-
-const footerEcosystemLinks: InriNavItem[] = [
-  { label: 'Mining', href: '/mining' },
-  { label: 'Pool', href: '/pool' },
-  { label: 'Staking', href: '/staking' },
-  { label: 'Token Factory', href: '/token-factory' },
-  { label: 'Swap', href: '/swap' },
-  { label: 'P2P', href: '/p2p' },
-]
-
-const footerResourceLinks: InriNavItem[] = [
-  { label: 'Whitepaper', href: '/whitepaper' },
-  { label: 'Mining Championship', href: '/mining-championship/' },
-  { label: 'Mining Windows', href: '/mining-windows' },
-  { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
-  { label: 'Privacy Policy', href: '/privacy-policy' },
-  { label: 'Terms & Conditions', href: '/terms-and-conditions' },
-]
 
 function uniqueNavItems(items: InriNavItem[]) {
   const seen = new Set<string>()
@@ -103,8 +79,6 @@ const socialLinks: SocialLink[] = [
   { label: 'Email', href: 'mailto:contact@inri.life', icon: <Mail className="h-4 w-4" /> },
 ]
 
-const footerFacts = ['Proof-of-Work', 'Chain ID 3777', 'EVM Compatible', 'Mainnet Live']
-
 const navLinkClass =
   'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold text-white/78 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-3'
 
@@ -136,7 +110,7 @@ function UtilityMenu() {
         className="w-60 rounded-[1.2rem] border border-white/[0.12] bg-[linear-gradient(180deg,#040912,#000000)] p-2 text-white shadow-[0_22px_70px_rgba(0,0,0,0.5),0_0_0_1px_rgba(19,164,255,0.06)]"
       >
         <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-          More routes
+          Main routes
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/[0.08]" />
         {utilityNavItems.map((item) => (
@@ -319,46 +293,17 @@ export function InriShell({ children }: { children: ReactNode }) {
   )
 }
 
-function FooterLinkColumn({
-  title,
-  links,
-}: {
-  title: string
-  links: InriNavItem[]
-}) {
-  return (
-    <div>
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">{title}</p>
-      <div className="mt-5 grid gap-3">
-        {links.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            translate="no"
-            className="notranslate text-sm font-semibold text-white/72 transition hover:text-white"
-            {...(link.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function FooterSocialButton({ link }: { link: SocialLink }) {
+function FooterSocialIcon({ link }: { link: SocialLink }) {
   return (
     <Link
       href={link.href}
       target="_blank"
       rel="noreferrer"
       aria-label={link.label}
-      className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-white/74 transition-all hover:-translate-y-px hover:border-primary/48 hover:bg-primary/[0.12] hover:text-white"
+      title={link.label}
+      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.03] text-white/74 transition-all hover:-translate-y-px hover:border-primary/48 hover:bg-primary/[0.12] hover:text-white"
     >
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.12] bg-black/40">
-        {link.icon}
-      </span>
-      <span>{link.label}</span>
+      {link.icon}
     </Link>
   )
 }
@@ -366,100 +311,23 @@ function FooterSocialButton({ link }: { link: SocialLink }) {
 export function InriFooter() {
   return (
     <footer className="border-t border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.12),transparent_22%),linear-gradient(180deg,#010408_0%,#000000_100%)]">
-      <div className="mx-auto flex w-full max-w-[1760px] flex-col gap-14 px-4 py-16 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid gap-8 rounded-[2rem] border-[1.45px] border-white/[0.12] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 shadow-[0_28px_88px_rgba(0,0,0,0.34)] lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:p-8">
-          <div className="space-y-6">
-            <Logo showText size={58} />
-            <div className="max-w-3xl space-y-3">
-              <p className="text-lg font-semibold text-white/94 sm:text-xl">
-                Official access layer for the INRI mainnet.
-              </p>
-              <p className="max-w-[66ch] text-sm leading-7 text-white/60 sm:text-base">
-                Use one clear surface to open the wallet, explore the chain, start mining,
-                access the pool, launch tokens and read the whitepaper.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {footerFacts.map((fact) => (
-                <span
-                  key={fact}
-                  className="rounded-full border border-white/[0.12] bg-white/[0.04] px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/72"
-                >
-                  {fact}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-                Open INRI Wallet
-              </InriLinkButton>
-              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-                Open Explorer
-              </InriLinkButton>
-            </div>
+      <div className="mx-auto flex w-full max-w-[1760px] flex-col gap-8 px-4 py-10 sm:px-8 xl:px-12 2xl:px-16">
+        <div className="flex flex-col gap-6 rounded-[2rem] border-[1.45px] border-white/[0.12] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 shadow-[0_28px_88px_rgba(0,0,0,0.34)] lg:flex-row lg:items-center lg:justify-between lg:p-8">
+          <div className="max-w-3xl">
+            <Logo showText size={56} />
+            <p className="mt-5 max-w-[62ch] text-sm leading-7 text-white/64 sm:text-base">
+              Official mainnet surface for wallet access, explorer, mining, pool, token factory and the active championship route.
+            </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-white/[0.1] bg-black/28 p-5">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-primary">
-                Network
-              </p>
-              <div className="mt-4 space-y-3 text-sm text-white/72">
-                <div className="flex items-center justify-between gap-4">
-                  <span>Consensus</span>
-                  <span className="font-bold text-white">Proof-of-Work</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span>Chain ID</span>
-                  <span className="font-bold text-white">3777</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span>Compatibility</span>
-                  <span className="font-bold text-white">EVM</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span>Support</span>
-                  <span className="font-bold text-white">contact@inri.life</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-white/[0.1] bg-black/28 p-5">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-primary">
-                Community
-              </p>
-              <p className="mt-3 text-sm leading-7 text-white/58">
-                Official channels for updates, support, announcements and ecosystem activity.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                {socialLinks.map((link) => (
-                  <FooterSocialButton key={link.label} link={link} />
-                ))}
-              </div>
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {socialLinks.map((link) => (
+              <FooterSocialIcon key={link.label} link={link} />
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-3 xl:grid-cols-4">
-          <FooterLinkColumn title="Start" links={footerStartLinks} />
-          <FooterLinkColumn title="Ecosystem" links={footerEcosystemLinks} />
-          <FooterLinkColumn title="Resources" links={footerResourceLinks} />
-          <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">Brand</p>
-            <div className="mt-5 space-y-3 text-sm leading-7 text-white/60">
-              <p>
-                INRI CHAIN is built to keep the main routes of the network visible, direct and
-                easy to use on desktop and mobile.
-              </p>
-              <p>
-                The site should feel like a real network control surface, not a generic landing
-                page.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 border-t border-white/[0.08] pt-6 text-sm text-white/42 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 text-sm text-white/42 md:flex-row md:items-center md:justify-between">
           <p>© 2026 INRI CHAIN. All rights reserved.</p>
           <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
         </div>

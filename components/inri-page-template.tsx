@@ -78,15 +78,15 @@ export function InriPageTemplate({
 
               <div className="inri-section-surface rounded-[1.8rem] p-5 sm:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Page summary</p>
-                <h2 className="mt-3 text-2xl font-black text-white sm:text-[2rem]">Clear structure across the site.</h2>
+                <h2 className="mt-3 text-2xl font-black text-white sm:text-[2rem]">One consistent standard for every INRI route.</h2>
                 <p className="mt-4 text-sm leading-7 text-white/66">
-                  This route follows the same INRI layout rules used across the home page, wallet flow, explorer links and mining sections.
+                  Each page follows the same visual hierarchy, spacing and action pattern used across the INRI mainnet surface.
                 </p>
                 <div className="mt-5 grid gap-3">
                   {[
-                    'Cleaner mobile spacing and button rhythm',
-                    'Shared cards, actions and resources',
-                    'Consistent INRI branding',
+                    'Stronger hero hierarchy and cleaner action blocks',
+                    'Shared cards, routes and resource panels',
+                    'Consistent INRI branding across desktop and mobile',
                   ].map((item) => (
                     <div key={item} className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/76">
                       {item}

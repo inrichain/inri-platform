@@ -3,21 +3,23 @@ import Link from 'next/link'
 import {
   ArrowRight,
   Blocks,
+  Cpu,
   Factory,
-  Pickaxe,
-  ShieldCheck,
-  Wallet,
-  Layers3,
   FileText,
   Coins,
+  Layers3,
+  Pickaxe,
+  ShieldCheck,
+  Trophy,
+  Wallet,
 } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
 const heroPoints = [
-  'Wallet, explorer, mining and pool in one official flow',
-  'Token Factory, staking and P2P ready from the same site',
-  'Built for direct access on desktop and mobile',
+  'Official wallet, explorer, mining and pool routes from one surface',
+  'Token Factory, staking and P2P ready inside the same ecosystem',
+  'Built for direct use on mobile and desktop without breaking the flow',
 ]
 
 const routeCards: {
@@ -43,7 +45,7 @@ const routeCards: {
   },
   {
     title: 'Mining',
-    text: 'Get started with Windows, Ubuntu or pool mining.',
+    text: 'Start with Windows, Ubuntu or pool mining.',
     href: '/mining',
     icon: Pickaxe,
   },
@@ -81,16 +83,34 @@ const routeCards: {
 
 const quickSignals = [
   {
-    title: 'Official routes',
-    text: 'Wallet, explorer, pool, mining, staking and token creation stay visible from the first screen.',
+    title: 'Fast access',
+    text: 'Primary actions stay visible from the first fold so users can move from discovery to action without friction.',
   },
   {
-    title: 'Real network feel',
-    text: 'The homepage keeps the chain close to live activity instead of acting like a generic marketing landing page.',
+    title: 'Network-first layout',
+    text: 'The homepage behaves like a real network surface with routes, status and live references instead of a generic landing page.',
   },
   {
-    title: 'Responsive by default',
-    text: 'Main actions stay clear on mobile and desktop so onboarding does not break when traffic arrives from social media.',
+    title: 'Responsive control',
+    text: 'Cards, buttons and routing stay clear on mobile and desktop for traffic coming from social media, search and direct visits.',
+  },
+]
+
+const championshipSignals = [
+  {
+    title: '150,000 INRI',
+    text: 'Total reward pool',
+    icon: Trophy,
+  },
+  {
+    title: '0.20 INRI',
+    text: 'Per valid solo block',
+    icon: Pickaxe,
+  },
+  {
+    title: 'CPU valid',
+    text: 'Legitimate solo blocks qualify',
+    icon: Cpu,
   },
 ]
 
@@ -141,10 +161,10 @@ export function InriHomepage() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.045)_1px,transparent_1px)] bg-[size:56px_56px] opacity-28" />
 
           <div className="relative inri-page-container py-12 sm:py-14 lg:py-18">
-            <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:items-center">
+            <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr] xl:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
-                  {['Mainnet', 'PoW', 'Chain 3777', 'EVM'].map((item) => (
+                  {['Mainnet', 'PoW', 'Chain 3777', 'EVM Compatible'].map((item) => (
                     <span
                       key={item}
                       translate="no"
@@ -156,12 +176,12 @@ export function InriHomepage() {
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-[2.2rem] font-bold leading-[0.96] text-white sm:text-[3.6rem] lg:text-[5.15rem]">
-                  The official home of the INRI mainnet.
+                  Official access to the INRI mainnet.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-white/66 sm:text-lg">
-                  Open the wallet, explore the chain, start mining, access the pool, create
-                  tokens, enter staking and read the whitepaper from one professional network
-                  surface.
+                  Open the wallet, explore the blockchain, start mining, access the pool,
+                  launch tokens, join staking and follow the championship from one clean
+                  official surface.
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
@@ -169,7 +189,7 @@ export function InriHomepage() {
                     Open INRI Wallet
                   </InriLinkButton>
                   <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
-                    Explore Chain
+                    Open Explorer
                   </InriLinkButton>
                   <InriLinkButton href="/mining" variant="secondary">
                     Start Mining
@@ -192,14 +212,14 @@ export function InriHomepage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-                      Official routes
+                      Main routes
                     </p>
                     <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">
                       Everything users need to use, mine and explore INRI.
                     </h2>
                   </div>
                   <span className="rounded-full border-[1.35px] border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                    Main actions
+                    Mainnet live
                   </span>
                 </div>
 
@@ -211,23 +231,57 @@ export function InriHomepage() {
                   <QuickRoute title="Token Factory" text="Launch tokens on INRI" href="/token-factory" />
                   <QuickRoute title="Whitepaper" text="Read the project structure" href="/whitepaper" />
                 </div>
+              </Frame>
+            </div>
+          </div>
+        </section>
 
-                <div className="mt-5 rounded-[1.55rem] border-[1.45px] border-white/[0.16] bg-black/30 p-4 sm:p-5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                    Home priorities
+        <section className="border-t border-white/[0.10] bg-black">
+          <div className="inri-page-container py-10 sm:py-12 lg:py-14">
+            <div className="rounded-[2rem] border-[1.45px] border-primary/18 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_26%),linear-gradient(180deg,rgba(6,17,29,0.98),rgba(1,5,10,0.99))] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.34)] sm:p-7">
+              <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr] xl:items-center">
+                <div>
+                  <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.10] px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
+                    Active campaign
+                  </div>
+                  <h2 className="mt-5 max-w-4xl text-3xl font-black leading-tight text-white sm:text-4xl xl:text-[3.2rem]">
+                    Independent Mining Championship now deserves prime space on the home page.
+                  </h2>
+                  <p className="mt-4 max-w-3xl text-sm leading-8 text-white/66 sm:text-base">
+                    The competition is live from block 1,000,000 to 1,500,000 with 150,000 INRI
+                    in total rewards. Solo mining only. CPU miners are valid participants when the
+                    produced block is legitimate.
                   </p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    {['Fast access', 'Clear hierarchy', 'Live network feeling'].map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-2xl border-[1.25px] border-white/[0.12] bg-white/[0.02] px-3 py-3 text-sm text-white/74"
-                      >
-                        {item}
-                      </div>
-                    ))}
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <InriLinkButton href="/mining-championship/">Open Championship</InriLinkButton>
+                    <InriLinkButton href="/mining" variant="secondary">
+                      Mining Setup
+                    </InriLinkButton>
+                    <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
+                      Verify in Explorer
+                    </InriLinkButton>
                   </div>
                 </div>
-              </Frame>
+
+                <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                  {championshipSignals.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <div
+                        key={item.title}
+                        className="rounded-[1.45rem] border border-white/[0.12] bg-black/28 p-4"
+                      >
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="mt-4 text-lg font-black text-white">{item.title}</div>
+                        <p className="mt-1 text-sm leading-7 text-white/58">{item.text}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -257,12 +311,12 @@ export function InriHomepage() {
                   Ecosystem routes
                 </p>
                 <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
-                  Keep the main INRI routes visible without making the site heavy.
+                  Clear sections for the routes that matter most.
                 </h2>
               </div>
               <p className="max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
-                The site should move users from discovery to action quickly, while keeping the
-                network identity clear in every section.
+                Keep the main INRI routes visible, fast and consistent so the site feels like a
+                real mainnet interface instead of a loose collection of pages.
               </p>
             </div>
 
