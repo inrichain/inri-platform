@@ -136,7 +136,7 @@ const quickHighlights = [
 
 function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
   return (
-    <div className="rounded-[1.25rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] p-3.5 shadow-[0_14px_34px_rgba(0,0,0,0.16)]">
+    <div className="inri-premium-tile p-3.5">
       <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">{icon}</div>
       <h3 className="mt-2.5 text-[14px] font-bold text-white">{title}</h3>
       <p className="mt-1 text-[13px] leading-6 text-white/64">{text}</p>
@@ -146,7 +146,7 @@ function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text
 
 export function InriWalletsPage() {
   return (
-    <main className="bg-black text-white">
+    <main className="inri-premium-main">
       <section className="inri-hero-surface bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_24%),radial-gradient(circle_at_85%_0%,rgba(19,164,255,0.08),transparent_22%),linear-gradient(180deg,#03101d_0%,#000000_78%)]">
         <div className="inri-page-container py-8 sm:py-10 xl:py-11">
           <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
@@ -184,7 +184,7 @@ export function InriWalletsPage() {
               </div>
             </div>
 
-            <div className="rounded-[1.65rem] border-[1.35px] border-white/14 bg-[linear-gradient(180deg,rgba(6,18,30,0.98),rgba(1,6,12,0.99))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.30)] sm:p-5">
+            <div className="inri-premium-card p-4 sm:p-5">
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Manual setup</p>
               <h2 className="mt-3 text-[1.9rem] font-black leading-tight text-white">Add INRI CHAIN manually.</h2>
               <p className="mt-3 text-sm leading-7 text-white/64">
@@ -231,7 +231,7 @@ export function InriWalletsPage() {
             {walletItems.map((wallet) => (
               <article
                 key={wallet.name}
-                className="flex min-h-[260px] flex-col rounded-[1.65rem] border-[1.45px] border-white/12 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.24)]"
+                className="inri-premium-card flex min-h-[260px] flex-col p-5"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/14 bg-white">
@@ -280,7 +280,7 @@ export function InriWalletsPage() {
 
       <section className="pb-10 pt-4 sm:pb-12">
         <div className="inri-page-container">
-          <div className="rounded-[1.6rem] border-[1.35px] border-white/12 bg-[linear-gradient(180deg,rgba(6,18,30,0.96),rgba(2,8,14,0.98))] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-6">
+          <div className="inri-premium-card p-5 sm:p-6">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:items-center">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Next step</p>

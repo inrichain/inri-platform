@@ -496,8 +496,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
-    : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-[1rem] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.018))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24)] transition-all hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.12]'
+    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-full border border-primary/25 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.035))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.14]'
+    : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-full border border-primary/25 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.035))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.14]'
 
   const panelClass = compact
     ? 'left-0 right-0 w-auto min-[520px]:left-auto min-[520px]:right-0 min-[520px]:w-[390px]'

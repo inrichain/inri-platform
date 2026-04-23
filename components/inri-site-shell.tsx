@@ -131,7 +131,7 @@ const socialLinks: SocialLink[] = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold transition-all after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-3'
+  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-[14px] font-extrabold transition-all after:absolute after:bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-4'
 
 function NavLink({ item }: { item: InriNavItem }) {
   const pathname = usePathname()
@@ -142,7 +142,7 @@ function NavLink({ item }: { item: InriNavItem }) {
       href={item.href}
       translate="no"
       className={`${navLinkClass} ${
-        active ? 'text-white after:w-6' : 'text-white/78 after:w-0 hover:text-white hover:after:w-6'
+        active ? 'bg-primary/10 text-white after:w-6' : 'text-white/70 after:w-0 hover:bg-white/[0.05] hover:text-white hover:after:w-6'
       }`}
       aria-current={active ? 'page' : undefined}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
@@ -162,7 +162,7 @@ function UtilityMenu() {
         <button
           translate="no"
           className={`${navLinkClass} gap-1.5 ${
-            activeParent ? 'text-white after:w-6' : 'text-white/78 after:w-0 hover:text-white hover:after:w-6'
+            activeParent ? 'bg-primary/10 text-white after:w-6' : 'text-white/70 after:w-0 hover:bg-white/[0.05] hover:text-white hover:after:w-6'
           }`}
           aria-current={activeParent ? 'page' : undefined}
         >
@@ -312,26 +312,28 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/18 bg-black/96 backdrop-blur-2xl">
-      <div className="bg-[linear-gradient(90deg,#056ec7_0%,#118ff0_52%,#056ec7_100%)] shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-        <div className="mx-auto max-w-[1600px] px-4 py-3 sm:px-8 xl:px-12 2xl:px-16">
+    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#02060f]/88 shadow-[0_18px_70px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
+      <div className="border-b border-white/[0.08] bg-[linear-gradient(90deg,rgba(19,164,255,0.20),rgba(103,212,255,0.10),rgba(19,164,255,0.20))]">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/92 sm:text-[13px] lg:text-[15px] lg:tracking-[0.24em]"
+            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.22em] text-white/78 sm:text-[12px] lg:tracking-[0.28em]"
           >
-            Mainnet • Proof-of-Work • Chain 3777 • EVM Compatible
+            INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
           </p>
         </div>
       </div>
 
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid min-h-[74px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:min-h-[82px] md:gap-6 lg:min-h-[88px] lg:py-0">
+        <div className="grid min-h-[78px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 md:gap-6 lg:min-h-[86px] lg:py-0">
           <div className="min-w-0 justify-self-start">
-            <Logo showText size={42} />
+            <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full">
+              <Logo showText size={48} />
+            </Link>
           </div>
 
           <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <nav className="flex items-center justify-center gap-5 xl:gap-6">
+            <nav className="flex items-center justify-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.035] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -339,7 +341,7 @@ export function InriHeader() {
             </nav>
           </div>
 
-          <div className="hidden items-center justify-self-end gap-3 md:flex">
+          <div className="hidden items-center justify-self-end gap-2 md:flex">
             <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
@@ -359,8 +361,6 @@ export function InriHeader() {
           </div>
         </div>
       </div>
-
-      <div className="h-[6px] border-t border-white/10 bg-[linear-gradient(90deg,#056ec7_0%,#118ff0_52%,#056ec7_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
     </header>
   )
 }
@@ -380,7 +380,7 @@ function BackToTopButton() {
       type="button"
       aria-label="Back to top"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className={`fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-full border border-primary/35 bg-[linear-gradient(180deg,rgba(7,17,30,0.94),rgba(1,5,10,0.96))] text-primary shadow-[0_18px_55px_rgba(0,0,0,0.35),0_0_30px_rgba(19,164,255,0.12)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-primary/70 hover:text-white sm:bottom-7 sm:right-7 ${
+      className={`inri-back-to-top fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center text-primary backdrop-blur-xl transition-all hover:-translate-y-1 hover:text-white sm:bottom-7 sm:right-7 ${
         visible ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -417,9 +417,9 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-black">
-      <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-16 xl:px-12 2xl:px-16">
-        <div className="grid gap-12 border-t border-white/[0.05] pt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] lg:gap-10 lg:pt-14">
+    <footer className="border-t border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_32rem),linear-gradient(180deg,#02060f,#000)]">
+      <div className="mx-auto max-w-[1600px] px-4 py-16 sm:px-8 lg:py-20 xl:px-12 2xl:px-16">
+        <div className="grid gap-12 rounded-[2.5rem] border border-white/[0.10] bg-white/[0.025] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8 lg:grid-cols-5 lg:gap-10 lg:p-10">
           <div className="max-w-md">
             <Logo showText size={78} />
             <p className="mt-6 text-sm leading-7 text-white/56 sm:text-[15px]">

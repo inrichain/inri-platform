@@ -118,7 +118,7 @@ async function fetchSelector(signature: string) {
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(7,15,26,0.97),rgba(2,8,15,0.985))] shadow-[0_30px_90px_rgba(0,0,0,0.34)] ${className}`}>
+    <div className={`inri-premium-card ${className}`}>
       {children}
     </div>
   )
@@ -544,7 +544,7 @@ export function InriTokenFactoryClient() {
             </div>
           ) : null}
 
-          <div className="mt-5 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 sm:p-6">
+          <div className="mt-5 inri-premium-card p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Launch form</div>
@@ -625,14 +625,14 @@ export function InriTokenFactoryClient() {
           </div>
         </div>
         <div className="space-y-4">
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="inri-premium-card p-5 sm:p-6">
             <div className="flex items-center gap-2 text-white">
               <ShieldCheck className="h-5 w-5 text-primary" />
               <h3 className="text-xl font-black">Launch summary</h3>
             </div>
             <div className="mt-5 grid gap-3">
               {previewItems.map((item) => (
-                <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-4 py-4">
+                <div key={item.label} className="inri-premium-tile px-4 py-4">
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-white/46">{item.label}</div>
                   <div className="mt-2 text-base font-bold text-white">{item.value}</div>
                 </div>

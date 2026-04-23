@@ -1,130 +1,82 @@
-import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { ArrowRight, MonitorSmartphone, Pickaxe, Server, ShieldCheck } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 
 const entryCards = [
-  {
-    title: 'Mining Windows',
-    text: 'Official Windows mining route with cleaner structure and easier navigation.',
-    href: '/mining-windows',
-    icon: <MonitorSmartphone className="h-5 w-5" />,
-  },
-  {
-    title: 'Mining Ubuntu',
-    text: 'Official Ubuntu mining route with a cleaner setup flow and current installer access.',
-    href: '/mining-ubuntu',
-    icon: <Server className="h-5 w-5" />,
-  },
-  {
-    title: 'Pool',
-    text: 'Open PPLNS and SOLO stats, recent blocks, payments and miner lookup by address.',
-    href: '/pool',
-    icon: <Pickaxe className="h-5 w-5" />,
-  },
-  {
-    title: 'Mining Championship',
-    text: 'Official competition page with prize ladder, top 5 ranking and wallet search.',
-    href: '/mining-championship/',
-    icon: <ShieldCheck className="h-5 w-5" />,
-  },
-] as const
+  { title: 'Mining Windows', text: 'Start mining on Windows with the official INRI route.', href: '/mining-windows', icon: MonitorSmartphone },
+  { title: 'Mining Ubuntu', text: 'Use the Ubuntu setup route for server and VPS miners.', href: '/mining-ubuntu', icon: Server },
+  { title: 'Pool', text: 'Open PPLNS/SOLO stats, blocks, payouts and miner lookup.', href: '/pool', icon: Pickaxe },
+  { title: 'Championship', text: 'Follow the active mining championship and prize ladder.', href: '/mining-championship/', icon: ShieldCheck },
+]
 
 const facts = [
-  ['Chain', 'INRI CHAIN'],
-  ['Chain ID', '3777'],
   ['Consensus', 'PoW · Ethash'],
+  ['Chain ID', '3777'],
+  ['Mainnet', 'INRI CHAIN'],
   ['Fork reminder', 'Block 6000000'],
-] as const
-
-function FeatureCard({ title, text, icon }: { title: string; text: string; icon: ReactNode }) {
-  return (
-    <div className="inri-soft-card rounded-[1.7rem] p-5">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">{icon}</div>
-      <h3 className="mt-4 text-lg font-black text-white">{title}</h3>
-      <p className="mt-2 text-sm leading-7 text-white/66">{text}</p>
-    </div>
-  )
-}
+]
 
 export function InriMiningPage() {
   return (
     <InriShell>
-      <main className="bg-black text-white">
+      <main className="inri-premium-main">
         <section className="inri-hero-surface">
-          <div className="inri-page-container py-14 xl:py-20">
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.06fr)_420px]">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
-                  Mining hub
+          <div className="inri-page-container py-10 sm:py-12 lg:py-16">
+            <div className="inri-premium-hero-card p-5 sm:p-7 lg:p-10">
+              <div className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.45fr)] xl:items-end">
+                <div>
+                  <div className="flex flex-wrap gap-2.5">
+                    <span className="inri-chip text-primary">Mining</span>
+                    <span className="inri-chip">Proof-of-Work</span>
+                    <span className="inri-chip">INRI mainnet</span>
+                  </div>
+                  <h1 className="mt-6 max-w-5xl text-balance text-[2.4rem] font-black leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.4rem] lg:text-[5rem]">
+                    Mine INRI from one clear command center.
+                  </h1>
+                  <p className="mt-6 max-w-3xl text-base leading-8 text-white/68 sm:text-lg sm:leading-9">
+                    Choose Windows, Ubuntu, pool mining or the active championship from a cleaner page with fewer distractions and stronger route cards.
+                  </p>
+                  <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+                    <InriLinkButton href="/mining-windows">Windows setup</InriLinkButton>
+                    <InriLinkButton href="/mining-ubuntu" variant="secondary">Ubuntu setup</InriLinkButton>
+                    <InriLinkButton href="/mining-championship/" variant="secondary">Championship</InriLinkButton>
+                  </div>
                 </div>
-                <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-5xl xl:text-[4.35rem]">
-                  Official mining routes with the <span className="text-primary">same premium INRI standard</span> across the site.
-                </h1>
-                <p className="mt-5 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">
-                  This hub keeps Windows, Ubuntu, Pool and Championship routes together in a cleaner layout that matches the rest of the official site.
-                </p>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <InriLinkButton href="/mining-windows">Open Mining Windows</InriLinkButton>
-                  <InriLinkButton href="/mining-ubuntu" variant="secondary">Open Mining Ubuntu</InriLinkButton>
-                  <InriLinkButton href="/mining-championship/" variant="secondary">Open Championship</InriLinkButton>
-                  <InriLinkButton href="/pool" variant="secondary">Open Pool</InriLinkButton>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/72">
-                  {facts.map(([label, value]) => (
-                    <div key={label} className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 font-semibold">
-                      <span className="text-white/45">{label}:</span> {value}
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="inri-section-surface rounded-[2rem] p-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Choose your route</p>
-                <div className="mt-5 grid gap-3">
-                  {entryCards.map((item) => (
-                    <Link key={item.title} href={item.href} className="group rounded-[1.35rem] border border-white/12 bg-white/[0.035] p-4 transition hover:border-primary/40 hover:bg-primary/[0.08]">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/24 bg-primary/10 text-primary">
-                          {item.icon}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 text-base font-black text-white">
-                            {item.title}
-                            <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
-                          </div>
-                          <p className="mt-2 text-sm leading-6 text-white/64">{item.text}</p>
-                        </div>
+                <div className="inri-premium-card p-5 sm:p-6">
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Network facts</p>
+                  <div className="mt-5 grid gap-3">
+                    {facts.map(([label, value]) => (
+                      <div key={label} className="inri-premium-tile flex items-center justify-between gap-4 px-4 py-3">
+                        <span className="text-sm text-white/52">{label}</span>
+                        <span className="text-sm font-black text-white">{value}</span>
                       </div>
-                    </Link>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section className="py-10 sm:py-12">
-          <div className="inri-page-container">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <FeatureCard title="Windows first" text="The Windows page follows the same classic step order from the old site: clean folders, create mining account, place files, add chaindata and start mining." icon={<MonitorSmartphone className="h-5 w-5" />} />
-              <FeatureCard title="Ubuntu kept simple" text="The Ubuntu page stays lighter, closer to the old route, but adds a premium layout and keeps the installer script available." icon={<Server className="h-5 w-5" />} />
-              <FeatureCard title="Wallet before mining" text="Users should always prepare the payout address first, then move to the mining setup that matches their machine." icon={<ShieldCheck className="h-5 w-5" />} />
-              <FeatureCard title="Pool after setup" text="Once the miner is live, the pool page becomes the operational place to watch activity and search miner addresses." icon={<Pickaxe className="h-5 w-5" />} />
-            </div>
-
-            <div className="mt-6 inri-section-surface rounded-[2rem] p-6 sm:p-7">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Featured campaign</div>
-                  <h2 className="mt-2 text-2xl font-black text-white sm:text-[2.1rem]">Mining Championship has its own official route.</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/64">Open the dedicated route for the prize ladder, top-5 leaderboard, wallet address search and official explorer verification.</p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <InriLinkButton href="/mining-championship/">Open Championship</InriLinkButton>
-                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>Official explorer</InriLinkButton>
-                </div>
-              </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {entryCards.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="group inri-premium-card block p-5 transition hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/[0.06]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      <h2 className="text-xl font-black text-white">{item.title}</h2>
+                      <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>
