@@ -3,14 +3,18 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck, Sparkles } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck } from 'lucide-react'
 
 const FACTORY_ADDRESS = '0x1D760E78D92aA5B46b484bc054Bbfae11198B751'
 const INRI_CHAIN_ID_HEX = '0xec1'
-const CREATE_TOKEN_SELECTOR = 'b2cb1e5c'
-const TOTAL_TOKENS_SELECTOR = '2f745c59'
-const ALL_TOKENS_SELECTOR = 'fe2d1a7d'
-const TOKEN_CREATED_TOPIC = '0x8f78f3f0d1fc8f1bd0d8c71dafb7f46d9ca5f0b2d9d4547892fb4e8d1ba6de0f'
+
+const CREATE_TOKEN_SIGNATURES = [
+  'createToken(string,string,uint8,uint256)',
+  'createToken(string,string,uint256,uint8)',
+] as const
+
+const TOTAL_TOKENS_SIGNATURE = 'totalTokens()'
+const ALL_TOKENS_SIGNATURE = 'allTokens(uint256)'
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
@@ -45,6 +49,10 @@ function encodeUint(value: bigint) {
   return value.toString(16).padStart(64, '0')
 }
 
+function asciiToHex(value: string) {
+  return `0x${Array.from(value).map((char) => char.charCodeAt(0).toString(16).padStart(2, '0')).join('')}`
+}
+
 function utf8ToHex(value: string) {
   return Array.from(new TextEncoder().encode(value))
     .map((byte) => byte.toString(16).padStart(2, '0'))
@@ -58,13 +66,16 @@ function encodeString(value: string) {
   return `${encodeUint(byteLength)}${dataHex.padEnd(paddedHexLength, '0')}`
 }
 
-function encodeCreateToken(name: string, symbol: string, decimals: number, supply: bigint) {
+function encodeCreateTokenWithSelector(selector: string, name: string, symbol: string, decimals: number, supply: bigint, signature: string) {
   const encodedName = encodeString(name)
   const encodedSymbol = encodeString(symbol)
   const nameOffset = 32n * 4n
   const symbolOffset = nameOffset + BigInt(encodedName.length / 2)
 
-  return `0x${CREATE_TOKEN_SELECTOR}${encodeUint(nameOffset)}${encodeUint(symbolOffset)}${encodeUint(BigInt(decimals))}${encodeUint(supply)}${encodedName}${encodedSymbol}`
+  const thirdArg = signature === 'createToken(string,string,uint256,uint8)' ? encodeUint(supply) : encodeUint(BigInt(decimals))
+  const fourthArg = signature === 'createToken(string,string,uint256,uint8)' ? encodeUint(BigInt(decimals)) : encodeUint(supply)
+
+  return `0x${selector}${encodeUint(nameOffset)}${encodeUint(symbolOffset)}${thirdArg}${fourthArg}${encodedName}${encodedSymbol}`
 }
 
 function sanitizeSupply(input: string) {
@@ -79,13 +90,6 @@ function shortAddress(address?: string | null) {
 function parseHexToBigInt(value: unknown) {
   if (typeof value !== 'string' || !value.startsWith('0x')) return 0n
   return BigInt(value)
-}
-
-function parseCreatedTokenFromLogData(data?: string) {
-  if (!data || !data.startsWith('0x')) return null
-  const clean = strip0x(data)
-  if (clean.length < 64) return null
-  return `0x${clean.slice(24, 64)}`
 }
 
 function isValidAddress(value?: string | null) {
@@ -104,6 +108,12 @@ async function rpcCall(method: string, params: unknown[] = []) {
   const data = (await response.json()) as { result?: unknown; error?: { message?: string } }
   if (data.error) throw new Error(data.error.message || 'RPC error')
   return data.result
+}
+
+async function fetchSelector(signature: string) {
+  const result = await rpcCall('web3_sha3', [asciiToHex(signature)])
+  if (typeof result !== 'string' || result.length < 10) throw new Error(`Selector not found for ${signature}`)
+  return result.slice(2, 10)
 }
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -155,6 +165,18 @@ function InputField({
   )
 }
 
+type FactoryStats = {
+  total: bigint
+  latest: string | null
+}
+
+type ResolvedCreateCall = {
+  signature: (typeof CREATE_TOKEN_SIGNATURES)[number]
+  selector: string
+  data: string
+  gas: bigint
+}
+
 export function InriTokenFactoryClient() {
   const [providerReady, setProviderReady] = useState(false)
   const [account, setAccount] = useState<string | null>(null)
@@ -171,6 +193,8 @@ export function InriTokenFactoryClient() {
   const [latestToken, setLatestToken] = useState<string | null>(null)
   const [gasEstimate, setGasEstimate] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [selectors, setSelectors] = useState<Record<string, string>>({})
+  const [resolvedSignature, setResolvedSignature] = useState<string | null>(null)
 
   const networkReady = chainId?.toLowerCase() === INRI_CHAIN_ID_HEX
 
@@ -184,27 +208,67 @@ export function InriTokenFactoryClient() {
     [form],
   )
 
-  const refreshFactoryStats = useCallback(async () => {
-    try {
-      const totalRaw = await rpcCall('eth_call', [{ to: FACTORY_ADDRESS, data: `0x${TOTAL_TOKENS_SELECTOR}` }, 'latest'])
-      const total = parseHexToBigInt(totalRaw)
-      setFactoryCount(total.toString())
+  useEffect(() => {
+    let cancelled = false
 
-      if (total > 0n) {
-        const latestRaw = await rpcCall('eth_call', [{ to: FACTORY_ADDRESS, data: `0x${ALL_TOKENS_SELECTOR}${encodeUint(total - 1n)}` }, 'latest'])
-        if (typeof latestRaw === 'string' && latestRaw.startsWith('0x') && latestRaw.length >= 66) {
-          setLatestToken(`0x${latestRaw.slice(-40)}`)
+    const loadSelectors = async () => {
+      try {
+        const signatures = [...CREATE_TOKEN_SIGNATURES, TOTAL_TOKENS_SIGNATURE, ALL_TOKENS_SIGNATURE]
+        const entries = await Promise.all(signatures.map(async (signature) => [signature, await fetchSelector(signature)] as const))
+        if (!cancelled) setSelectors(Object.fromEntries(entries))
+      } catch (cause) {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : 'Unable to load token factory selectors.')
         }
       }
-    } catch {
-      setFactoryCount('-')
-      setLatestToken(null)
+    }
+
+    loadSelectors().catch(() => undefined)
+    return () => {
+      cancelled = true
     }
   }, [])
 
+  const refreshFactoryStats = useCallback(async (): Promise<FactoryStats> => {
+    const totalSelector = selectors[TOTAL_TOKENS_SIGNATURE]
+    const allTokensSelector = selectors[ALL_TOKENS_SIGNATURE]
+
+    if (!totalSelector || !allTokensSelector) {
+      setFactoryCount('-')
+      setLatestToken(null)
+      return { total: 0n, latest: null }
+    }
+
+    try {
+      const totalRaw = await rpcCall('eth_call', [{ to: FACTORY_ADDRESS, data: `0x${totalSelector}` }, 'latest'])
+      const total = parseHexToBigInt(totalRaw)
+      setFactoryCount(total.toString())
+
+      let latest: string | null = null
+      if (total > 0n) {
+        const latestRaw = await rpcCall('eth_call', [{ to: FACTORY_ADDRESS, data: `0x${allTokensSelector}${encodeUint(total - 1n)}` }, 'latest'])
+        if (typeof latestRaw === 'string' && latestRaw.startsWith('0x') && latestRaw.length >= 66) {
+          latest = `0x${latestRaw.slice(-40)}`
+          setLatestToken(latest)
+        } else {
+          setLatestToken(null)
+        }
+      } else {
+        setLatestToken(null)
+      }
+
+      return { total, latest }
+    } catch {
+      setFactoryCount('-')
+      setLatestToken(null)
+      return { total: 0n, latest: null }
+    }
+  }, [selectors])
+
   useEffect(() => {
+    if (!selectors[TOTAL_TOKENS_SIGNATURE] || !selectors[ALL_TOKENS_SIGNATURE]) return
     refreshFactoryStats().catch(() => undefined)
-  }, [refreshFactoryStats])
+  }, [refreshFactoryStats, selectors])
 
   useEffect(() => {
     const eth = getEthereum()
@@ -307,24 +371,66 @@ export function InriTokenFactoryClient() {
     }
   }
 
-  const estimateGas = async () => {
+  const resolveCreateCall = useCallback(async (): Promise<ResolvedCreateCall> => {
     const eth = getEthereum()
-    if (!eth || !account || !networkReady) return
+    if (!eth || !account || !networkReady) throw new Error('Connect the wallet on INRI CHAIN first.')
+
+    const cleanSupply = sanitizeSupply(form.supply)
+    const decimals = Number(form.decimals)
+    const name = form.name.trim()
+    const symbol = form.symbol.trim()
+
+    if (!name) throw new Error('Token name is required.')
+    if (!symbol) throw new Error('Token symbol is required.')
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) throw new Error('Decimals must be an integer between 0 and 255.')
+    if (!/^\d+$/.test(cleanSupply) || BigInt(cleanSupply) <= 0n) throw new Error('Supply must be a whole number greater than zero.')
+
+    const supply = BigInt(cleanSupply)
+    const failures: string[] = []
+
+    for (const signature of CREATE_TOKEN_SIGNATURES) {
+      const selector = selectors[signature]
+      if (!selector) continue
+      const data = encodeCreateTokenWithSelector(selector, name, symbol, decimals, supply, signature)
+
+      try {
+        const gasHex = (await eth.request({
+          method: 'eth_estimateGas',
+          params: [{ from: account, to: FACTORY_ADDRESS, data }],
+        })) as string
+
+        const gas = BigInt(gasHex)
+        setResolvedSignature(signature)
+        return { signature, selector, data, gas }
+      } catch (cause) {
+        failures.push(`${signature}: ${cause instanceof Error ? cause.message : String(cause)}`)
+      }
+    }
+
+    throw new Error(
+      failures.length
+        ? `The site could not match the live factory ABI. Gas estimation failed for all known createToken variants. ${failures.join(' | ')}`
+        : 'The site could not prepare the createToken call because the factory selectors are not loaded yet.',
+    )
+  }, [account, form.decimals, form.name, form.supply, form.symbol, networkReady, selectors])
+
+  const estimateGas = useCallback(async () => {
+    if (!account || !networkReady) {
+      setGasEstimate(null)
+      return
+    }
+
     try {
-      const cleanSupply = sanitizeSupply(form.supply)
-      if (!form.name || !form.symbol || !cleanSupply) return
-      const decimals = Number(form.decimals)
-      const data = encodeCreateToken(form.name.trim(), form.symbol.trim(), decimals, BigInt(cleanSupply))
-      const gas = (await eth.request({ method: 'eth_estimateGas', params: [{ from: account, to: FACTORY_ADDRESS, data }] })) as string
-      setGasEstimate(BigInt(gas).toString())
+      const resolved = await resolveCreateCall()
+      setGasEstimate(resolved.gas.toString())
     } catch {
       setGasEstimate(null)
     }
-  }
+  }, [account, networkReady, resolveCreateCall])
 
   useEffect(() => {
     estimateGas().catch(() => undefined)
-  }, [form.name, form.symbol, form.decimals, form.supply, account, networkReady])
+  }, [estimateGas])
 
   const createToken = async () => {
     const eth = getEthereum()
@@ -341,48 +447,30 @@ export function InriTokenFactoryClient() {
       return
     }
 
-    const name = form.name.trim()
-    const symbol = form.symbol.trim()
-    const cleanSupply = sanitizeSupply(form.supply)
-    const decimals = Number(form.decimals)
-
-    if (!name) return setError('Token name is required.')
-    if (!symbol) return setError('Token symbol is required.')
-    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) return setError('Decimals must be an integer between 0 and 255.')
-    if (!/^\d+$/.test(cleanSupply) || BigInt(cleanSupply) <= 0n) return setError('Supply must be a whole number greater than zero.')
-
     try {
       setError(null)
       setIsCreating(true)
       setTxHash(null)
       setCreatedToken(null)
-      setStatus('Waiting for wallet confirmation...')
+      setStatus('Checking the live factory ABI and waiting for wallet confirmation...')
 
-      const data = encodeCreateToken(name, symbol, decimals, BigInt(cleanSupply))
-      let gasHex: string | undefined
-      try {
-        const estimated = (await eth.request({ method: 'eth_estimateGas', params: [{ from: account, to: FACTORY_ADDRESS, data }] })) as string
-        const boosted = (BigInt(estimated) * 125n) / 100n
-        gasHex = `0x${boosted.toString(16)}`
-        setGasEstimate(boosted.toString())
-      } catch {
-        gasHex = undefined
-      }
+      const before = await refreshFactoryStats()
+      const resolved = await resolveCreateCall()
+      const boostedGas = (resolved.gas * 125n) / 100n
+      setGasEstimate(boostedGas.toString())
+      setResolvedSignature(resolved.signature)
 
       const hash = (await eth.request({
         method: 'eth_sendTransaction',
-        params: [{ from: account, to: FACTORY_ADDRESS, data, ...(gasHex ? { gas: gasHex } : {}) }],
+        params: [{ from: account, to: FACTORY_ADDRESS, data: resolved.data, gas: `0x${boostedGas.toString(16)}` }],
       })) as string
 
       setTxHash(hash)
-      setStatus('Transaction sent. Waiting for confirmation on INRI CHAIN...')
+      setStatus(`Transaction sent with ${resolved.signature}. Waiting for confirmation on INRI CHAIN...`)
 
-      let receipt: { status?: string; logs?: Array<{ address?: string; topics?: string[]; data?: string }> } | null = null
+      let receipt: { status?: string } | null = null
       for (let attempt = 0; attempt < 90; attempt += 1) {
-        receipt = (await eth.request({ method: 'eth_getTransactionReceipt', params: [hash] })) as {
-          status?: string
-          logs?: Array<{ address?: string; topics?: string[]; data?: string }>
-        } | null
+        receipt = (await eth.request({ method: 'eth_getTransactionReceipt', params: [hash] })) as { status?: string } | null
         if (receipt) break
         await new Promise((resolve) => window.setTimeout(resolve, 4000))
       }
@@ -394,22 +482,18 @@ export function InriTokenFactoryClient() {
       }
 
       if (receipt.status !== '0x1') {
-        throw new Error('Transaction reverted. The form values look valid, so check the wallet gas details and confirm the live factory matches the intended contract version.')
+        throw new Error(`Transaction reverted even after ABI auto-detection. The live factory may expose a different createToken signature than the site expects.`)
       }
 
-      const tokenLog = receipt.logs?.find(
-        (log) => log.address?.toLowerCase() === FACTORY_ADDRESS.toLowerCase() && log.topics?.[0]?.toLowerCase() === TOKEN_CREATED_TOPIC.toLowerCase(),
-      )
-      const created = parseCreatedTokenFromLogData(tokenLog?.data)
+      const after = await refreshFactoryStats()
+      const inferredToken = after.total > before.total && isValidAddress(after.latest) ? after.latest : null
 
-      if (created && isValidAddress(created)) {
-        setCreatedToken(created)
+      if (inferredToken) {
+        setCreatedToken(inferredToken)
         setStatus('Token created successfully. Open it on the explorer or add it to the wallet.')
       } else {
-        setStatus('Token created. Open the explorer transaction to see the new contract address.')
+        setStatus('Token created. Open the explorer transaction to confirm the new token address.')
       }
-
-      await refreshFactoryStats()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Token creation failed.')
     } finally {
@@ -519,14 +603,13 @@ export function InriTokenFactoryClient() {
                 value={form.supply}
                 onChange={(value) => setForm((current) => ({ ...current, supply: value.replace(/[^0-9,_\s]/g, '') }))}
                 placeholder="1000000"
-                helper="Enter a whole number. The contract multiplies it by 10**decimals."
+                helper="Enter a whole number. The contract multiplies it by 10**decimals internally only if the live factory was designed that way."
                 inputMode="numeric"
               />
             </div>
 
             <div className="mt-5 rounded-[1.2rem] border border-primary/16 bg-primary/[0.08] p-4 text-sm leading-7 text-white/72">
-              <strong className="text-white">Important:</strong> the factory mints the full supply once and sends it to the connected wallet.
-              Use a whole-number supply such as <strong className="text-white">1000000</strong>. The contract applies <strong className="text-white">10**decimals</strong> internally.
+              <strong className="text-white">Important:</strong> this screen now tests the live factory ABI before sending the transaction, so it can adapt if the createToken argument order on-chain is different from the hardcoded frontend assumption.
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -596,9 +679,18 @@ export function InriTokenFactoryClient() {
               </Link>
             </div>
             <div className="mt-4 text-sm leading-7 text-white/56">
-              Function: <span className="font-semibold text-white">createToken(name, symbol, decimals, supply)</span>
+              Function: <span className="font-semibold text-white">createToken(...)</span>
             </div>
-            {gasEstimate ? <div className="mt-2 text-sm leading-7 text-white/56">Estimated gas: <span className="font-semibold text-white">{gasEstimate}</span></div> : null}
+            {resolvedSignature ? (
+              <div className="mt-2 text-sm leading-7 text-white/56">
+                Live signature matched: <span className="font-semibold text-white">{resolvedSignature}</span>
+              </div>
+            ) : null}
+            {gasEstimate ? (
+              <div className="mt-2 text-sm leading-7 text-white/56">
+                Estimated gas: <span className="font-semibold text-white">{gasEstimate}</span>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -641,9 +733,9 @@ export function InriTokenFactoryClient() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-300" />
               <div>
-                <div className="text-sm font-black text-white">If the transaction reverts</div>
+                <div className="text-sm font-black text-white">If the transaction still reverts</div>
                 <div className="mt-2 text-sm leading-7 text-white/66">
-                  The values in your screenshot are valid for the Solidity code you shared. When a launch still reverts, the most likely causes are insufficient gas in the wallet transaction or the live factory bytecode not matching the expected contract version.
+                  The main frontend risk here was the hardcoded contract call. This version probes the live factory using gas estimation before sending. If it still fails, the remaining issue is probably the real on-chain ABI exposing a different function name or a factory rule on the contract itself.
                 </div>
               </div>
             </div>
