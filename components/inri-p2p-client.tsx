@@ -53,6 +53,9 @@ function patchStyle(styleText: string): string {
 :host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 :host .p2pHero{display:none!important}
 :host .top{display:none!important}
+:host #btnConnect{display:none!important}
+:host #btnOpenMM{display:none!important}
+:host #btnOpenTW{display:none!important}
 :host .tabs,
 :host .card,
 :host .offer,
@@ -232,34 +235,35 @@ async function __inriSyncFromHeader(){
   try {
     const bridge = __inriHeaderBridge()
     const provider = pickBestProvider()
-    if (!provider) return false
-
-    const accounts = await provider.request?.({ method: 'eth_accounts' }).catch(() => [])
-    if (!Array.isArray(accounts) || !accounts.length) return false
-
-    if (!me) {
-      await connectWallet()
-    } else {
-      await refreshWithdrawable().catch(() => {})
-      await refreshMarket().catch(() => {})
+    if (!provider) {
+      if (el?.syncInfo) {
+        el.syncInfo.textContent = 'No header wallet provider found yet.'
+      }
+      return false
     }
+
+    await connectWallet()
 
     if (bridge?.address && el?.meAddr) {
       el.meAddr.textContent = bridge.address
     }
     if (el?.btnConnect) {
-      el.btnConnect.textContent = bridge?.address ? bridge.address.slice(0, 6) + '...' + bridge.address.slice(-4) : 'Header wallet'
+      el.btnConnect.style.display = 'none'
       el.btnConnect.setAttribute('aria-hidden', 'true')
       el.btnConnect.setAttribute('tabindex', '-1')
     }
+    if (el?.btnOpenMM) el.btnOpenMM.style.display = 'none'
+    if (el?.btnOpenTW) el.btnOpenTW.style.display = 'none'
     if (el?.syncInfo) {
-      el.syncInfo.textContent = 'Wallet synced from the top header.'
+      el.syncInfo.textContent = bridge?.address
+        ? 'Wallet synced from the top header: ' + bridge.address.slice(0, 6) + '...' + bridge.address.slice(-4)
+        : 'Wallet synced from the top header.'
     }
     return true
   } catch (err) {
     console.warn('P2P header sync failed', err)
     if (el?.syncInfo) {
-      el.syncInfo.textContent = 'Wallet sync failed. Use the sync button or the in-panel connect button.'
+      el.syncInfo.textContent = 'Wallet sync failed. Reconnect in the top header and try again.'
     }
     return false
   }
@@ -295,11 +299,28 @@ async function ensureEthers(): Promise<void> {
   })
 }
 
+
+function getActiveWalletState(): ActiveWalletState {
+  if (typeof window === 'undefined') return null
+  return (window as Window & { __INRI_ACTIVE_WALLET__?: ActiveWalletState }).__INRI_ACTIVE_WALLET__ ?? null
+}
+
+function setShadowText(root: ShadowRoot | null | undefined, id: string, value: string) {
+  const node = root?.getElementById(id)
+  if (node) node.textContent = value
+}
+
+function shortAddr(address?: string) {
+  if (!address) return '—'
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
 export function InriP2PClient() {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string>('')
   const [syncing, setSyncing] = useState(false)
+  const autoSyncRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -385,10 +406,59 @@ export function InriP2PClient() {
     }
   }, [])
 
-  const syncWallet = async () => {
+  useEffect(() => {
+    if (status !== 'ready' || autoSyncRef.current) return
+    const active = getActiveWalletState()
+    if (!active?.address) return
+    autoSyncRef.current = true
+    const t = window.setTimeout(() => {
+      void syncWallet(true)
+    }, 350)
+    return () => window.clearTimeout(t)
+  }, [status])
+
+  const syncWallet = async (silent = false) => {
+    const root = hostRef.current?.shadowRoot ?? null
+    const active = getActiveWalletState()
+
     try {
       setSyncing(true)
-      await window.__INRI_P2P_SYNC__?.()
+
+      if (!silent) {
+        setShadowText(root, 'syncInfo', active?.address ? `Connecting top header wallet: ${shortAddr(active.address)}` : 'Connecting top header wallet...')
+      }
+
+      let synced = false
+      try {
+        synced = Boolean(await window.__INRI_P2P_SYNC__?.())
+      } catch {
+        synced = false
+      }
+
+      if (!synced) {
+        const connectBtn = root?.getElementById('btnConnect') as HTMLButtonElement | null
+        connectBtn?.click()
+      }
+
+      await new Promise((resolve) => window.setTimeout(resolve, 900))
+      try {
+        await window.__INRI_P2P_REFRESH__?.()
+      } catch {}
+      await new Promise((resolve) => window.setTimeout(resolve, 250))
+
+      if (active?.address) {
+        setShadowText(root, 'meAddr', active.address)
+        setShadowText(root, 'netPill', active.chainId?.toLowerCase() === '0xec1' ? 'Network: INRI CHAIN' : 'Network: connected')
+        const btn = root?.getElementById('btnConnect') as HTMLButtonElement | null
+        if (btn) btn.textContent = shortAddr(active.address)
+      }
+
+      const meAddr = root?.getElementById('meAddr')?.textContent?.trim()
+      if (!meAddr || meAddr === '—') {
+        setShadowText(root, 'syncInfo', 'Top wallet detected, but the market did not bind yet. Click Use header wallet again.')
+      } else if (!silent) {
+        setShadowText(root, 'syncInfo', `Wallet synced from the top header: ${shortAddr(meAddr)}`)
+      }
     } finally {
       setSyncing(false)
     }
@@ -407,10 +477,10 @@ export function InriP2PClient() {
     <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
       <div className="mb-5 flex flex-col gap-4 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm leading-7 text-white/68">
-          P2P uses only the wallet connected in the top header. No second wallet connection is shown inside the market.
+          P2P uses only the wallet connected in the top header. Use the button below to bind that same wallet to the market.
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Syncing...' : 'Sync header wallet'}</button>
+          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Connecting...' : 'Use header wallet'}</button>
           <button type="button" onClick={refreshMarket} disabled={syncing} className="inri-button-secondary disabled:cursor-not-allowed disabled:opacity-60">Refresh market</button>
         </div>
       </div>
