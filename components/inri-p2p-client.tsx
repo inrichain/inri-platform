@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { getWalletConnectProvider, getWalletConnectState } from '@/lib/walletconnect-inri'
 
 declare global {
   interface Window {
     ethers?: unknown
+    __INRI_WALLETCONNECT_PROVIDER__?: unknown
   }
 }
 
@@ -159,31 +161,104 @@ function patchStyle(styleText: string): string {
 }
 
 function patchScript(scriptText: string): string {
-  return replaceEverywhere(
+  const patched = replaceEverywhere(
     replaceEverywhere(
       replaceEverywhere(
         replaceEverywhere(
           replaceEverywhere(
             replaceEverywhere(
-              scriptText,
-              'const DAPP_URL = "https://p2p.inri.life/";',
-              'const DAPP_URL = window.location.href.split("#")[0];',
+              replaceEverywhere(
+                scriptText,
+                'const DAPP_URL = "https://p2p.inri.life/";',
+                'const DAPP_URL = window.location.href.split("#")[0];',
+              ),
+              'document.getElementById(',
+              '__root.getElementById(',
             ),
-            'document.getElementById(',
-            '__root.getElementById(',
+            'document.querySelectorAll(',
+            '__root.querySelectorAll(',
           ),
-          'document.querySelectorAll(',
-          '__root.querySelectorAll(',
+          'document.querySelector(',
+          '__root.querySelector(',
         ),
-        'document.querySelector(',
-        '__root.querySelector(',
+        'document.createElement(',
+        '__root.ownerDocument.createElement(',
       ),
-      'document.createElement(',
-      '__root.ownerDocument.createElement(',
+      'document.addEventListener(',
+      '__root.addEventListener(',
     ),
-    'document.addEventListener(',
-    '__root.addEventListener(',
+    'if(window.ethereum) return window.ethereum;',
+    'if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
   )
+
+  return `${patched}
+
+async function __inriSelectProviderForSync(){
+  const candidates = []
+  if (window.__INRI_WALLETCONNECT_PROVIDER__) candidates.push(window.__INRI_WALLETCONNECT_PROVIDER__)
+  for (const item of discoveredProviders || []) {
+    if (item?.provider) candidates.push(item.provider)
+  }
+  if (window.ethereum) candidates.push(window.ethereum)
+
+  const seen = new Set()
+  for (const prov of candidates) {
+    if (!prov || seen.has(prov)) continue
+    seen.add(prov)
+    try {
+      const accounts = await prov.request?.({ method: "eth_accounts" })
+      if (Array.isArray(accounts) && accounts.length) return prov
+    } catch {}
+  }
+
+  return pickBestProvider()
+}
+
+async function __inriBootstrapExternalWallet(){
+  try {
+    const prov = await __inriSelectProviderForSync()
+    if (!prov) return
+
+    attachWalletListeners(prov)
+
+    const accounts = await prov.request?.({ method: "eth_accounts" }).catch(() => [])
+    if (!Array.isArray(accounts) || !accounts.length) return
+
+    const cid = await prov.request?.({ method: "eth_chainId" }).catch(() => "")
+    if (String(cid || "").toLowerCase() !== CHAIN_HEX.toLowerCase()) {
+      el.netPill.textContent = `Network: switch to \${CHAIN_NAME}`
+      return
+    }
+
+    if (!rpcProvider) await buildRpcProvider()
+
+    browserProvider = new ethers.BrowserProvider(prov)
+    signer = await browserProvider.getSigner()
+    me = accounts[0]
+
+    readProvider = rpcProvider || browserProvider
+    contractRead = new ethers.Contract(CONTRACT, ABI, readProvider)
+    contractWrite = new ethers.Contract(CONTRACT, ABI, signer)
+
+    el.btnConnect.textContent = short(me)
+    el.meAddr.textContent = me
+    el.netPill.textContent = `Network: \${CHAIN_NAME}`
+    el.rpcMode.textContent = rpcProvider
+      ? `Provider mode: RPC(read) + Wallet(write) (\${new URL(activeRpcUrl).host})`
+      : "Provider mode: Wallet Provider (RPC fallback failed)"
+
+    try { await loadContractInfo() } catch {}
+    try { await detectWithdrawSupport() } catch {}
+    try { await refreshWithdrawable() } catch {}
+    try { await refreshMarket() } catch {}
+    try { startLiveActivity() } catch {}
+  } catch (err) {
+    console.warn("P2P wallet sync skipped", err)
+  }
+}
+
+setTimeout(() => { void __inriBootstrapExternalWallet() }, 180)
+`
 }
 
 async function ensureEthers(): Promise<void> {
@@ -251,6 +326,13 @@ export function InriP2PClient() {
           wrap.classList.add('integrated-wrap')
         }
 
+        try {
+          window.__INRI_WALLETCONNECT_PROVIDER__ = await getWalletConnectProvider()
+          await getWalletConnectState()
+        } catch {
+          // no-op
+        }
+
         const host = hostRef.current
         if (!host || cancelled) return
 
@@ -289,7 +371,7 @@ export function InriP2PClient() {
   return (
     <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
       <div className="mb-5 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-white/68">
-        P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header, then manage your offers and trades below.
+        P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header. If a wallet is already connected there, the market now syncs it automatically here.
       </div>
       {status === 'loading' ? (
         <div className="flex min-h-[840px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/60 text-sm font-semibold text-white/72">

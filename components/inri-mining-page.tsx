@@ -6,13 +6,13 @@ import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 const entryCards = [
   {
     title: 'Mining Windows',
-    text: 'Premium version of the classic Windows mining guide, now cleaner and easier to follow.',
+    text: 'Official Windows mining route with cleaner structure and easier navigation.',
     href: '/mining-windows',
     icon: <MonitorSmartphone className="h-5 w-5" />,
   },
   {
     title: 'Mining Ubuntu',
-    text: 'Premium version of the Ubuntu route with the current installer download kept available.',
+    text: 'Official Ubuntu mining route with a cleaner setup flow and current installer access.',
     href: '/mining-ubuntu',
     icon: <Server className="h-5 w-5" />,
   },
@@ -59,10 +59,10 @@ export function InriMiningPage() {
                   Mining hub
                 </div>
                 <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-5xl xl:text-[4.35rem]">
-                  Premium mining pages with the <span className="text-primary">classic INRI routes</span> kept intact.
+                  Official mining routes with the <span className="text-primary">same premium INRI standard</span> across the site.
                 </h1>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/68 sm:text-lg">
-                  This hub keeps the familiar Windows and Ubuntu paths while presenting them in a cleaner, stronger layout that matches the rest of the site.
+                  This hub keeps Windows, Ubuntu, Pool and Championship routes together in a cleaner layout that matches the rest of the official site.
                 </p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <InriLinkButton href="/mining-windows">Open Mining Windows</InriLinkButton>
@@ -117,7 +117,7 @@ export function InriMiningPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
                   <div className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Featured campaign</div>
-                  <h2 className="mt-2 text-2xl font-black text-white sm:text-[2.1rem]">Independent Mining Championship now has its own official page.</h2>
+                  <h2 className="mt-2 text-2xl font-black text-white sm:text-[2.1rem]">Mining Championship has its own official route.</h2>
                   <p className="mt-3 text-sm leading-7 text-white/64">Open the dedicated route for the prize ladder, top-5 leaderboard, wallet address search and official explorer verification.</p>
                 </div>
                 <div className="flex flex-wrap gap-3">

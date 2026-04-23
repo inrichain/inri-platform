@@ -27,10 +27,10 @@ export function InriStakingPage() {
                     Official staking route
                   </div>
                   <h1 className="mt-5 max-w-[780px] text-4xl font-black leading-[0.95] text-white sm:text-5xl xl:text-[4rem]">
-                    Official staking on INRI with a cleaner and more direct interface.
+                    Official staking on INRI with the same premium interface used across the site.
                   </h1>
                   <p className="mt-5 max-w-[760px] text-base leading-8 text-white/66 sm:text-lg">
-                    Use the wallet button in the top header, switch to INRI CHAIN, choose a plan and manage staking from one cleaner panel.
+                    Use the wallet button in the top header, switch to INRI CHAIN, choose a plan and manage staking from one cleaner premium panel.
                   </p>
 
                   <div className="mt-7 flex flex-wrap gap-3">

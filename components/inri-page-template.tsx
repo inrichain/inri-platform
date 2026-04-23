@@ -47,21 +47,21 @@ export function InriPageTemplate({
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_26%),linear-gradient(180deg,#02060b_0%,#000000_42%,#020812_100%)]">
         <section className="inri-hero-surface">
-          <div className="inri-page-container py-12 sm:py-14 lg:py-18">
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_390px] xl:items-end">
+          <div className="inri-page-container py-10 sm:py-12 lg:py-16">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_370px] xl:items-end">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2.5">
                   <span className="inri-chip text-primary">{eyebrow}</span>
                   <span className="inri-chip">Official route</span>
                   <span className="inri-chip">INRI mainnet</span>
                 </div>
-                <h1 className="mt-5 max-w-5xl text-balance text-[2rem] font-black leading-[1.02] text-white sm:text-[2.8rem] lg:text-[4.1rem]">
+                <h1 className="mt-5 max-w-5xl text-balance text-[2rem] font-black leading-[1.02] text-white sm:text-[2.8rem] lg:text-[3.85rem]">
                   {title}
                 </h1>
                 <p className="mt-5 max-w-3xl text-[15px] leading-7 text-white/68 sm:text-lg sm:leading-8">{description}</p>
 
                 {actions.length > 0 ? (
-                  <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
+                  <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
                     {actions.map((action) => (
                       <InriLinkButton
                         key={`${action.label}-${action.href}`}
@@ -113,7 +113,7 @@ export function InriPageTemplate({
           </section>
         ) : null}
 
-        <section className="pb-16 sm:pb-20">
+        <section className="pb-14 sm:pb-16">
           <div className="inri-page-container">
             <div className="inri-section-surface rounded-[1.8rem] p-5 sm:p-8 lg:p-10">
               {children ? children : null}

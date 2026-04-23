@@ -14,12 +14,12 @@ type NoteCard = {
 const notes: NoteCard[] = [
   {
     title: 'Official route',
-    text: 'Launch an INRI token from the live mainnet factory using the wallet connected on this page.',
+    text: 'Launch an INRI token from the live mainnet factory using the wallet connected in the top header.',
     icon: <Sparkles className="h-5 w-5" />,
   },
   {
     title: 'Wallet first',
-    text: 'Connect your wallet, switch to INRI CHAIN and review the token details before sending.',
+    text: 'Connect the wallet in the header, confirm INRI CHAIN and then review the token details before sending.',
     icon: <ShieldCheck className="h-5 w-5" />,
   },
 ]
@@ -34,7 +34,7 @@ export function InriTokenFactoryPage() {
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_20%),linear-gradient(180deg,#02070c_0%,#000000_48%,#03111d_100%)]">
         <section className="inri-hero-surface">
           <div className="inri-page-container py-10 lg:py-12">
-            <div className="mx-auto grid max-w-[1180px] gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
+            <div className="mx-auto grid max-w-[1180px] gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-end">
               <div>
                 <div className="inline-flex items-center rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
                   INRI Token Factory
@@ -47,6 +47,7 @@ export function InriTokenFactoryPage() {
                 </p>
               </div>
 
+              <div className="grid gap-4">
               <Surface className="p-5 sm:p-6">
                 <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Factory contract</div>
                 <div className="mt-3 break-all font-mono text-sm font-bold text-white">{factoryAddress}</div>
@@ -60,17 +61,23 @@ export function InriTokenFactoryPage() {
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Surface>
+
+              <div className="grid gap-3">
+                {notes.map((note) => (
+                  <Surface key={note.title} className="p-5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/[0.10] text-primary">
+                      {note.icon}
+                    </div>
+                    <div className="mt-4 text-lg font-black text-white">{note.title}</div>
+                    <p className="mt-2 text-sm leading-7 text-white/62">{note.text}</p>
+                  </Surface>
+                ))}
+              </div>
+            </div>
             </div>
 
             <div className="mx-auto mt-8 max-w-[1180px]">
               <InriTokenFactoryClient />
-            </div>
-          </div>
-        </section>
-        <section className="pb-12 pt-2">
-          <div className="inri-page-container">
-            <div className="mx-auto max-w-[1180px] rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 text-sm leading-7 text-white/64">
-              Use the top header to connect your wallet and make sure INRI CHAIN is selected before sending the create token transaction.
             </div>
           </div>
         </section>

@@ -22,10 +22,10 @@ export function InriP2PPage() {
                   <span className="inri-chip">Chain 3777</span>
                 </div>
                 <h1 className="mt-6 text-4xl font-black leading-[1.02] text-white sm:text-5xl lg:text-[4rem]">
-                  P2P market with a cleaner official INRI interface.
+                  P2P market with the same premium INRI interface.
                 </h1>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-                  Buy and sell INRI through the escrow market with a cleaner layout, better spacing and the wallet connection handled from the top header of the site.
+                  Buy and sell INRI through the escrow market with cleaner spacing, better hierarchy and wallet connection handled from the top header of the site.
                 </p>
               </div>
 
