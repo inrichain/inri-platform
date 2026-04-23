@@ -480,7 +480,7 @@ export function InriP2PClient() {
           P2P uses only the wallet connected in the top header. Use the button below to bind that same wallet to the market.
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Connecting...' : 'Use header wallet'}</button>
+          <button type="button" onClick={() => void syncWallet()} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Connecting...' : 'Use header wallet'}</button>
           <button type="button" onClick={refreshMarket} disabled={syncing} className="inri-button-secondary disabled:cursor-not-allowed disabled:opacity-60">Refresh market</button>
         </div>
       </div>
