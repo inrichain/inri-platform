@@ -226,7 +226,7 @@ async function __inriBootstrapExternalWallet(){
 
     const cid = await prov.request?.({ method: "eth_chainId" }).catch(() => "")
     if (String(cid || "").toLowerCase() !== CHAIN_HEX.toLowerCase()) {
-      el.netPill.textContent = `Network: switch to \${CHAIN_NAME}`
+      el.netPill.textContent = "Network: switch to " + CHAIN_NAME
       return
     }
 
@@ -242,9 +242,9 @@ async function __inriBootstrapExternalWallet(){
 
     el.btnConnect.textContent = short(me)
     el.meAddr.textContent = me
-    el.netPill.textContent = `Network: \${CHAIN_NAME}`
+    el.netPill.textContent = "Network: " + CHAIN_NAME
     el.rpcMode.textContent = rpcProvider
-      ? `Provider mode: RPC(read) + Wallet(write) (\${new URL(activeRpcUrl).host})`
+      ? "Provider mode: RPC(read) + Wallet(write) (" + new URL(activeRpcUrl).host + ")"
       : "Provider mode: Wallet Provider (RPC fallback failed)"
 
     try { await loadContractInfo() } catch {}
