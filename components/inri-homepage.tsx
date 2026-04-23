@@ -160,7 +160,7 @@ export function InriHomepage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(19,164,255,0.22),transparent_26%),radial-gradient(circle_at_86%_14%,rgba(19,164,255,0.12),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.99))]" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(19,164,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.045)_1px,transparent_1px)] bg-[size:56px_56px] opacity-28" />
 
-          <div className="relative inri-page-container py-12 sm:py-14 lg:py-18">
+          <div className="relative inri-page-container py-12 sm:py-14 lg:py-20">
             <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr] xl:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
@@ -300,7 +300,7 @@ export function InriHomepage() {
         </section>
 
         <section className="border-t border-white/[0.10] bg-black">
-          <div className="inri-page-container py-18 lg:py-20">
+          <div className="inri-page-container py-20 lg:py-20">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">

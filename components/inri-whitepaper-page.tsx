@@ -79,7 +79,7 @@ export function InriWhitepaperPage() {
     <InriShell>
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(19,164,255,0.14),_transparent_26%),linear-gradient(180deg,#02060b_0%,#000000_42%,#020812_100%)]">
         <section className="inri-hero-surface">
-          <div className="inri-page-container py-14 lg:py-18">
+          <div className="inri-page-container py-14 lg:py-20">
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1.18fr)_430px] xl:items-start">
               <div>
                 <div className="flex flex-wrap gap-3">

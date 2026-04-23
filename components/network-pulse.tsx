@@ -893,7 +893,7 @@ export function NetworkPulse() {
 
   return (
     <section className="border-t border-white/[0.10] bg-black">
-      <div className="inri-page-container py-12 sm:py-16 lg:py-18">
+      <div className="inri-page-container py-12 sm:py-16 lg:py-20">
         <Panel className="p-5 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>

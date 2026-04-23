@@ -131,7 +131,7 @@ const socialLinks: SocialLink[] = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-3 text-[14px] font-extrabold transition-all after:absolute after:bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-4'
+  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[10px] px-3 text-[14px] font-extrabold transition-all after:absolute after:bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-4'
 
 function NavLink({ item }: { item: InriNavItem }) {
   const pathname = usePathname()
@@ -247,7 +247,7 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
@@ -290,7 +290,7 @@ function MobileMenu() {
                     key={`${item.label}-${item.href}-${index}`}
                     href={item.href}
                     translate="no"
-                    className={`notranslate block w-full rounded-xl border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
+                    className={`notranslate block w-full rounded-[10px] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
                       active
                         ? 'border-primary/50 bg-primary/[0.10] text-white'
                         : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
@@ -333,7 +333,7 @@ export function InriHeader() {
           </div>
 
           <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <nav className="flex items-center justify-center gap-1">
+            <nav className="flex items-center justify-center gap-1 rounded-[14px] border border-white/[0.10] bg-white/[0.035] p-1">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -408,7 +408,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
     >
       {link.icon}
     </Link>
@@ -418,7 +418,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 export function InriFooter() {
   return (
     <footer className="border-t border-white/[0.08] bg-black">
-      <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-18 xl:px-12 2xl:px-16">
+      <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-20 xl:px-12 2xl:px-16">
         <div className="grid gap-10 lg:grid-cols-[1.35fr_repeat(4,0.8fr)] lg:gap-12">
           <div className="max-w-lg">
             <Logo showText size={76} />

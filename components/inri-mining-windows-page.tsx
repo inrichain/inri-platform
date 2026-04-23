@@ -187,7 +187,7 @@ export function InriMiningWindowsPage() {
     <InriShell>
       <main className="bg-black text-white">
         <section className="border-b border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_24%),linear-gradient(180deg,#041222_0%,#000000_72%)]">
-          <div className="mx-auto max-w-[1460px] px-4 py-14 sm:px-6 lg:px-8 xl:py-18">
+          <div className="mx-auto max-w-[1460px] px-4 py-14 sm:px-6 lg:px-8 xl:py-20">
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_420px] xl:items-start">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/28 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
