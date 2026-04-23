@@ -52,7 +52,7 @@ function patchStyle(styleText: string): string {
 :host .wrap{max-width:none;margin:0;padding:0;gap:16px}
 :host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 :host .p2pHero{display:none!important}
-:host .top{display:flex!important;position:static!important;top:auto!important;z-index:auto!important;padding:0!important;margin:0 0 14px 0!important;border:none!important;background:transparent!important;backdrop-filter:none!important}
+:host .top{display:none!important}
 :host .tabs,
 :host .card,
 :host .offer,
@@ -147,7 +147,7 @@ function patchStyle(styleText: string): string {
 :host .search{gap:10px}
 :host .search input{width:320px}
 @media(max-width:640px){:host .search input{width:100%}
-:host .top .row,:host .tabs{justify-content:flex-start}
+:host .tabs{justify-content:flex-start}
 :host .panelWrap{gap:14px}}
 :host .offers{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;max-height:none;overflow:visible;padding-right:0}
 :host .offer{
@@ -177,12 +177,6 @@ function patchStyle(styleText: string): string {
 :host .toast{border-radius:16px;padding:12px 14px;background:rgba(8,15,26,.96)}
 :host .muted{font-size:12px;color:rgba(255,255,255,.76)}
 :host .muted2{font-size:12px;color:rgba(255,255,255,.64)}
-:host .top > .brand{display:none!important}
-:host .top a.btn.btn-ghost{display:none!important}
-:host .top .row{width:100%;justify-content:flex-end;gap:10px;flex-wrap:wrap}
-:host .top .pill{border-color:rgba(19,164,255,.16);background:rgba(255,255,255,.045)}
-:host .top .btn-pri{min-width:164px;justify-content:center}
-:host .top .mono{color:#fff}
 :host .right .mono,:host .kv .v,:host .walletLeft .mono{word-break:break-word}
 `
 
@@ -252,6 +246,11 @@ async function __inriSyncFromHeader(){
 
     if (bridge?.address && el?.meAddr) {
       el.meAddr.textContent = bridge.address
+    }
+    if (el?.btnConnect) {
+      el.btnConnect.textContent = bridge?.address ? bridge.address.slice(0, 6) + '...' + bridge.address.slice(-4) : 'Header wallet'
+      el.btnConnect.setAttribute('aria-hidden', 'true')
+      el.btnConnect.setAttribute('tabindex', '-1')
     }
     if (el?.syncInfo) {
       el.syncInfo.textContent = 'Wallet synced from the top header.'
@@ -408,10 +407,10 @@ export function InriP2PClient() {
     <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
       <div className="mb-5 flex flex-col gap-4 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm leading-7 text-white/68">
-          P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header. If the market does not sync automatically, use the sync button below.
+          P2P uses only the wallet connected in the top header. No second wallet connection is shown inside the market.
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Syncing...' : 'Sync connected wallet'}</button>
+          <button type="button" onClick={syncWallet} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Syncing...' : 'Sync header wallet'}</button>
           <button type="button" onClick={refreshMarket} disabled={syncing} className="inri-button-secondary disabled:cursor-not-allowed disabled:opacity-60">Refresh market</button>
         </div>
       </div>
