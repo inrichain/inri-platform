@@ -233,7 +233,7 @@ export function InriPrivacyPolicyPage() {
   return (
     <InriLegalPage
       eyebrow="Privacy Policy"
-      title="Privacy Policy in the same premium language as the rest of the INRI site."
+      title="Privacy Policy for the INRI ecosystem."
       description="This page now carries the real privacy policy structure for the INRI ecosystem: website, explorer, RPC, on-chain public data, off-chain handling, cookies, analytics and user rights — all in one clean route."
       facts={facts}
       sections={sections}

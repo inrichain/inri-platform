@@ -48,7 +48,7 @@ export function InriTokenFactoryPage() {
                 INRI Token Factory
               </div>
               <h1 className="mx-auto mt-5 max-w-[980px] text-4xl font-black leading-[0.96] text-white sm:text-5xl lg:text-[4rem]">
-                Create a token on INRI with a cleaner, more professional launch screen.
+                Create a token on INRI from the official launch route.
               </h1>
               <p className="mx-auto mt-5 max-w-[860px] text-base leading-8 text-white/66 sm:text-lg">
                 Connect the wallet, switch to INRI CHAIN, fill the token details and launch from one centered app panel.

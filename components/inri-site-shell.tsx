@@ -20,9 +20,9 @@ export type InriNavItem = {
 }
 
 export const inriNavItems: InriNavItem[] = [
+  { label: 'Home', href: '/' },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Mining', href: '/mining' },
-  { label: 'Championship', href: '/mining-championship/' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
   { label: 'Whitepaper', href: '/whitepaper' },
@@ -34,28 +34,35 @@ const EXPLORER_URL = 'https://explorer.inri.life'
 const utilityNavItems: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Explorer', href: EXPLORER_URL, external: true },
-  { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
+  { label: 'Swap', href: '/swap' },
   { label: 'P2P', href: '/p2p' },
   { label: 'Mining Championship', href: '/mining-championship/' },
   { label: 'Mining Windows', href: '/mining-windows' },
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
-  { label: 'Privacy Policy', href: '/privacy-policy' },
-  { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
 
-const footerPrimaryLinks: InriNavItem[] = [
+const footerStartLinks: InriNavItem[] = [
+  { label: 'Home', href: '/' },
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Wallets', href: '/wallets' },
+  { label: 'Explorer', href: EXPLORER_URL, external: true },
+]
+
+const footerEcosystemLinks: InriNavItem[] = [
   { label: 'Mining', href: '/mining' },
-  { label: 'Mining Championship', href: '/mining-championship/' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
-  { label: 'Swap', href: '/swap' },
   { label: 'Token Factory', href: '/token-factory' },
+  { label: 'Swap', href: '/swap' },
   { label: 'P2P', href: '/p2p' },
+]
+
+const footerResourceLinks: InriNavItem[] = [
   { label: 'Whitepaper', href: '/whitepaper' },
-  { label: 'Explorer', href: EXPLORER_URL, external: true },
+  { label: 'Mining Championship', href: '/mining-championship/' },
+  { label: 'Mining Windows', href: '/mining-windows' },
+  { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms & Conditions', href: '/terms-and-conditions' },
 ]
@@ -72,14 +79,31 @@ function uniqueNavItems(items: InriNavItem[]) {
 
 const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems])
 
-const socialLinks = [
-  { label: 'X', href: 'https://x.com/inrichain', text: 'X' },
-  { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: Instagram },
-  { label: 'Telegram', href: 'https://t.me/+MQyCO6GXZJtmOTJh', icon: Send },
-  { label: 'Discord', href: 'https://discord.gg/VuUCSTYJNe', text: 'Discord' },
-  { label: 'GitHub', href: 'https://github.com/inrichain', icon: Github },
-  { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: Youtube },
+function DiscordIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.078.037c-.211.375-.444.864-.608 1.249a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.249.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.579.099 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 13.94 13.94 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.011c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.128 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.04.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .031-.055c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.211 0 2.175 1.095 2.157 2.418 0 1.334-.955 2.419-2.157 2.419Zm7.975 0c-1.184 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.211 0 2.175 1.095 2.157 2.418 0 1.334-.946 2.419-2.157 2.419Z" />
+    </svg>
+  )
+}
+
+type SocialLink = {
+  label: string
+  href: string
+  icon: ReactNode
+}
+
+const socialLinks: SocialLink[] = [
+  { label: 'X', href: 'https://x.com/inrichain', icon: <span className="text-sm font-black">X</span> },
+  { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: <Instagram className="h-4 w-4" /> },
+  { label: 'Telegram', href: 'https://t.me/+MQyCO6GXZJtmOTJh', icon: <Send className="h-4 w-4" /> },
+  { label: 'Discord', href: 'https://discord.gg/VuUCSTYJNe', icon: <DiscordIcon className="h-4 w-4" /> },
+  { label: 'GitHub', href: 'https://github.com/inrichain', icon: <Github className="h-4 w-4" /> },
+  { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: <Youtube className="h-4 w-4" /> },
+  { label: 'Email', href: 'mailto:contact@inri.life', icon: <Mail className="h-4 w-4" /> },
 ]
+
+const footerFacts = ['Proof-of-Work', 'Chain ID 3777', 'EVM Compatible', 'Mainnet Live']
 
 const navLinkClass =
   'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold text-white/78 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-3'
@@ -102,7 +126,7 @@ function UtilityMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button translate="no" className={`${navLinkClass} gap-1.5`}>
-          More
+          Ecosystem
           <ChevronDown className="h-4 w-4 text-white/50" />
         </button>
       </DropdownMenuTrigger>
@@ -112,7 +136,7 @@ function UtilityMenu() {
         className="w-60 rounded-[1.2rem] border border-white/[0.12] bg-[linear-gradient(180deg,#040912,#000000)] p-2 text-white shadow-[0_22px_70px_rgba(0,0,0,0.5),0_0_0_1px_rgba(19,164,255,0.06)]"
       >
         <DropdownMenuLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-          More pages
+          More routes
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/[0.08]" />
         {utilityNavItems.map((item) => (
@@ -190,7 +214,7 @@ function MobileMenu() {
             <Logo showText size={52} />
           </SheetTitle>
           <SheetDescription className="pt-2 text-left text-white/55">
-            Wallet access, network routes and main chain entry points.
+            Official routes for the INRI mainnet.
           </SheetDescription>
         </SheetHeader>
 
@@ -239,7 +263,7 @@ export function InriHeader() {
             translate="no"
             className="notranslate text-center text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/92 sm:text-[13px] lg:text-[15px] lg:tracking-[0.24em]"
           >
-            Mainnet • Proof-of-Work • Chain 3777
+            Mainnet • Proof-of-Work • Chain 3777 • EVM Compatible
           </p>
         </div>
       </div>
@@ -295,92 +319,142 @@ export function InriShell({ children }: { children: ReactNode }) {
   )
 }
 
-function FooterSocialIcon({
-  href,
-  label,
-  children,
+function FooterLinkColumn({
+  title,
+  links,
 }: {
-  href: string
-  label: string
-  children: ReactNode
+  title: string
+  links: InriNavItem[]
 }) {
   return (
+    <div>
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">{title}</p>
+      <div className="mt-5 grid gap-3">
+        {links.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            translate="no"
+            className="notranslate text-sm font-semibold text-white/72 transition hover:text-white"
+            {...(link.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FooterSocialButton({ link }: { link: SocialLink }) {
+  return (
     <Link
-      href={href}
+      href={link.href}
       target="_blank"
       rel="noreferrer"
-      aria-label={label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.03] text-white/72 transition-all hover:-translate-y-px hover:border-primary/48 hover:bg-primary/[0.12] hover:text-white"
+      aria-label={link.label}
+      className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-white/74 transition-all hover:-translate-y-px hover:border-primary/48 hover:bg-primary/[0.12] hover:text-white"
     >
-      {children}
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.12] bg-black/40">
+        {link.icon}
+      </span>
+      <span>{link.label}</span>
     </Link>
   )
 }
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-black">
+    <footer className="border-t border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.12),transparent_22%),linear-gradient(180deg,#010408_0%,#000000_100%)]">
       <div className="mx-auto flex w-full max-w-[1760px] flex-col gap-14 px-4 py-16 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] xl:gap-14">
+        <div className="grid gap-8 rounded-[2rem] border-[1.45px] border-white/[0.12] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 shadow-[0_28px_88px_rgba(0,0,0,0.34)] lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:p-8">
           <div className="space-y-6">
-            <Logo showText size={56} />
-            <div className="max-w-2xl space-y-3">
-              <p className="text-base font-semibold text-white/92">
-                A black-and-blue gateway to the INRI mainnet.
+            <Logo showText size={58} />
+            <div className="max-w-3xl space-y-3">
+              <p className="text-lg font-semibold text-white/94 sm:text-xl">
+                Official access layer for the INRI mainnet.
               </p>
-              <p className="max-w-[60ch] text-sm leading-7 text-white/58">
-                Explore the wallet, pool, mining routes, explorer and whitepaper from one refined
-                network surface.
+              <p className="max-w-[66ch] text-sm leading-7 text-white/60 sm:text-base">
+                Use one clear surface to open the wallet, explore the chain, start mining,
+                access the pool, launch tokens and read the whitepaper.
               </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {footerFacts.map((fact) => (
+                <span
+                  key={fact}
+                  className="rounded-full border border-white/[0.12] bg-white/[0.04] px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/72"
+                >
+                  {fact}
+                </span>
+              ))}
             </div>
             <div className="flex flex-wrap gap-3">
               <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-                INRI Wallet
+                Open INRI Wallet
               </InriLinkButton>
               <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-                Explorer
+                Open Explorer
               </InriLinkButton>
             </div>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 xl:pl-10">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">
-                Main routes
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[1.5rem] border border-white/[0.1] bg-black/28 p-5">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-primary">
+                Network
               </p>
-              <div className="mt-5 grid gap-3">
-                {footerPrimaryLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    translate="no"
-                    className="notranslate text-sm font-semibold text-white/72 transition hover:text-white"
-                    {...(link.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+              <div className="mt-4 space-y-3 text-sm text-white/72">
+                <div className="flex items-center justify-between gap-4">
+                  <span>Consensus</span>
+                  <span className="font-bold text-white">Proof-of-Work</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Chain ID</span>
+                  <span className="font-bold text-white">3777</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Compatibility</span>
+                  <span className="font-bold text-white">EVM</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Support</span>
+                  <span className="font-bold text-white">contact@inri.life</span>
+                </div>
               </div>
             </div>
 
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">
+            <div className="rounded-[1.5rem] border border-white/[0.1] bg-black/28 p-5">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-primary">
                 Community
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
+              <p className="mt-3 text-sm leading-7 text-white/58">
+                Official channels for updates, support, announcements and ecosystem activity.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2.5">
                 {socialLinks.map((link) => (
-                  <FooterSocialIcon key={link.label} href={link.href} label={link.label}>
-                    {link.icon ? (
-                      <link.icon className="h-4 w-4" />
-                    ) : (
-                      <span className="text-sm font-bold">{link.text}</span>
-                    )}
-                  </FooterSocialIcon>
+                  <FooterSocialButton key={link.label} link={link} />
                 ))}
-                <FooterSocialIcon href="mailto:contact@inri.life" label="Email">
-                  <Mail className="h-4 w-4" />
-                </FooterSocialIcon>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-10 md:grid-cols-3 xl:grid-cols-4">
+          <FooterLinkColumn title="Start" links={footerStartLinks} />
+          <FooterLinkColumn title="Ecosystem" links={footerEcosystemLinks} />
+          <FooterLinkColumn title="Resources" links={footerResourceLinks} />
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-primary">Brand</p>
+            <div className="mt-5 space-y-3 text-sm leading-7 text-white/60">
+              <p>
+                INRI CHAIN is built to keep the main routes of the network visible, direct and
+                easy to use on desktop and mobile.
+              </p>
+              <p>
+                The site should feel like a real network control surface, not a generic landing
+                page.
+              </p>
             </div>
           </div>
         </div>
