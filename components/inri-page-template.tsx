@@ -77,16 +77,16 @@ export function InriPageTemplate({
               </div>
 
               <div className="inri-section-surface rounded-[1.8rem] p-5 sm:p-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">Page summary</p>
-                <h2 className="mt-3 text-2xl font-black text-white sm:text-[2rem]">One consistent standard for every INRI route.</h2>
+                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary">INRI standard</p>
+                <h2 className="mt-3 text-2xl font-black text-white sm:text-[2rem]">One cleaner visual pattern for every route.</h2>
                 <p className="mt-4 text-sm leading-7 text-white/66">
-                  Each page follows the same visual hierarchy, spacing and action pattern used across the INRI mainnet surface.
+                  The main sections follow the same structure so the site feels like one official network interface, not separate pages with different styles.
                 </p>
                 <div className="mt-5 grid gap-3">
                   {[
-                    'Stronger hero hierarchy and cleaner action blocks',
-                    'Shared cards, routes and resource panels',
-                    'Consistent INRI branding across desktop and mobile',
+                    'Clear hero, actions and content hierarchy',
+                    'Consistent blocks across desktop and mobile',
+                    'Header wallet access kept at the top level',
                   ].map((item) => (
                     <div key={item} className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/76">
                       {item}

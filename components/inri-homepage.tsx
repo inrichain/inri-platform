@@ -176,12 +176,10 @@ export function InriHomepage() {
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-[2.2rem] font-bold leading-[0.96] text-white sm:text-[3.6rem] lg:text-[5.15rem]">
-                  Official access to the INRI mainnet.
+                  Official gateway to the INRI mainnet.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-white/66 sm:text-lg">
-                  Open the wallet, explore the blockchain, start mining, access the pool,
-                  launch tokens, join staking and follow the championship from one clean
-                  official surface.
+                  Open the wallet, explore the blockchain, mine, access the pool, launch tokens and follow the mining championship from one official interface.
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
@@ -215,7 +213,7 @@ export function InriHomepage() {
                       Main routes
                     </p>
                     <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">
-                      Everything users need to use, mine and explore INRI.
+                      Everything users need to use, mine and explore INRI in one place.
                     </h2>
                   </div>
                   <span className="rounded-full border-[1.35px] border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
@@ -245,12 +243,10 @@ export function InriHomepage() {
                     Active campaign
                   </div>
                   <h2 className="mt-5 max-w-4xl text-3xl font-black leading-tight text-white sm:text-4xl xl:text-[3.2rem]">
-                    Independent Mining Championship now deserves prime space on the home page.
+                    Mining Championship live now on the INRI home page.
                   </h2>
                   <p className="mt-4 max-w-3xl text-sm leading-8 text-white/66 sm:text-base">
-                    The competition is live from block 1,000,000 to 1,500,000 with 150,000 INRI
-                    in total rewards. Solo mining only. CPU miners are valid participants when the
-                    produced block is legitimate.
+                    The competition is live from block 1,000,000 to 1,500,000 with 150,000 INRI in total rewards. Only solo mining counts. CPU miners are valid participants when the block produced is legitimate.
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
@@ -311,12 +307,11 @@ export function InriHomepage() {
                   Ecosystem routes
                 </p>
                 <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
-                  Clear sections for the routes that matter most.
+                  Clear sections for the routes that matter most
                 </h2>
               </div>
               <p className="max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
-                Keep the main INRI routes visible, fast and consistent so the site feels like a
-                real mainnet interface instead of a loose collection of pages.
+                Keep the main INRI routes visible, fast and consistent so the whole site feels like one real mainnet interface.
               </p>
             </div>
 

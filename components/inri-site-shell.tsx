@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
+import { ChevronDown, Github, Globe, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
 import {
@@ -25,7 +25,7 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
-  { label: 'Whitepaper', href: '/whitepaper' },
+  { label: 'Championship', href: '/mining-championship/' },
 ]
 
 const LIVE_WALLET_URL = 'https://wallet.inri.life'
@@ -34,14 +34,46 @@ const EXPLORER_URL = 'https://explorer.inri.life'
 const utilityNavItems: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Explorer', href: EXPLORER_URL, external: true },
+  { label: 'Whitepaper', href: '/whitepaper' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'Swap', href: '/swap' },
   { label: 'P2P', href: '/p2p' },
-  { label: 'Mining Championship', href: '/mining-championship/' },
   { label: 'Mining Windows', href: '/mining-windows' },
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
 ]
 
+const footerGroups: { title: string; links: InriNavItem[] }[] = [
+  {
+    title: 'Start',
+    links: [
+      { label: 'Home', href: '/' },
+      { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
+      { label: 'Explorer', href: EXPLORER_URL, external: true },
+      { label: 'Whitepaper', href: '/whitepaper' },
+    ],
+  },
+  {
+    title: 'Ecosystem',
+    links: [
+      { label: 'Mining', href: '/mining' },
+      { label: 'Pool', href: '/pool' },
+      { label: 'Staking', href: '/staking' },
+      { label: 'Token Factory', href: '/token-factory' },
+      { label: 'Swap', href: '/swap' },
+      { label: 'P2P', href: '/p2p' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Mining Championship', href: '/mining-championship/' },
+      { label: 'Mining Windows', href: '/mining-windows' },
+      { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms & Conditions', href: '/terms-and-conditions' },
+    ],
+  },
+]
 
 function uniqueNavItems(items: InriNavItem[]) {
   const seen = new Set<string>()
@@ -301,7 +333,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.03] text-white/74 transition-all hover:-translate-y-px hover:border-primary/48 hover:bg-primary/[0.12] hover:text-white"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white/62 transition-all hover:-translate-y-px hover:text-white"
     >
       {link.icon}
     </Link>
@@ -310,26 +342,65 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 
 export function InriFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.12),transparent_22%),linear-gradient(180deg,#010408_0%,#000000_100%)]">
-      <div className="mx-auto flex w-full max-w-[1760px] flex-col gap-8 px-4 py-10 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="flex flex-col gap-6 rounded-[2rem] border-[1.45px] border-white/[0.12] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 shadow-[0_28px_88px_rgba(0,0,0,0.34)] lg:flex-row lg:items-center lg:justify-between lg:p-8">
-          <div className="max-w-3xl">
-            <Logo showText size={56} />
-            <p className="mt-5 max-w-[62ch] text-sm leading-7 text-white/64 sm:text-base">
-              Official mainnet surface for wallet access, explorer, mining, pool, token factory and the active championship route.
+    <footer className="border-t border-white/[0.08] bg-black">
+      <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-16 xl:px-12 2xl:px-16">
+        <div className="grid gap-12 border-t border-white/[0.05] pt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-10 lg:pt-14">
+          <div className="max-w-md">
+            <Logo showText size={60} />
+            <p className="mt-6 text-sm leading-7 text-white/54 sm:text-[15px]">
+              Official network surface for wallet access, explorer, mining, staking,
+              token creation and the active championship route on INRI CHAIN.
             </p>
+            <div className="mt-7 flex flex-wrap items-center gap-1.5">
+              {socialLinks.map((link) => (
+                <FooterSocialIcon key={link.label} link={link} />
+              ))}
+            </div>
+            <div className="mt-7 space-y-1.5 text-sm text-white/40">
+              <p>© 2026 INRI CHAIN. All rights reserved.</p>
+              <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {socialLinks.map((link) => (
-              <FooterSocialIcon key={link.label} link={link} />
-            ))}
-          </div>
-        </div>
+          {footerGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="text-[1.3rem] font-bold text-white">{group.title}</h3>
+              <div className="mt-6 grid gap-4">
+                {group.links.map((item) => (
+                  <Link
+                    key={`${group.title}-${item.label}-${item.href}`}
+                    href={item.href}
+                    className="text-[15px] font-medium text-white/64 transition hover:text-white"
+                    {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
-        <div className="flex flex-col gap-3 text-sm text-white/42 md:flex-row md:items-center md:justify-between">
-          <p>© 2026 INRI CHAIN. All rights reserved.</p>
-          <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-[1.3rem] font-bold text-white">Network</h3>
+              <div className="mt-6 grid gap-4 text-[15px] text-white/64">
+                <p>Consensus</p>
+                <p className="font-semibold text-white">Proof-of-Work</p>
+                <p>Chain ID</p>
+                <p className="font-semibold text-white">3777</p>
+                <p>Compatibility</p>
+                <p className="font-semibold text-white">EVM</p>
+                <Link href="mailto:contact@inri.life" className="font-semibold text-white transition hover:text-primary">
+                  contact@inri.life
+                </Link>
+              </div>
+            </div>
+
+            <div className="inline-flex items-center gap-2 text-sm text-white/44">
+              <Globe className="h-4 w-4" />
+              <span>EN / PT</span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
