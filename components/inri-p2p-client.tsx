@@ -3,16 +3,31 @@
 import { useEffect, useRef, useState } from 'react'
 import { getWalletConnectProvider, getWalletConnectState } from '@/lib/walletconnect-inri'
 
+type ProviderLike = {
+  request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
+  on?: (event: string, handler: (...args: unknown[]) => void) => void
+  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
+  isMetaMask?: boolean
+  isOkxWallet?: boolean
+  isRabby?: boolean
+  isCoinbaseWallet?: boolean
+  isTrust?: boolean
+  providers?: ProviderLike[]
+}
+
+type ConnectorType = '' | 'injected' | 'walletconnect'
+
+type ActiveWalletState = {
+  connector: ConnectorType | ''
+  address: string
+  chainId: string
+  provider?: ProviderLike
+} | null
+
 declare global {
   interface Window {
     ethers?: unknown
-    __INRI_WALLETCONNECT_PROVIDER__?: unknown
-    __INRI_ACTIVE_WALLET__?: {
-      connector?: string
-      address?: string
-      chainId?: string
-      provider?: unknown
-    } | null
+    __INRI_WALLETCONNECT_PROVIDER__?: ProviderLike
     __INRI_P2P_SYNC__?: (() => Promise<boolean>) | null
     __INRI_P2P_REFRESH__?: (() => Promise<void>) | null
   }
@@ -202,7 +217,7 @@ function patchScript(scriptText: string): string {
       '__root.addEventListener(',
     ),
     'if(window.ethereum) return window.ethereum;',
-    'if(window.__INRI_ACTIVE_WALLET__?.provider) return window.__INRI_ACTIVE_WALLET__.provider;\n    if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
+    'if(window.__INRI_ACTIVE_WALLET__ && window.__INRI_ACTIVE_WALLET__.provider) return window.__INRI_ACTIVE_WALLET__.provider;\n    if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
   )
 
   return `${patched}
