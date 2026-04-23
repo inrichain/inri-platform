@@ -1,9 +1,10 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
+import { ArrowUp, ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
 import {
@@ -364,12 +365,37 @@ export function InriHeader() {
   )
 }
 
+function BackToTopButton() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 560)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <button
+      type="button"
+      aria-label="Back to top"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className={`fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-full border border-primary/35 bg-[linear-gradient(180deg,rgba(7,17,30,0.94),rgba(1,5,10,0.96))] text-primary shadow-[0_18px_55px_rgba(0,0,0,0.35),0_0_30px_rgba(19,164,255,0.12)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-primary/70 hover:text-white sm:bottom-7 sm:right-7 ${
+        visible ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
+      }`}
+    >
+      <ArrowUp className="h-5 w-5" />
+    </button>
+  )
+}
+
 export function InriShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-black text-white">
       <InriHeader />
       {children}
       <InriFooter />
+      <BackToTopButton />
     </div>
   )
 }
