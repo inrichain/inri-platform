@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { ChevronDown, Github, Globe, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
+import { ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
 import {
@@ -102,13 +102,13 @@ type SocialLink = {
 }
 
 const socialLinks: SocialLink[] = [
-  { label: 'X', href: 'https://x.com/inrichain', icon: <span className="text-sm font-black">X</span> },
-  { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: <Instagram className="h-4 w-4" /> },
-  { label: 'Telegram', href: 'https://t.me/+MQyCO6GXZJtmOTJh', icon: <Send className="h-4 w-4" /> },
-  { label: 'Discord', href: 'https://discord.gg/VuUCSTYJNe', icon: <DiscordIcon className="h-4 w-4" /> },
-  { label: 'GitHub', href: 'https://github.com/inrichain', icon: <Github className="h-4 w-4" /> },
-  { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: <Youtube className="h-4 w-4" /> },
-  { label: 'Email', href: 'mailto:contact@inri.life', icon: <Mail className="h-4 w-4" /> },
+  { label: 'X', href: 'https://x.com/inrichain', icon: <span className="text-base font-black">X</span> },
+  { label: 'Instagram', href: 'https://www.instagram.com/inrichain/', icon: <Instagram className="h-5 w-5" /> },
+  { label: 'Telegram', href: 'https://t.me/+MQyCO6GXZJtmOTJh', icon: <Send className="h-5 w-5" /> },
+  { label: 'Discord', href: 'https://discord.gg/VuUCSTYJNe', icon: <DiscordIcon className="h-5 w-5" /> },
+  { label: 'GitHub', href: 'https://github.com/inrichain', icon: <Github className="h-5 w-5" /> },
+  { label: 'YouTube', href: 'https://www.youtube.com/@inrichain', icon: <Youtube className="h-5 w-5" /> },
+  { label: 'Email', href: 'mailto:contact@inri.life', icon: <Mail className="h-5 w-5" /> },
 ]
 
 const navLinkClass =
@@ -333,7 +333,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white/62 transition-all hover:-translate-y-px hover:text-white"
+      className="inline-flex h-12 w-12 items-center justify-center rounded-full text-white/72 transition-all hover:-translate-y-px hover:text-white"
     >
       {link.icon}
     </Link>
@@ -344,14 +344,14 @@ export function InriFooter() {
   return (
     <footer className="border-t border-white/[0.08] bg-black">
       <div className="mx-auto max-w-[1600px] px-4 py-14 sm:px-8 lg:py-16 xl:px-12 2xl:px-16">
-        <div className="grid gap-12 border-t border-white/[0.05] pt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-10 lg:pt-14">
+        <div className="grid gap-12 border-t border-white/[0.05] pt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] lg:gap-10 lg:pt-14">
           <div className="max-w-md">
-            <Logo showText size={60} />
-            <p className="mt-6 text-sm leading-7 text-white/54 sm:text-[15px]">
+            <Logo showText size={78} />
+            <p className="mt-6 text-sm leading-7 text-white/56 sm:text-[15px]">
               Official network surface for wallet access, explorer, mining, staking,
               token creation and the active championship route on INRI CHAIN.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-1.5">
+            <div className="mt-7 flex flex-wrap items-center gap-2">
               {socialLinks.map((link) => (
                 <FooterSocialIcon key={link.label} link={link} />
               ))}
@@ -380,25 +380,18 @@ export function InriFooter() {
             </div>
           ))}
 
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-[1.3rem] font-bold text-white">Network</h3>
-              <div className="mt-6 grid gap-4 text-[15px] text-white/64">
-                <p>Consensus</p>
-                <p className="font-semibold text-white">Proof-of-Work</p>
-                <p>Chain ID</p>
-                <p className="font-semibold text-white">3777</p>
-                <p>Compatibility</p>
-                <p className="font-semibold text-white">EVM</p>
-                <Link href="mailto:contact@inri.life" className="font-semibold text-white transition hover:text-primary">
-                  contact@inri.life
-                </Link>
-              </div>
-            </div>
-
-            <div className="inline-flex items-center gap-2 text-sm text-white/44">
-              <Globe className="h-4 w-4" />
-              <span>EN / PT</span>
+          <div>
+            <h3 className="text-[1.3rem] font-bold text-white">Network</h3>
+            <div className="mt-6 grid gap-4 text-[15px] text-white/64">
+              <p>Consensus</p>
+              <p className="font-semibold text-white">Proof-of-Work</p>
+              <p>Chain ID</p>
+              <p className="font-semibold text-white">3777</p>
+              <p>Compatibility</p>
+              <p className="font-semibold text-white">EVM</p>
+              <Link href="mailto:contact@inri.life" className="font-semibold text-white transition hover:text-primary">
+                contact@inri.life
+              </Link>
             </div>
           </div>
         </div>

@@ -203,7 +203,7 @@ export function InriStakingClient() {
   const [userState, setUserState] = useState<UserState | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<0 | 1 | 2>(0)
   const [amount, setAmount] = useState('100')
-  const [status, setStatus] = useState('Connect the wallet and review the program from one screen.')
+  const [status, setStatus] = useState('Use the top header to connect your wallet and confirm INRI CHAIN before staking.')
   const [error, setError] = useState<string | null>(null)
   const [busyAction, setBusyAction] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -468,7 +468,7 @@ export function InriStakingClient() {
 
   const sendTransaction = async (signature: string, encodedArgs = '', value?: bigint, pendingText?: string) => {
     const eth = getEthereum()
-    if (!eth || !account) throw new Error('Connect the wallet first')
+    if (!eth || !account) throw new Error('Connect your wallet from the top header first')
     const selector = selectors[signature]
     if (!selector) throw new Error(`Missing selector for ${signature}`)
     const tx = {
@@ -498,7 +498,7 @@ export function InriStakingClient() {
 
   const stakeNow = async () => {
     if (!networkReady) {
-      setError('Switch to INRI CHAIN before staking.')
+      setError('Select INRI CHAIN from the top header before staking.')
       return
     }
     try {
@@ -517,7 +517,7 @@ export function InriStakingClient() {
 
   const claimAll = async () => {
     if (!networkReady) {
-      setError('Switch to INRI CHAIN before claiming.')
+      setError('Select INRI CHAIN from the top header before claiming.')
       return
     }
     try {
@@ -534,7 +534,7 @@ export function InriStakingClient() {
 
   const restake = async () => {
     if (!networkReady) {
-      setError('Switch to INRI CHAIN before restaking.')
+      setError('Select INRI CHAIN from the top header before restaking.')
       return
     }
     try {
@@ -551,7 +551,7 @@ export function InriStakingClient() {
 
   const unstake = async () => {
     if (!networkReady) {
-      setError('Switch to INRI CHAIN before unstaking.')
+      setError('Select INRI CHAIN from the top header before unstaking.')
       return
     }
     try {
@@ -623,21 +623,8 @@ export function InriStakingClient() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <ActionButton
-                onClick={connectWallet}
-                disabled={busyAction === 'connect'}
-                className="border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] hover:-translate-y-px hover:brightness-105"
-              >
-                {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : account ? 'Reconnect wallet' : 'Connect wallet'}
-              </ActionButton>
-              <ActionButton
-                onClick={switchNetwork}
-                disabled={busyAction === 'network'}
-                className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
-              >
-                {busyAction === 'network' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
-              </ActionButton>
+            <div className="mt-4 rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-4 text-sm leading-7 text-white/66">
+              Use the Connect Wallet button in the top header. Once the wallet is connected and INRI CHAIN is selected there, the staking actions below become ready here automatically.
             </div>
           </div>
         </div>

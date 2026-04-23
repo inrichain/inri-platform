@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck } from 'lucide-react'
 
 const FACTORY_ADDRESS = '0x1D760E78D92aA5B46b484bc054Bbfae11198B751'
 const INRI_CHAIN_ID_HEX = '0xec1'
@@ -407,11 +407,7 @@ export function InriTokenFactoryClient() {
       }
     }
 
-    throw new Error(
-      failures.length
-        ? `The site could not match the live factory ABI. Gas estimation failed for all known createToken variants. ${failures.join(' | ')}`
-        : 'The site could not prepare the createToken call because the factory selectors are not loaded yet.',
-    )
+    throw new Error('The token factory call could not be prepared with the live contract settings.')
   }, [account, form.decimals, form.name, form.supply, form.symbol, networkReady, selectors])
 
   const estimateGas = useCallback(async () => {
@@ -439,11 +435,11 @@ export function InriTokenFactoryClient() {
       return
     }
     if (!account) {
-      await connectWallet()
+      setError('Connect your wallet from the top header first.')
       return
     }
     if (!networkReady) {
-      setError('Switch to INRI CHAIN first.')
+      setError('Select INRI CHAIN from the top header first.')
       return
     }
 
@@ -452,7 +448,7 @@ export function InriTokenFactoryClient() {
       setIsCreating(true)
       setTxHash(null)
       setCreatedToken(null)
-      setStatus('Checking the live factory ABI and waiting for wallet confirmation...')
+      setStatus('Waiting for wallet confirmation...')
 
       const before = await refreshFactoryStats()
       const resolved = await resolveCreateCall()
@@ -466,7 +462,7 @@ export function InriTokenFactoryClient() {
       })) as string
 
       setTxHash(hash)
-      setStatus(`Transaction sent with ${resolved.signature}. Waiting for confirmation on INRI CHAIN...`)
+      setStatus('Transaction sent. Waiting for confirmation on INRI CHAIN...')
 
       let receipt: { status?: string } | null = null
       for (let attempt = 0; attempt < 90; attempt += 1) {
@@ -482,7 +478,7 @@ export function InriTokenFactoryClient() {
       }
 
       if (receipt.status !== '0x1') {
-        throw new Error(`Transaction reverted even after ABI auto-detection. The live factory may expose a different createToken signature than the site expects.`)
+        throw new Error('Transaction reverted. Confirm the token fields and try again.')
       }
 
       const after = await refreshFactoryStats()
@@ -495,7 +491,7 @@ export function InriTokenFactoryClient() {
         setStatus('Token created. Open the explorer transaction to confirm the new token address.')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Token creation failed.')
+      setError(err instanceof Error ? err.message : 'Token creation failed. Please review the fields and try again.')
     } finally {
       setIsCreating(false)
     }
@@ -554,23 +550,12 @@ export function InriTokenFactoryClient() {
                 <div className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Launch form</div>
                 <h2 className="mt-2 text-2xl font-black text-white">Create the token from one clean panel</h2>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={connectWallet}
-                  disabled={isConnecting}
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-6 text-sm font-black text-black shadow-[0_14px_34px_rgba(19,164,255,0.28)] transition hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isConnecting ? 'Connecting...' : account ? 'Reconnect wallet' : 'Connect wallet'}
-                </button>
-                <button
-                  type="button"
-                  onClick={switchToInri}
-                  disabled={isSwitching}
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/16 bg-white/[0.04] px-6 text-sm font-bold text-white transition hover:border-primary/55 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSwitching ? 'Switching...' : networkReady ? 'INRI CHAIN ready' : 'Switch network'}
-                </button>
+              <div className="rounded-full border border-white/12 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/70">
+                {account
+                  ? networkReady
+                    ? 'Wallet connected in header • INRI CHAIN ready'
+                    : 'Wallet connected in header • switch to INRI CHAIN in the top menu'
+                  : 'Use the Connect Wallet button in the top header'}
               </div>
             </div>
 
@@ -608,8 +593,8 @@ export function InriTokenFactoryClient() {
               />
             </div>
 
-            <div className="mt-5 rounded-[1.2rem] border border-primary/16 bg-primary/[0.08] p-4 text-sm leading-7 text-white/72">
-              <strong className="text-white">Important:</strong> this screen now tests the live factory ABI before sending the transaction, so it can adapt if the createToken argument order on-chain is different from the hardcoded frontend assumption.
+            <div className="mt-5 rounded-[1.2rem] border border-primary/16 bg-primary/[0.08] p-4 text-sm leading-7 text-white/78">
+              Review the token details carefully before launch. The initial supply is sent to the connected wallet when creation succeeds.
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -678,19 +663,6 @@ export function InriTokenFactoryClient() {
                 <ExternalLink className="h-4 w-4" />
               </Link>
             </div>
-            <div className="mt-4 text-sm leading-7 text-white/56">
-              Function: <span className="font-semibold text-white">createToken(...)</span>
-            </div>
-            {resolvedSignature ? (
-              <div className="mt-2 text-sm leading-7 text-white/56">
-                Live signature matched: <span className="font-semibold text-white">{resolvedSignature}</span>
-              </div>
-            ) : null}
-            {gasEstimate ? (
-              <div className="mt-2 text-sm leading-7 text-white/56">
-                Estimated gas: <span className="font-semibold text-white">{gasEstimate}</span>
-              </div>
-            ) : null}
           </div>
 
           <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -727,18 +699,6 @@ export function InriTokenFactoryClient() {
                 </button>
               </div>
             ) : null}
-          </div>
-
-          <div className="rounded-[1.6rem] border border-amber-400/14 bg-amber-500/[0.05] p-5 sm:p-6">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-300" />
-              <div>
-                <div className="text-sm font-black text-white">If the transaction still reverts</div>
-                <div className="mt-2 text-sm leading-7 text-white/66">
-                  The main frontend risk here was the hardcoded contract call. This version probes the live factory using gas estimation before sending. If it still fails, the remaining issue is probably the real on-chain ABI exposing a different function name or a factory rule on the contract itself.
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
