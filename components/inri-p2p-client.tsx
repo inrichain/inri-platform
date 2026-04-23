@@ -27,31 +27,7 @@ function patchStyle(styleText: string): string {
 :host .wrap{max-width:none;margin:0;padding:0;gap:16px}
 :host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 :host .p2pHero{display:none!important}
-:host .top{
-  position:static;
-  top:auto;
-  z-index:auto;
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-  gap:10px;
-  padding:0;
-  margin:0;
-  border:none;
-  background:transparent;
-  backdrop-filter:none;
-}
-:host .top > .brand{display:none!important}
-:host .top a.btn.btn-ghost{display:none!important}
-:host .top .row{
-  width:100%;
-  justify-content:flex-end;
-  gap:10px;
-  flex-wrap:wrap;
-}
-:host .top .pill{border-color:rgba(19,164,255,.16);background:rgba(255,255,255,.045)}
-:host .top .btn-pri{min-width:164px;justify-content:center}
-:host .top .mono{color:#fff}
+:host .top{display:none!important}
 :host .tabs,
 :host .card,
 :host .offer,
@@ -146,7 +122,7 @@ function patchStyle(styleText: string): string {
 :host .search{gap:10px}
 :host .search input{width:320px}
 @media(max-width:640px){:host .search input{width:100%}
-:host .top .row,:host .tabs{justify-content:flex-start}
+:host .tabs{justify-content:flex-start}
 :host .panelWrap{gap:14px}}
 :host .offers{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;max-height:none;overflow:visible;padding-right:0}
 :host .offer{
@@ -312,9 +288,12 @@ export function InriP2PClient() {
 
   return (
     <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
+      <div className="mb-5 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-7 text-white/68">
+        P2P follows the same site standard. Use <span className="font-bold text-white">Connect Wallet</span> in the top header, then manage your offers and trades below.
+      </div>
       {status === 'loading' ? (
         <div className="flex min-h-[840px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/60 text-sm font-semibold text-white/72">
-          Loading P2P market...
+          Loading P2P market interface...
         </div>
       ) : null}
 

@@ -1,5 +1,8 @@
+'use client'
+
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ChevronDown, Github, Instagram, Mail, Menu, Send, Youtube } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
@@ -87,6 +90,21 @@ function uniqueNavItems(items: InriNavItem[]) {
 
 const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems])
 
+function normalizePath(path: string) {
+  if (!path) return '/'
+  const clean = path.split('?')[0].split('#')[0]
+  if (clean.length > 1 && clean.endsWith('/')) return clean.slice(0, -1)
+  return clean || '/'
+}
+
+function isPathActive(pathname: string, href: string) {
+  if (!href.startsWith('/')) return false
+  const current = normalizePath(pathname)
+  const target = normalizePath(href)
+  if (target === '/') return current === '/'
+  return current === target || current.startsWith(target + '/')
+}
+
 function DiscordIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
@@ -112,14 +130,20 @@ const socialLinks: SocialLink[] = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold text-white/78 transition-all hover:text-white after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all hover:after:w-6 xl:px-3'
+  'notranslate relative inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-[15px] font-bold transition-all after:absolute after:-bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-3'
 
 function NavLink({ item }: { item: InriNavItem }) {
+  const pathname = usePathname()
+  const active = isPathActive(pathname || '/', item.href)
+
   return (
     <Link
       href={item.href}
       translate="no"
-      className={navLinkClass}
+      className={`${navLinkClass} ${
+        active ? 'text-white after:w-6' : 'text-white/78 after:w-0 hover:text-white hover:after:w-6'
+      }`}
+      aria-current={active ? 'page' : undefined}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {item.label}
@@ -128,10 +152,19 @@ function NavLink({ item }: { item: InriNavItem }) {
 }
 
 function UtilityMenu() {
+  const pathname = usePathname()
+  const activeParent = utilityNavItems.some((item) => isPathActive(pathname || '/', item.href))
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button translate="no" className={`${navLinkClass} gap-1.5`}>
+        <button
+          translate="no"
+          className={`${navLinkClass} gap-1.5 ${
+            activeParent ? 'text-white after:w-6' : 'text-white/78 after:w-0 hover:text-white hover:after:w-6'
+          }`}
+          aria-current={activeParent ? 'page' : undefined}
+        >
           Ecosystem
           <ChevronDown className="h-4 w-4 text-white/50" />
         </button>
@@ -145,23 +178,29 @@ function UtilityMenu() {
           Main routes
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/[0.08]" />
-        {utilityNavItems.map((item) => (
-          <DropdownMenuItem
-            key={item.label}
-            asChild
-            className="rounded-[0.95rem] px-3 py-3 text-sm font-semibold text-white/82 transition hover:bg-primary/[0.09] hover:text-white"
-          >
-            <Link
-              href={item.href}
-              translate="no"
-              className="notranslate flex items-center justify-between gap-3"
-              {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+        {utilityNavItems.map((item) => {
+          const active = isPathActive(pathname || '/', item.href)
+          return (
+            <DropdownMenuItem
+              key={item.label}
+              asChild
+              className={`rounded-[0.95rem] px-3 py-3 text-sm font-semibold transition ${
+                active ? 'bg-primary/[0.12] text-white' : 'text-white/82 hover:bg-primary/[0.09] hover:text-white'
+              }`}
             >
-              <span>{item.label}</span>
-              <span className="text-primary/70">↗</span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
+              <Link
+                href={item.href}
+                translate="no"
+                className="notranslate flex items-center justify-between gap-3"
+                aria-current={active ? 'page' : undefined}
+                {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+              >
+                <span>{item.label}</span>
+                <span className="text-primary/70">↗</span>
+              </Link>
+            </DropdownMenuItem>
+          )
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -202,6 +241,8 @@ export function InriLinkButton({
 }
 
 function MobileMenu() {
+  const pathname = usePathname()
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -241,17 +282,25 @@ function MobileMenu() {
             </div>
 
             <div className="grid gap-2">
-              {mobileNavItems.map((item, index) => (
-                <Link
-                  key={`${item.label}-${item.href}-${index}`}
-                  href={item.href}
-                  translate="no"
-                  className="notranslate block w-full rounded-[1rem] border-[1.45px] border-white/[0.14] bg-white/[0.03] px-4 py-3 text-sm font-semibold text-white/84 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
-                  {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {mobileNavItems.map((item, index) => {
+                const active = isPathActive(pathname || '/', item.href)
+                return (
+                  <Link
+                    key={`${item.label}-${item.href}-${index}`}
+                    href={item.href}
+                    translate="no"
+                    className={`notranslate block w-full rounded-[1rem] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
+                      active
+                        ? 'border-primary/50 bg-primary/[0.10] text-white'
+                        : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
+                    }`}
+                    aria-current={active ? 'page' : undefined}
+                    {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>
