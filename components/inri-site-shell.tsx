@@ -247,7 +247,7 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
@@ -290,7 +290,7 @@ function MobileMenu() {
                     key={`${item.label}-${item.href}-${index}`}
                     href={item.href}
                     translate="no"
-                    className={`notranslate block w-full rounded-[1rem] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
+                    className={`notranslate block w-full rounded-xl border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
                       active
                         ? 'border-primary/50 bg-primary/[0.10] text-white'
                         : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
@@ -408,7 +408,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
+      className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
     >
       {link.icon}
     </Link>
