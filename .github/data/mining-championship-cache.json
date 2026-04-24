@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastScannedBlock": 1080446,
+  "lastScannedBlock": 1080485,
   "participants": {
     "0x2878ad14e2252119ad793df7d54e93914e141414": {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -11,9 +11,9 @@
     },
     "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42": {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 37957,
-      "lastBlock": 1080446,
-      "chainSoloBlocks": 37957,
+      "blocks": 37986,
+      "lastBlock": 1080485,
+      "chainSoloBlocks": 37986,
       "poolSoloBlocks": 0
     },
     "0x85eebfe1b1db893dc90079c785c7c70e78fb3028": {
@@ -60,10 +60,10 @@
     },
     "0x3d4e2f29e967ebead8dfe578e639089431a6c354": {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 2292,
-      "lastBlock": 1080428,
+      "blocks": 2293,
+      "lastBlock": 1080457,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 2292
+      "poolSoloBlocks": 2293
     },
     "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6": {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -116,24 +116,24 @@
     },
     "0x91cc8af03fd7430ca86355c83ff5a60209ea2911": {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 348,
-      "lastBlock": 1080368,
+      "blocks": 349,
+      "lastBlock": 1080456,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 348
+      "poolSoloBlocks": 349
     },
     "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8": {
       "address": "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8",
-      "blocks": 985,
-      "lastBlock": 1080386,
+      "blocks": 987,
+      "lastBlock": 1080465,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 985
+      "poolSoloBlocks": 987
     },
     "0xcfb18f8bbaa3c4f869ce4c12f87d73b79ad75f5f": {
       "address": "0xcfb18f8bbaa3c4f869ce4c12f87d73b79ad75f5f",
-      "blocks": 78,
-      "lastBlock": 1079856,
+      "blocks": 79,
+      "lastBlock": 1080459,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 78
+      "poolSoloBlocks": 79
     }
   }
 }
