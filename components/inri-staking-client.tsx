@@ -38,6 +38,58 @@ const PLAN_META = [
   { id: 2, title: 'Plan 360', days: 360, multiplier: '1.60x', penalty: '9%', accent: 'Maximum long lock' },
 ] as const
 
+type SelectorMap = Record<string, string>
+
+type ContractStats = {
+  started: boolean
+  newStakesPaused: boolean
+  emergencyExitEnabled: boolean
+  startTime: bigint
+  programEnd: bigint
+  totalWeight: bigint
+  baseRewardsRemaining: bigint
+  minStake: bigint
+  maxPerPlan: bigint
+  claimCooldown: bigint
+  currentEra: bigint
+  emissionPerDay: bigint
+  contractBalance: bigint
+}
+
+type PlanView = {
+  principal: bigint
+  weight: bigint
+  unlockAt: bigint
+  rewardDebt: bigint
+  pendingRewards: bigint
+  active: boolean
+}
+
+type UserState = {
+  pendingRewards: bigint
+  canClaim: boolean
+  nextClaimAt: bigint
+  walletBalance: bigint
+  positions: PlanView[]
+  timeUntilUnlock: bigint[]
+}
+
+const initialContractStats: ContractStats = {
+  started: false,
+  newStakesPaused: false,
+  emergencyExitEnabled: false,
+  startTime: 0n,
+  programEnd: 0n,
+  totalWeight: 0n,
+  baseRewardsRemaining: 0n,
+  minStake: 0n,
+  maxPerPlan: 0n,
+  claimCooldown: 0n,
+  currentEra: 0n,
+  emissionPerDay: 0n,
+  contractBalance: 0n,
+}
+
 function strip0x(value: string) {
   return value.startsWith('0x') ? value.slice(2) : value
 }
