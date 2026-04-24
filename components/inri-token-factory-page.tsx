@@ -1,13 +1,13 @@
-import { Factory, Rocket, ShieldCheck, Sparkles } from 'lucide-react'
-import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
+import { Factory, Rocket, Sparkles } from 'lucide-react'
+import { InriShell } from '@/components/inri-site-shell'
 import { InriTokenFactoryClient } from '@/components/inri-token-factory-client'
-import { InriUnifiedClientFrame, InriUnifiedHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-unified'
 
 export function InriTokenFactoryPage() {
   return (
     <InriShell>
-      <main className="inri-v26-main">
-        <InriUnifiedHero
+      <main>
+        <InriHero
           eyebrow="INRI TOKEN FACTORY"
           title="Launch tokens on INRI with a product-grade creation interface."
           description="The token factory client is preserved and framed as a premium INRI product route for builders and communities."
@@ -29,9 +29,9 @@ export function InriTokenFactoryPage() {
             { title: 'Brand trust', text: 'One interface increases confidence.', icon: <Sparkles className="h-4 w-4" /> },
           ]}
         />
-        <InriUnifiedClientFrame>
+        <InriClientFrame>
           <InriTokenFactoryClient />
-        </InriUnifiedClientFrame>
+        </InriClientFrame>
       </main>
     </InriShell>
   )

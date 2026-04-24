@@ -1,39 +1,19 @@
 import { Cpu, MonitorSmartphone, Pickaxe, Server, Trophy } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
-import { InriUnifiedCard, InriUnifiedHero, InriUnifiedSection } from '@/components/inri-unified'
+import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-unified'
 
 const miningRoutes = [
-  {
-    title: 'Windows Mining',
-    text: 'Mining setup route for Windows users with a cleaner official flow.',
-    href: '/mining-windows',
-    icon: <MonitorSmartphone className="h-5 w-5" />,
-  },
-  {
-    title: 'Ubuntu Mining',
-    text: 'Server/VPS mining setup route for Ubuntu and Linux operators.',
-    href: '/mining-ubuntu',
-    icon: <Server className="h-5 w-5" />,
-  },
-  {
-    title: 'Pool Dashboard',
-    text: 'Open the pool dashboard, miner lookup, blocks and payment activity.',
-    href: '/pool',
-    icon: <Pickaxe className="h-5 w-5" />,
-  },
-  {
-    title: 'Mining Championship',
-    text: 'Open the solo mining campaign page and ranking/search interface.',
-    href: '/mining-championship/',
-    icon: <Trophy className="h-5 w-5" />,
-  },
+  { title: 'Windows Mining', text: 'Mining setup route for Windows users with a cleaner official flow.', href: '/mining-windows', icon: <MonitorSmartphone className="h-5 w-5" /> },
+  { title: 'Ubuntu Mining', text: 'Server/VPS mining setup route for Ubuntu and Linux operators.', href: '/mining-ubuntu', icon: <Server className="h-5 w-5" /> },
+  { title: 'Pool Dashboard', text: 'Open the pool dashboard, miner lookup, blocks and payment activity.', href: '/pool', icon: <Pickaxe className="h-5 w-5" /> },
+  { title: 'Mining Championship', text: 'Open the solo mining campaign page and ranking/search interface.', href: '/mining-championship/', icon: <Trophy className="h-5 w-5" /> },
 ] as const
 
 export function InriMiningPage() {
   return (
     <InriShell>
-      <main className="inri-v26-main">
-        <InriUnifiedHero
+      <main>
+        <InriHero
           eyebrow="INRI MINING HUB"
           title="Mining routes organized like a serious network product."
           description="Windows, Ubuntu, pool mining and championship pages share the same premium INRI interface so miners do not feel like they are jumping between different websites."
@@ -55,17 +35,14 @@ export function InriMiningPage() {
             { title: 'Campaign ready', text: 'Championship links stay visible.', icon: <Trophy className="h-4 w-4" /> },
           ]}
         />
-        <InriUnifiedSection
-          eyebrow="Mining paths"
-          title="Choose the right mining route."
-          description="All mining pages are connected by the same design system and action language."
-        >
-          <div className="inri-v26-card-grid inri-v26-card-grid-4">
+
+        <InriSection eyebrow="Mining paths" title="Choose the right mining route." description="All mining pages are connected by the same design system and action language.">
+          <InriCardGrid cols={4}>
             {miningRoutes.map((route) => (
-              <InriUnifiedCard key={route.title} {...route} cta="Open" />
+              <InriCard key={route.title} title={route.title} text={route.text} href={route.href} icon={route.icon} cta="Open" />
             ))}
-          </div>
-        </InriUnifiedSection>
+          </InriCardGrid>
+        </InriSection>
       </main>
     </InriShell>
   )

@@ -1,14 +1,10 @@
 import { Download, ShieldCheck, Wallet, WalletCards } from 'lucide-react'
-import {
-  InriUnifiedCard,
-  InriUnifiedHero,
-  InriUnifiedSection,
-} from '@/components/inri-unified'
+import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-unified'
 
 export function InriWalletsPage() {
   return (
-    <main className="inri-v26-main">
-      <InriUnifiedHero
+    <main>
+      <InriHero
         eyebrow="INRI WALLETS"
         title="Wallet access and network onboarding in one professional route."
         description="Users can start with the official INRI Wallet, open the explorer, and move into staking, P2P or token factory without leaving the same visual standard."
@@ -31,33 +27,13 @@ export function InriWalletsPage() {
         ]}
       />
 
-      <InriUnifiedSection eyebrow="Wallet options" title="Choose how to enter INRI.">
-        <div className="inri-v26-card-grid inri-v26-card-grid-3">
-          <InriUnifiedCard
-            title="INRI Wallet"
-            text="Open the official wallet interface for INRI ecosystem actions."
-            href="https://wallet.inri.life"
-            external
-            icon={<Wallet className="h-5 w-5" />}
-            cta="Open wallet"
-          />
-          <InriUnifiedCard
-            title="Explorer"
-            text="Verify accounts, transactions and contracts from the official explorer."
-            href="https://explorer.inri.life"
-            external
-            icon={<ShieldCheck className="h-5 w-5" />}
-            cta="Open explorer"
-          />
-          <InriUnifiedCard
-            title="Mining setup"
-            text="Move from wallet setup to mining, pool and campaign participation."
-            href="/mining"
-            icon={<Download className="h-5 w-5" />}
-            cta="Start mining"
-          />
-        </div>
-      </InriUnifiedSection>
+      <InriSection eyebrow="Wallet options" title="Choose how to enter INRI.">
+        <InriCardGrid>
+          <InriCard title="INRI Wallet" text="Open the official wallet interface for INRI ecosystem actions." href="https://wallet.inri.life" external icon={<Wallet className="h-5 w-5" />} cta="Open wallet" />
+          <InriCard title="Explorer" text="Verify accounts, transactions and contracts from the official explorer." href="https://explorer.inri.life" external icon={<ShieldCheck className="h-5 w-5" />} cta="Open explorer" />
+          <InriCard title="Mining setup" text="Move from wallet setup to mining, pool and campaign participation." href="/mining" icon={<Download className="h-5 w-5" />} cta="Start mining" />
+        </InriCardGrid>
+      </InriSection>
     </main>
   )
 }

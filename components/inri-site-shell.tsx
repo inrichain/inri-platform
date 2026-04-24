@@ -9,11 +9,7 @@ import { Logo } from '@/components/logo'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
-export type InriNavItem = {
-  label: string
-  href: string
-  external?: boolean
-}
+export type InriNavItem = { label: string; href: string; external?: boolean }
 
 export const inriNavItems: InriNavItem[] = [
   { label: 'Home', href: '/' },
@@ -125,7 +121,11 @@ function NavLink({ item }: { item: InriNavItem }) {
     <Link
       href={item.href}
       translate="no"
-      className={`inri-v26-nav-link notranslate ${active ? 'is-active' : ''}`}
+      className={`notranslate inline-flex h-10 items-center justify-center rounded-[14px] px-3 text-[13px] font-black transition ${
+        active
+          ? 'bg-cyan-400/12 text-white shadow-[inset_0_0_0_1px_rgba(125,220,255,0.15),0_10px_22px_rgba(0,0,0,0.18)]'
+          : 'text-white/68 hover:bg-white/[0.055] hover:text-white'
+      }`}
       aria-current={active ? 'page' : undefined}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
@@ -149,18 +149,18 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'inri-button-primary'
+      ? 'border border-cyan-200/70 bg-[linear-gradient(180deg,#7ddcff_0%,#27baff_48%,#0c92e8_100%)] text-[#031019] shadow-[0_18px_44px_rgba(25,168,255,0.25),inset_0_1px_0_rgba(255,255,255,0.45)]'
       : variant === 'secondary'
-        ? 'inri-button-secondary'
+        ? 'border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.025))] text-white shadow-[0_16px_36px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-cyan-300/30 hover:bg-cyan-400/10'
         : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all ${
+      className={`inline-flex min-h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[16px] px-5 text-sm font-black tracking-[-0.01em] transition hover:-translate-y-px hover:brightness-105 ${
         noTranslate ? 'notranslate' : ''
-      } ${variant === 'ghost' ? 'h-auto px-0 text-[14px] font-extrabold' : 'px-5'} ${styles}`}
+      } ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
     >
       {children}
@@ -174,14 +174,17 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inri-v26-menu-button lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-cyan-300/15 bg-white/[0.04] text-white shadow-[0_14px_30px_rgba(0,0,0,0.22)] transition hover:border-cyan-300/40 hover:bg-cyan-400/10 lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="inri-v26-mobile-sheet flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden p-0 sm:max-w-md">
-        <SheetHeader className="shrink-0 border-b border-white/[0.10] px-5 py-5 text-left">
+      <SheetContent
+        side="right"
+        className="flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden border-l border-cyan-300/15 bg-[linear-gradient(180deg,#07101d,#03060b)] p-0 text-white sm:max-w-md"
+      >
+        <SheetHeader className="shrink-0 border-b border-cyan-300/10 px-5 py-5 text-left">
           <SheetTitle className="text-left text-white">
             <Logo showText size={52} />
           </SheetTitle>
@@ -212,7 +215,11 @@ function MobileMenu() {
                     key={`${item.label}-${item.href}-${index}`}
                     href={item.href}
                     translate="no"
-                    className={`inri-v26-mobile-link notranslate ${active ? 'is-active' : ''}`}
+                    className={`notranslate block w-full rounded-[14px] border px-4 py-3 text-sm font-bold transition ${
+                      active
+                        ? 'border-cyan-300/30 bg-cyan-400/12 text-white'
+                        : 'border-cyan-300/12 bg-white/[0.035] text-white/75 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-white'
+                    }`}
                     aria-current={active ? 'page' : undefined}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
                   >
@@ -230,12 +237,14 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="inri-v26-header">
-      <div className="inri-v26-topbar">
-        <p translate="no" className="notranslate">INRI MAINNET · PROOF-OF-WORK · CHAIN 3777 · EVM COMPATIBLE</p>
+    <header className="sticky top-0 z-50 border-b border-cyan-300/10 bg-[#03060b]/86 shadow-[0_18px_46px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+      <div className="border-b border-cyan-300/10 bg-[linear-gradient(90deg,rgba(6,33,55,0.92),rgba(7,20,35,0.76),rgba(6,33,55,0.92))] px-4 py-2 text-center">
+        <p translate="no" className="notranslate text-[10px] font-black uppercase tracking-[0.28em] text-cyan-100/84">
+          INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
+        </p>
       </div>
 
-      <div className="inri-v26-header-inner">
+      <div className="mx-auto grid min-h-[82px] max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8 xl:px-10">
         <div className="min-w-0 justify-self-start">
           <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full">
             <Logo showText size={48} />
@@ -243,7 +252,7 @@ export function InriHeader() {
         </div>
 
         <div className="hidden min-w-0 items-center justify-center xl:flex">
-          <nav className="inri-v26-nav">
+          <nav className="flex items-center justify-center gap-1 rounded-[18px] border border-cyan-300/12 bg-white/[0.04] p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.045)]">
             {[...inriNavItems, ...utilityNavItems].map((item) => (
               <NavLink key={`${item.label}-${item.href}`} item={item} />
             ))}
@@ -280,7 +289,7 @@ function BackToTopButton() {
       type="button"
       aria-label="Back to top"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className={`inri-back-to-top fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center text-primary backdrop-blur-xl transition-all hover:-translate-y-1 hover:text-white sm:bottom-7 sm:right-7 ${
+      className={`fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-[16px] border border-cyan-300/15 bg-white/[0.05] text-cyan-200 shadow-[0_18px_44px_rgba(0,0,0,0.26)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-cyan-300/35 hover:text-white sm:bottom-7 sm:right-7 ${
         visible ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >
@@ -291,7 +300,7 @@ function BackToTopButton() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="inri-v26-shell min-h-screen text-white">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#03060b_0%,#07101d_46%,#020409_100%)] text-white">
       <InriHeader />
       {children}
       <InriFooter />
@@ -302,7 +311,14 @@ export function InriShell({ children }: { children: ReactNode }) {
 
 function FooterSocialIcon({ link }: { link: SocialLink }) {
   return (
-    <Link href={link.href} target="_blank" rel="noreferrer" aria-label={link.label} title={link.label} className="inri-v26-social">
+    <Link
+      href={link.href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={link.label}
+      title={link.label}
+      className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-cyan-300/12 bg-white/[0.04] text-white/68 transition-all hover:-translate-y-px hover:border-cyan-300/35 hover:bg-cyan-400/10 hover:text-white"
+    >
       {link.icon}
     </Link>
   )
@@ -310,8 +326,8 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 
 export function InriFooter() {
   return (
-    <footer className="inri-v26-footer">
-      <div className="inri-v26-container py-16 lg:py-20">
+    <footer className="border-t border-cyan-300/10 bg-[radial-gradient(circle_at_top_left,rgba(25,168,255,0.12),transparent_28rem),linear-gradient(180deg,#07101d_0%,#020409_100%)]">
+      <div className="mx-auto max-w-[1520px] px-4 py-16 sm:px-6 lg:px-8 lg:py-20 xl:px-10">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,0.75fr))] lg:gap-10">
           <div className="max-w-md">
             <Logo showText size={78} />
@@ -323,7 +339,7 @@ export function InriFooter() {
                 <FooterSocialIcon key={link.label} link={link} />
               ))}
             </div>
-            <div className="mt-8 h-px w-full bg-gradient-to-r from-primary/60 via-white/10 to-transparent" />
+            <div className="mt-8 h-px w-full bg-gradient-to-r from-cyan-300/60 via-white/10 to-transparent" />
             <div className="mt-6 space-y-1.5 text-sm text-white/42">
               <p>© 2026 INRI CHAIN. All rights reserved.</p>
               <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
@@ -338,7 +354,7 @@ export function InriFooter() {
                   <Link
                     key={`${group.title}-${item.label}-${item.href}`}
                     href={item.href}
-                    className="text-[15px] font-semibold text-white/58 transition hover:text-primary"
+                    className="text-[15px] font-semibold text-white/58 transition hover:text-cyan-200"
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
                   >
                     {item.label}
@@ -356,12 +372,12 @@ export function InriFooter() {
                 ['Chain ID', '3777'],
                 ['Compatibility', 'EVM'],
               ].map(([label, value]) => (
-                <div key={label} className="border-l-2 border-primary/50 pl-3">
+                <div key={label} className="border-l-2 border-cyan-300/50 pl-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/38">{label}</p>
                   <p className="mt-1 font-black text-white">{value}</p>
                 </div>
               ))}
-              <Link href="mailto:contact@inri.life" className="mt-2 font-black text-white transition hover:text-primary">
+              <Link href="mailto:contact@inri.life" className="mt-2 font-black text-white transition hover:text-cyan-200">
                 contact@inri.life
               </Link>
             </div>

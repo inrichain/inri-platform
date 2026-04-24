@@ -1,12 +1,6 @@
 import type { ReactNode } from 'react'
-import { Layers3 } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
-import {
-  InriAction,
-  InriUnifiedCard,
-  InriUnifiedHero,
-  InriUnifiedSection,
-} from '@/components/inri-unified'
+import { InriAction, InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-unified'
 
 type Bullet = { title: string; text: string }
 type Resource = { title: string; text: string; href: string; external?: boolean }
@@ -34,8 +28,8 @@ export function InriPageTemplate({
 }: InriPageTemplateProps) {
   return (
     <InriShell>
-      <main className="inri-v26-main">
-        <InriUnifiedHero
+      <main>
+        <InriHero
           eyebrow={eyebrow}
           title={title}
           description={description}
@@ -47,39 +41,37 @@ export function InriPageTemplate({
           ]}
           sideTitle="Same visual system."
           sideText="This route uses the same INRI dark-blue standard as the home, mining, staking, pool and P2P pages."
-          sideItems={[
-            { title: 'Premium shell', text: 'Header, hero, cards and CTAs stay consistent.', icon: <Layers3 className="h-4 w-4" /> },
-          ]}
         />
 
         {items.length ? (
-          <InriUnifiedSection eyebrow="Page highlights" title="What this route covers.">
-            <div className="inri-v26-card-grid">
+          <InriSection eyebrow="Page highlights" title="What this route covers.">
+            <InriCardGrid>
               {items.map((item) => (
-                <InriUnifiedCard key={item.title} title={item.title} text={item.text} />
+                <InriCard key={item.title} title={item.title} text={item.text} />
               ))}
-            </div>
-          </InriUnifiedSection>
+            </InriCardGrid>
+          </InriSection>
         ) : null}
 
-        <InriUnifiedSection eyebrow="Resources" title="Useful INRI routes.">
-          {children ? <div className="inri-v26-template-content">{children}</div> : null}
-          {resources.length ? (
-            <div className="inri-v26-card-grid">
-              {resources.map((resource) => (
-                <InriUnifiedCard
-                  key={`${resource.title}-${resource.href}`}
-                  title={resource.title}
-                  text={resource.text}
-                  href={resource.href}
-                  external={resource.external}
-                  cta="Open"
-                />
-              ))}
+        <InriSection eyebrow="Resources" title="Useful INRI routes.">
+          {children ? (
+            <div className="mb-6 rounded-[28px] border border-cyan-300/12 bg-[radial-gradient(circle_at_top_left,rgba(25,168,255,0.10),transparent_28rem),linear-gradient(180deg,rgba(10,18,31,0.94),rgba(4,9,17,0.98))] p-5 shadow-[0_30px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)]">
+              {children}
             </div>
           ) : null}
-          {note ? <div className="inri-v26-note">{note}</div> : null}
-        </InriUnifiedSection>
+          {resources.length ? (
+            <InriCardGrid>
+              {resources.map((resource) => (
+                <InriCard key={`${resource.title}-${resource.href}`} title={resource.title} text={resource.text} href={resource.href} external={resource.external} cta="Open" />
+              ))}
+            </InriCardGrid>
+          ) : null}
+          {note ? (
+            <div className="mt-6 rounded-[24px] border border-cyan-300/12 bg-cyan-400/10 p-5 text-sm leading-7 text-white/72">
+              {note}
+            </div>
+          ) : null}
+        </InriSection>
       </main>
     </InriShell>
   )

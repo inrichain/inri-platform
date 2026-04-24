@@ -1,13 +1,13 @@
 import { Coins, LockKeyhole, ShieldCheck, Wallet2 } from 'lucide-react'
-import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
+import { InriShell } from '@/components/inri-site-shell'
 import { InriStakingClient } from '@/components/inri-staking-client'
-import { InriUnifiedClientFrame, InriUnifiedHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-unified'
 
 export function InriStakingPage() {
   return (
     <InriShell>
-      <main className="inri-v26-main">
-        <InriUnifiedHero
+      <main>
+        <InriHero
           eyebrow="INRI STAKING"
           title="Stake INRI inside a stronger official ecosystem interface."
           description="The staking app remains fully functional and is now presented with the same premium card, button and container standard as the rest of INRI."
@@ -29,9 +29,9 @@ export function InriStakingPage() {
             { title: 'Trust surface', text: 'Cleaner panels and CTAs improve confidence.', icon: <ShieldCheck className="h-4 w-4" /> },
           ]}
         />
-        <InriUnifiedClientFrame>
+        <InriClientFrame>
           <InriStakingClient />
-        </InriUnifiedClientFrame>
+        </InriClientFrame>
       </main>
     </InriShell>
   )

@@ -1,13 +1,13 @@
-import { ShieldCheck, Store, Users, Wallet } from 'lucide-react'
-import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
+import { Store, Users, Wallet } from 'lucide-react'
+import { InriShell } from '@/components/inri-site-shell'
 import { InriP2PClient } from '@/components/inri-p2p-client'
-import { InriUnifiedClientFrame, InriUnifiedHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-unified'
 
 export function InriP2PPage() {
   return (
     <InriShell>
-      <main className="inri-v26-main">
-        <InriUnifiedHero
+      <main>
+        <InriHero
           eyebrow="INRI P2P MARKET"
           title="A cleaner escrow marketplace for direct INRI trades."
           description="The P2P client remains active, but now appears inside the same official dark-blue ecosystem interface as staking, pool and token factory."
@@ -29,9 +29,9 @@ export function InriP2PPage() {
             { title: 'Community trading', text: 'Direct trading needs visual trust.', icon: <Users className="h-4 w-4" /> },
           ]}
         />
-        <InriUnifiedClientFrame>
+        <InriClientFrame>
           <InriP2PClient />
-        </InriUnifiedClientFrame>
+        </InriClientFrame>
       </main>
     </InriShell>
   )
