@@ -136,7 +136,7 @@ const quickHighlights = [
 
 function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
   return (
-    <div className="inri-premium-tile p-3.5">
+    <div className="inri-v2-feature p-3.5">
       <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">{icon}</div>
       <h3 className="mt-2.5 text-[14px] font-bold text-white">{title}</h3>
       <p className="mt-1 text-[13px] leading-6 text-white/64">{text}</p>
@@ -146,8 +146,8 @@ function QuickCard({ icon, title, text }: { icon: ReactNode; title: string; text
 
 export function InriWalletsPage() {
   return (
-    <main className="inri-premium-main">
-      <section className="inri-hero-surface">
+    <main className="inri-site-v2">
+      <section className="inri-v2-hero">
         <div className="inri-page-container py-10 sm:py-12 lg:py-16">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.46fr)] lg:items-end">
             <div>
@@ -173,7 +173,7 @@ export function InriWalletsPage() {
               </div>
             </div>
 
-            <div className="inri-premium-card p-5 sm:p-6">
+            <div className="inri-v2-card p-5 sm:p-6">
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Network setup</p>
               <h2 className="mt-3 text-2xl font-black text-white">Add INRI manually.</h2>
               <p className="mt-3 text-sm leading-7 text-white/62">
@@ -183,7 +183,7 @@ export function InriWalletsPage() {
                 {networkFields.map((field) => (
                   <div
                     key={field.label}
-                    className="inri-premium-tile px-4 py-3"
+                    className="inri-v2-feature px-4 py-3"
                   >
                     <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">{field.label}</div>
                     <div className="mt-1 break-all text-sm font-black text-white">{field.value}</div>
@@ -215,7 +215,7 @@ export function InriWalletsPage() {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {walletItems.map((wallet) => (
-              <article key={wallet.name} className="inri-premium-card flex min-h-[250px] flex-col p-5">
+              <article key={wallet.name} className="inri-v2-card flex min-h-[250px] flex-col p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/14 bg-white">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -259,7 +259,7 @@ export function InriWalletsPage() {
               'Add INRI CHAIN with RPC https://rpc.inri.life and Chain ID 3777.',
               'Open explorer, mining, staking or the P2P market from the same site.',
             ].map((text) => (
-              <div key={text} className="inri-premium-card flex items-start gap-3 p-5">
+              <div key={text} className="inri-v2-card flex items-start gap-3 p-5">
                 <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
                 <p className="text-sm leading-7 text-white/68">{text}</p>
               </div>

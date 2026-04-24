@@ -1,69 +1,58 @@
-import { RefreshCw, ShieldCheck, Store, Wallet } from 'lucide-react'
+import { ShieldCheck, Store, Wallet } from 'lucide-react'
+import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { InriP2PClient } from '@/components/inri-p2p-client'
-import { InriShell } from '@/components/inri-site-shell'
-
-const highlights = [
-  { title: 'Escrow market', value: 'P2P', text: 'Peer-to-peer trading with escrow protection inside the INRI ecosystem.', icon: Store },
-  { title: 'Header wallet', value: 'One wallet', text: 'Use the wallet connected at the top of the site to sync the market.', icon: Wallet },
-  { title: 'Trade flow', value: 'Protected', text: 'Create offers, mark payment, release funds and resolve disputes clearly.', icon: ShieldCheck },
-]
 
 export function InriP2PPage() {
   return (
     <InriShell>
-      <main className="inri-page-shell">
-        <section className="inri-hero-showcase">
-          <div className="inri-page-container py-10 sm:py-12 lg:py-16">
-            <div className="inri-glass-hero p-5 sm:p-7 lg:p-10">
-              <div className="grid gap-8 xl:grid-cols-[minmax(0,1.06fr)_minmax(320px,0.46fr)] xl:items-end">
-                <div>
-                  <div className="flex flex-wrap gap-2.5">
-                    <span className="inri-tag text-primary">P2P Market</span>
-                    <span className="inri-tag">Escrow</span>
-                    <span className="inri-tag">Chain 3777</span>
-                  </div>
-                  <h1 className="mt-6 max-w-5xl text-balance text-[2.4rem] font-black leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.4rem] lg:text-[5rem]">
-                    Trade INRI peer-to-peer with a cleaner market surface.
-                  </h1>
-                  <p className="mt-6 max-w-3xl text-base leading-8 text-white/68 sm:text-lg sm:leading-9">
-                    The P2P market now lives inside the same premium INRI frame. Connect once in the top header, then sync the market and manage offers below.
-                  </p>
+      <main className="inri-site-v2">
+        <section className="inri-v2-hero">
+          <div className="inri-page-container py-10 sm:py-14 lg:py-16">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(380px,0.52fr)] xl:items-stretch">
+              <div className="inri-v2-panel flex min-h-[460px] flex-col justify-center p-6 sm:p-8 lg:p-10">
+                <div className="flex flex-wrap gap-2.5">
+                  <span className="inri-v2-kicker">P2P Escrow</span>
+                  <span className="inri-v2-kicker">INRI mainnet</span>
+                  <span className="inri-v2-kicker">Chain 3777</span>
                 </div>
-
-                <div className="inri-dashboard-card p-5 sm:p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
-                    <RefreshCw className="h-5 w-5" />
-                  </div>
-                  <p className="mt-5 text-[11px] font-black uppercase tracking-[0.24em] text-primary">Wallet sync</p>
-                  <h2 className="mt-3 text-2xl font-black text-white">Use the same wallet from the header.</h2>
-                  <p className="mt-4 text-sm leading-7 text-white/64">
-                    If the market does not bind automatically, use the sync button inside the P2P panel. It will connect the market to the header wallet.
-                  </p>
+                <h1 className="inri-v2-heading mt-8 max-w-5xl text-[2.8rem] sm:text-[4.2rem] lg:text-[5.8rem]">
+                  Trade INRI with a protected peer-to-peer market.
+                </h1>
+                <p className="inri-v2-text mt-7 max-w-3xl text-lg">
+                  A cleaner escrow interface for direct trading. Connect from the header, sync the market and manage offers without a second wallet flow.
+                </p>
+                <div className="mt-9 grid gap-3 sm:flex sm:flex-wrap">
+                  <InriLinkButton href="#">Open P2P Market</InriLinkButton>
+                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary">View Explorer</InriLinkButton>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-              {highlights.map((item) => {
-                const Icon = item.icon
-                return (
-                  <div key={item.title} className="inri-dashboard-card p-5">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <p className="mt-4 text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/45">{item.title}</p>
-                    <p className="mt-3 text-2xl font-black text-white">{item.value}</p>
-                    <p className="mt-2 text-sm leading-7 text-white/60">{item.text}</p>
-                  </div>
-                )
-              })}
+              <div className="grid gap-4">
+                <div className="inri-v2-feature p-5">
+                  <div className="inri-v2-icon"><Store className="h-5 w-5" /></div>
+                  <h3 className="mt-5 text-2xl font-black text-white">Escrow market</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/64">Create, accept, mark paid and release through the market.</p>
+                </div>
+                <div className="inri-v2-feature p-5">
+                  <div className="inri-v2-icon"><Wallet className="h-5 w-5" /></div>
+                  <h3 className="mt-5 text-2xl font-black text-white">One wallet</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/64">Use the header wallet as the single connection source.</p>
+                </div>
+                <div className="inri-v2-feature p-5">
+                  <div className="inri-v2-icon"><ShieldCheck className="h-5 w-5" /></div>
+                  <h3 className="mt-5 text-2xl font-black text-white">Protected flow</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/64">Dispute and release actions stay inside the INRI route.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="pb-12 pt-6 sm:pb-16">
+        <section className="pb-16 pt-6">
           <div className="inri-page-container">
-            <InriP2PClient />
+            <div className="inri-v2-panel p-4 sm:p-6 lg:p-8">
+              <InriP2PClient />
+            </div>
           </div>
         </section>
       </main>

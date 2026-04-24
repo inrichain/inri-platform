@@ -2,221 +2,134 @@ import Link from 'next/link'
 import {
   ArrowRight,
   Blocks,
-  Cpu,
-  Factory,
-  FileText,
   Coins,
-  Layers3,
+  Factory,
   Pickaxe,
   ShieldCheck,
   Trophy,
   Wallet,
   Zap,
-  Activity,
-  Globe2,
 } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
-import { NetworkPulse } from '@/components/network-pulse'
 
-const routes = [
-  { title: 'Wallet', text: 'Create, connect and use INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
-  { title: 'Explorer', text: 'Blocks, transactions and contracts.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
-  { title: 'Mining', text: 'Windows, Ubuntu and pool routes.', href: '/mining', icon: Pickaxe },
-  { title: 'Token Factory', text: 'Launch tokens on Chain 3777.', href: '/token-factory', icon: Factory },
-  { title: 'Staking', text: 'Stake and manage INRI positions.', href: '/staking', icon: ShieldCheck },
-  { title: 'P2P', text: 'Escrow market for direct trading.', href: '/p2p', icon: Coins },
-]
-
-const stats = [
-  ['Network', 'INRI Mainnet'],
-  ['Chain ID', '3777'],
-  ['Consensus', 'Proof-of-Work'],
-  ['Compatibility', 'EVM'],
-]
-
-const championship = [
-  { title: '150,000 INRI', text: 'Total championship pool', icon: Trophy },
-  { title: '0.20 INRI', text: 'Per valid solo block', icon: Pickaxe },
-  { title: 'CPU valid', text: 'Legitimate solo blocks qualify', icon: Cpu },
+const primaryRoutes = [
+  { title: 'Wallet', text: 'Open the official wallet and connect to INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
+  { title: 'Explorer', text: 'Search blocks, transactions, tokens and contracts.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
+  { title: 'Mining', text: 'Start mining with Windows, Ubuntu or pool routes.', href: '/mining', icon: Pickaxe },
+  { title: 'Token Factory', text: 'Create tokens directly on INRI Chain 3777.', href: '/token-factory', icon: Factory },
+  { title: 'Staking', text: 'Stake INRI and manage positions.', href: '/staking', icon: ShieldCheck },
+  { title: 'P2P Market', text: 'Trade INRI through the escrow market.', href: '/p2p', icon: Coins },
 ]
 
 export function InriHomepage() {
   return (
     <InriShell>
-      <main className="inri-page-shell">
-        <section className="inri-hero-showcase">
-          <div className="inri-page-container py-10 sm:py-14 lg:py-18">
-            <div className="grid gap-7 xl:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.7fr)] xl:items-stretch">
-              <div className="inri-glass-hero p-6 sm:p-8 lg:p-10">
-                <div className="flex flex-wrap gap-2.5">
-                  <span className="inri-tag">Mainnet</span>
-                  <span className="inri-tag">PoW</span>
-                  <span className="inri-tag">Chain 3777</span>
-                  <span className="inri-tag">EVM</span>
+      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+        <section className="relative min-h-[calc(100vh-92px)] border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.55),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.30),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.055)_1px,transparent_1px)] bg-[size:72px_72px]" />
+          <div className="absolute -left-28 top-28 h-[32rem] w-[32rem] rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="absolute -right-20 bottom-10 h-[30rem] w-[30rem] rounded-full bg-blue-500/20 blur-3xl" />
+
+          <div className="relative mx-auto grid min-h-[calc(100vh-92px)] max-w-[1560px] items-center gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] xl:px-12">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                INRI V2 Interface
+              </div>
+
+              <h1 className="mt-8 max-w-5xl text-[3.4rem] font-black leading-[0.82] tracking-[-0.08em] text-white sm:text-[5.5rem] xl:text-[7.5rem]">
+                The INRI mainnet control room.
+              </h1>
+
+              <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72 sm:text-xl">
+                Wallet, explorer, mining, staking, token launch and P2P trading in one stronger network interface.
+              </p>
+
+              <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
+                <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+                  Open INRI Wallet
+                </InriLinkButton>
+                <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
+                  Explore Chain
+                </InriLinkButton>
+                <InriLinkButton href="/mining-championship/" variant="secondary">
+                  Championship
+                </InriLinkButton>
+              </div>
+
+              <div className="mt-10 grid gap-3 sm:grid-cols-4">
+                {[
+                  ['Chain', '3777'],
+                  ['Consensus', 'PoW'],
+                  ['Runtime', 'EVM'],
+                  ['Status', 'Mainnet'],
+                ].map(([label, value]) => (
+                  <div key={label} className="border-l-2 border-cyan-300/70 bg-white/[0.045] px-4 py-3 backdrop-blur-xl">
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
+                    <div className="mt-2 text-xl font-black text-white">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.055] p-4 shadow-[0_40px_120px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-6">
+              <div className="flex items-start justify-between gap-6 border-b border-white/10 pb-6">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Network routes</p>
+                  <h2 className="mt-3 max-w-xl text-4xl font-black leading-tight tracking-[-0.04em] text-white">
+                    Everything users need, presented like a real product.
+                  </h2>
                 </div>
-
-                <h1 className="mt-8 max-w-5xl text-balance text-[3rem] font-black leading-[0.88] tracking-[-0.065em] text-white sm:text-[4.6rem] lg:text-[6.7rem]">
-                  INRI Chain command center.
-                </h1>
-                <p className="mt-7 max-w-3xl text-lg leading-9 text-white/70 sm:text-xl">
-                  One premium surface for wallet access, explorer, mining, pool, staking,
-                  token creation and P2P routes on the INRI mainnet.
-                </p>
-
-                <div className="mt-9 grid gap-3 sm:flex sm:flex-wrap">
-                  <InriLinkButton href="https://wallet.inri.life" external noTranslate>
-                    Open INRI Wallet
-                  </InriLinkButton>
-                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
-                    Open Explorer
-                  </InriLinkButton>
-                  <InriLinkButton href="/mining-championship/" variant="secondary">
-                    Mining Championship
-                  </InriLinkButton>
-                </div>
-
-                <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {stats.map(([label, value]) => (
-                    <div key={label} className="inri-data-box">
-                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-primary/75">{label}</div>
-                      <div className="mt-2 text-lg font-black text-white">{value}</div>
-                    </div>
-                  ))}
+                <div className="hidden h-16 w-16 items-center justify-center rounded-[16px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300 sm:flex">
+                  <Zap className="h-7 w-7" />
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                <div className="inri-dashboard-card p-5 sm:p-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Main routes</p>
-                      <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">
-                        Everything important is one click away.
-                      </h2>
-                    </div>
-                    <div className="hidden h-16 w-16 items-center justify-center border border-primary/25 bg-primary/10 text-primary sm:flex">
-                      <Activity className="h-7 w-7" />
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {routes.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <Link
-                          key={item.title}
-                          href={item.href}
-                          {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                          className="group inri-route-tile"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex gap-3">
-                              <div className="inri-icon-box">
-                                <Icon className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <h3 className="font-black text-white">{item.title}</h3>
-                                <p className="mt-1 text-sm leading-6 text-white/58">{item.text}</p>
-                              </div>
-                            </div>
-                            <ArrowRight className="h-4 w-4 shrink-0 text-primary transition group-hover:translate-x-1" />
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {primaryRoutes.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.title}
+                      href={item.href}
+                      {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                      className="group rounded-[16px] border border-white/12 bg-black/20 p-5 transition hover:-translate-y-1 hover:border-cyan-300/45 hover:bg-cyan-300/[0.08]"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-cyan-300/25 bg-cyan-300/10 text-cyan-300">
+                            <Icon className="h-5 w-5" />
                           </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                <div className="inri-dashboard-card p-5 sm:p-6">
-                  <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Active campaign</p>
-                      <h2 className="mt-2 text-3xl font-black text-white">Mining Championship</h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-7 text-white/62">
-                        Live competition route with solo mining rewards, ranking and explorer verification.
-                      </p>
-                    </div>
-                    <InriLinkButton href="/mining-championship/">Open</InriLinkButton>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 md:grid-cols-3">
-                    {championship.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <div key={item.title} className="inri-campaign-box">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <div className="mt-3 text-xl font-black text-white">{item.title}</div>
-                          <p className="mt-1 text-sm text-white/58">{item.text}</p>
+                          <div>
+                            <h3 className="text-lg font-black text-white">{item.title}</h3>
+                            <p className="mt-2 text-sm leading-6 text-white/58">{item.text}</p>
+                          </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-cyan-300 transition group-hover:translate-x-1" />
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        <NetworkPulse />
-
-        <section className="border-t border-white/[0.08] py-14 sm:py-16 lg:py-20">
-          <div className="inri-page-container">
+        <section className="border-b border-white/10 bg-[linear-gradient(180deg,#02040a,#04101e)] py-16">
+          <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
             <div className="grid gap-4 md:grid-cols-3">
               {[
-                { title: 'Network first', text: 'The site behaves like an operating surface for the chain, not a simple landing page.', icon: Globe2 },
-                { title: 'Builder routes', text: 'Token Factory, P2P and staking are presented as live ecosystem tools.', icon: Factory },
-                { title: 'Fast action', text: 'Wallet, explorer, mining and pool actions stay visible and easy to reach.', icon: Zap },
-              ].map((item) => {
-                const Icon = item.icon
-                return (
-                  <div key={item.title} className="inri-dashboard-card p-6">
-                    <div className="inri-icon-box">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="mt-5 text-2xl font-black text-white">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
+                ['Mining Championship', '150,000 INRI reward campaign with solo mining route.', Trophy],
+                ['Token Factory', 'Launch community assets directly on INRI.', Factory],
+                ['P2P Market', 'Escrow market for direct INRI trades.', Coins],
+              ].map(([title, text, Icon]) => (
+                <div key={String(title)} className="rounded-[22px] border border-cyan-300/18 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <Icon className="h-5 w-5" />
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-white/[0.08] py-14 sm:py-16 lg:py-20">
-          <div className="inri-page-container">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Ecosystem</p>
-                <h2 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.035em] text-white sm:text-5xl">
-                  A cleaner path into every INRI product.
-                </h2>
-              </div>
-              <p className="max-w-2xl text-base leading-8 text-white/60">
-                Wallet, mining, staking, token creation and trading routes share the same design system for desktop and mobile.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {routes.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={`eco-${item.title}`}
-                    href={item.href}
-                    {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="group inri-product-card"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="inri-icon-box">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <ArrowRight className="h-5 w-5 text-primary transition group-hover:translate-x-1" />
-                    </div>
-                    <h3 className="mt-6 text-2xl font-black text-white">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
-                  </Link>
-                )
-              })}
+                  <h3 className="mt-6 text-2xl font-black text-white">{String(title)}</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">{String(text)}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
