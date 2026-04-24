@@ -8,10 +8,12 @@ import type { EthereumProvider, InriWalletConnector } from '@/lib/inri-active-wa
 import {
   INRI_CHAIN_ID_HEX,
   getActiveWalletProvider,
+  getErrorMessage,
   getInjectedEthereum,
   getLegacyGasPrice,
   isInriChain,
   readActiveWalletSnapshot,
+  requestFromActiveWallet,
   rpcCall,
   switchProviderToInri,
   toHex,
@@ -307,17 +309,31 @@ export function InriTokenFactoryClient() {
   }, [syncWalletState])
 
   const connectWallet = async () => {
-    const provider = activeProvider || getActiveWalletProvider()
-    if (!provider) {
-      setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
-      return
-    }
-
     try {
       setIsConnecting(true)
       setError(null)
-      const [selected] = (await provider.request({ method: 'eth_requestAccounts' })) as string[]
-      const currentChainId = (await provider.request({ method: 'eth_chainId' })) as string
+
+      const snapshot = await readActiveWalletSnapshot()
+      if (snapshot.provider && snapshot.account) {
+        setActiveProvider(snapshot.provider)
+        setProviderReady(true)
+        setAccount(snapshot.account)
+        setChainId(snapshot.chainId)
+        setConnectionType(snapshot.connector)
+        setStatus('Active wallet synced from the top header. Review the token details and continue.')
+        return
+      }
+
+      const provider = snapshot.provider || activeProvider || getActiveWalletProvider()
+      if (!provider) {
+        setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
+        return
+      }
+
+      const accounts = (await requestFromActiveWallet(provider, 'eth_requestAccounts')) as string[]
+      const currentChainId = (await requestFromActiveWallet(provider, 'eth_chainId')) as string
+      const selected = Array.isArray(accounts) ? accounts[0] : ''
+
       setActiveProvider(provider)
       setProviderReady(true)
       setAccount(selected || null)
@@ -325,7 +341,7 @@ export function InriTokenFactoryClient() {
       setConnectionType(selected ? (connectionType || 'injected') : connectionType)
       setStatus(selected ? 'Wallet connected. Review the token details and continue.' : 'Wallet connection canceled.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wallet connection failed.')
+      setError(getErrorMessage(err, 'Wallet connection failed.'))
     } finally {
       setIsConnecting(false)
     }
@@ -345,7 +361,7 @@ export function InriTokenFactoryClient() {
       setChainId(nextChainId || INRI_CHAIN_ID_HEX)
       setStatus('INRI CHAIN selected. The app is ready to send the launch transaction.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not switch network.')
+      setError(getErrorMessage(err, 'Could not switch network.'))
     } finally {
       setIsSwitching(false)
     }
@@ -431,16 +447,14 @@ export function InriTokenFactoryClient() {
       setGasEstimate(boostedGas.toString())
       setResolvedSignature(resolved.signature)
 
-      const hash = (await provider.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: FACTORY_ADDRESS,
-          data: resolved.data,
-          gas: toHex(boostedGas),
-          gasPrice: toHex(gasPrice),
-        }],
-      })) as string
+      const hash = (await requestFromActiveWallet(provider, 'eth_sendTransaction', [{
+        from: account,
+        to: FACTORY_ADDRESS,
+        data: resolved.data,
+        gas: toHex(boostedGas),
+        gasPrice: toHex(gasPrice),
+        type: '0x0',
+      }])) as string
 
       setTxHash(hash)
       setStatus('Transaction sent. Waiting for confirmation on INRI CHAIN...')
@@ -472,7 +486,7 @@ export function InriTokenFactoryClient() {
         setStatus('Token created. Open the explorer transaction to confirm the new token address.')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Token creation failed. Please review the fields and try again.')
+      setError(getErrorMessage(err, 'Token creation failed. Please review the fields and try again.'))
     } finally {
       setIsCreating(false)
     }
@@ -482,19 +496,17 @@ export function InriTokenFactoryClient() {
     const provider = activeProvider || getActiveWalletProvider()
     if (!provider || !createdToken) return
     try {
-      await provider.request({
-        method: 'wallet_watchAsset',
-        params: {
-          type: 'ERC20',
-          options: {
-            address: createdToken,
-            symbol: form.symbol.trim().slice(0, 11),
-            decimals: Number(form.decimals),
-          },
+      await requestFromActiveWallet(provider, 'wallet_watchAsset',
+{
+        type: 'ERC20',
+        options: {
+          address: createdToken,
+          symbol: form.symbol.trim().slice(0, 11),
+          decimals: Number(form.decimals),
         },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not add the token to the wallet.')
+      setError(getErrorMessage(err, 'Could not add the token to the wallet.'))
     }
   }
 

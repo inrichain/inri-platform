@@ -27,7 +27,7 @@ const INRI_WALLET_URL = 'https://wallet.inri.life'
 const INJECTED_DISMISSED_KEY = 'inri_injected_disconnected_v1'
 
 type ProviderLike = {
-  request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
+  request: (args: { method: string; params?: unknown[] | object; chainId?: string }) => Promise<any>
   on?: (event: string, handler: (...args: unknown[]) => void) => void
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
   isMetaMask?: boolean

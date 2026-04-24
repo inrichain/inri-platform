@@ -2,13 +2,20 @@
 
 export const INRI_CHAIN_ID_DECIMAL = 3777
 export const INRI_CHAIN_ID_HEX = '0xec1'
+export const INRI_WALLETCONNECT_CHAIN_ID = `eip155:${INRI_CHAIN_ID_DECIMAL}`
 export const INRI_RPC_URL = 'https://rpc.inri.life'
 export const INRI_EXPLORER_URL = 'https://explorer.inri.life'
 
 export type InriWalletConnector = '' | 'injected' | 'walletconnect'
 
+export type EthereumRequestArgs = {
+  method: string
+  params?: unknown[] | Record<string, unknown>
+  chainId?: string
+}
+
 export type EthereumProvider = {
-  request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
+  request: (args: EthereumRequestArgs) => Promise<unknown>
   on?: (event: string, handler: (...args: unknown[]) => void) => void
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
 }
@@ -58,6 +65,58 @@ export function getActiveWalletBridge(): ActiveWalletBridge {
 
 export function getActiveWalletProvider(): EthereumProvider | undefined {
   return getActiveWalletBridge()?.provider || getInjectedEthereum()
+}
+
+export function getErrorMessage(cause: unknown, fallback = 'Request failed') {
+  const error = cause as { shortMessage?: unknown; reason?: unknown; message?: unknown }
+  const raw = String(error?.shortMessage || error?.reason || error?.message || fallback)
+
+  if (raw.includes('Cannot read properties of undefined') && raw.includes('includes')) {
+    return 'WalletConnect could not route the request to INRI CHAIN. Disconnect INRI Wallet in the top button, connect again, and try once more.'
+  }
+
+  return raw
+}
+
+function buildRequestArgs(method: string, params?: unknown[] | Record<string, unknown>, chainId?: string): EthereumRequestArgs {
+  return {
+    method,
+    ...(params !== undefined ? { params } : {}),
+    ...(chainId ? { chainId } : {}),
+  }
+}
+
+export async function requestFromActiveWallet(
+  provider: EthereumProvider,
+  method: string,
+  params?: unknown[] | Record<string, unknown>,
+) {
+  const bridge = getActiveWalletBridge()
+  const isWalletConnect = bridge?.connector === 'walletconnect'
+
+  if (!isWalletConnect) {
+    return provider.request(buildRequestArgs(method, params))
+  }
+
+  // Reown / WalletConnect v2 needs the namespace chain id on many requests.
+  // Without it, some provider builds throw: Cannot read properties of undefined (reading 'includes').
+  try {
+    return await provider.request(buildRequestArgs(method, params, INRI_WALLETCONNECT_CHAIN_ID))
+  } catch (cause) {
+    const message = getErrorMessage(cause, '')
+
+    // Compatibility fallback for injected-like providers or older WalletConnect wrappers.
+    if (
+      message.includes('WalletConnect could not route') ||
+      message.toLowerCase().includes('chainid') ||
+      message.toLowerCase().includes('namespace') ||
+      message.toLowerCase().includes('not initialized')
+    ) {
+      return provider.request(buildRequestArgs(method, params))
+    }
+
+    throw cause
+  }
 }
 
 export async function readActiveWalletSnapshot(): Promise<ActiveWalletSnapshot> {
@@ -151,27 +210,21 @@ export async function estimateGasWithFallback(
 
 export async function switchProviderToInri(provider: EthereumProvider) {
   try {
-    await provider.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: INRI_CHAIN_ID_HEX }],
-    })
+    await requestFromActiveWallet(provider, 'wallet_switchEthereumChain', [{ chainId: INRI_CHAIN_ID_HEX }])
   } catch {
-    await provider.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId: INRI_CHAIN_ID_HEX,
-          chainName: 'INRI CHAIN',
-          nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-          rpcUrls: [INRI_RPC_URL],
-          blockExplorerUrls: [INRI_EXPLORER_URL],
-        },
-      ],
-    })
+    await requestFromActiveWallet(provider, 'wallet_addEthereumChain', [
+      {
+        chainId: INRI_CHAIN_ID_HEX,
+        chainName: 'INRI CHAIN',
+        nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
+        rpcUrls: [INRI_RPC_URL],
+        blockExplorerUrls: [INRI_EXPLORER_URL],
+      },
+    ])
   }
 
   try {
-    const nextChainId = await provider.request({ method: 'eth_chainId' })
+    const nextChainId = await requestFromActiveWallet(provider, 'eth_chainId')
     return typeof nextChainId === 'string' ? nextChainId : INRI_CHAIN_ID_HEX
   } catch {
     return INRI_CHAIN_ID_HEX

@@ -18,10 +18,12 @@ import {
   INRI_CHAIN_ID_HEX,
   estimateGasWithFallback,
   getActiveWalletProvider,
+  getErrorMessage,
   getInjectedEthereum,
   getLegacyGasPrice,
   normalizeChainId,
   readActiveWalletSnapshot,
+  requestFromActiveWallet,
   rpcCall,
   switchProviderToInri,
   toHex,
@@ -450,23 +452,38 @@ export function InriStakingClient() {
   }, [refreshContract, refreshUser, syncWalletState])
 
   const connectWallet = async () => {
-    const provider = getActiveWalletProvider()
-    if (!provider) {
-      setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
-      return
-    }
     try {
       setBusyAction('connect')
       setError(null)
-      const [selected] = (await provider.request({ method: 'eth_requestAccounts' })) as string[]
-      const currentChainId = (await provider.request({ method: 'eth_chainId' })) as string
+
+      const snapshot = await readActiveWalletSnapshot()
+      if (snapshot.provider && snapshot.account) {
+        setActiveProvider(snapshot.provider)
+        setProviderReady(true)
+        setAccount(snapshot.account)
+        setChainId(snapshot.chainId)
+        setConnectionType(snapshot.connector)
+        setStatus('Active wallet synced from the top header. Review your plan and continue.')
+        return
+      }
+
+      const provider = snapshot.provider || getActiveWalletProvider()
+      if (!provider) {
+        setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
+        return
+      }
+
+      const accounts = (await requestFromActiveWallet(provider, 'eth_requestAccounts')) as string[]
+      const currentChainId = (await requestFromActiveWallet(provider, 'eth_chainId')) as string
+      const selected = Array.isArray(accounts) ? accounts[0] : ''
+
       setActiveProvider(provider)
       setProviderReady(true)
       setAccount(selected || null)
       setChainId(currentChainId)
       setStatus(selected ? 'Wallet connected. Review your plan and continue.' : 'Wallet connection canceled.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Wallet connection failed')
+      setError(getErrorMessage(cause, 'Wallet connection failed'))
     } finally {
       setBusyAction(null)
     }
@@ -485,7 +502,7 @@ export function InriStakingClient() {
       setChainId(nextChainId || INRI_CHAIN_ID_HEX)
       setStatus('INRI CHAIN ready. You can use the staking app now.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unable to switch network')
+      setError(getErrorMessage(cause, 'Unable to switch network'))
     } finally {
       setBusyAction(null)
     }
@@ -519,9 +536,10 @@ export function InriStakingClient() {
       ...baseTx,
       gas: toHex(gasLimit),
       gasPrice: toHex(gasPrice),
+      type: '0x0',
     }
 
-    const txResult = (await provider.request({ method: 'eth_sendTransaction', params: [tx] })) as string
+    const txResult = (await requestFromActiveWallet(provider, 'eth_sendTransaction', [tx])) as string
     setTxHash(txResult)
     setStatus(pendingText || 'Transaction sent. Waiting for confirmation on INRI CHAIN...')
 
@@ -591,7 +609,7 @@ export function InriStakingClient() {
       setAmount('')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Stake failed')
+      setError(getErrorMessage(cause, 'Stake failed'))
     } finally {
       setBusyAction(null)
     }
@@ -605,7 +623,7 @@ export function InriStakingClient() {
       await sendTransaction('claimAll()', '', undefined, 'Claim transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Claim failed')
+      setError(getErrorMessage(cause, 'Claim failed'))
     } finally {
       setBusyAction(null)
     }
@@ -619,7 +637,7 @@ export function InriStakingClient() {
       await sendTransaction('restakeToPlan(uint8)', encodeUint(BigInt(planId)), undefined, 'Restake transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Restake failed')
+      setError(getErrorMessage(cause, 'Restake failed'))
     } finally {
       setBusyAction(null)
     }
@@ -635,7 +653,7 @@ export function InriStakingClient() {
       await sendTransaction('unstake(uint8)', encodeUint(BigInt(planId)), undefined, 'Unstake transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unstake failed')
+      setError(getErrorMessage(cause, 'Unstake failed'))
     } finally {
       setBusyAction(null)
     }

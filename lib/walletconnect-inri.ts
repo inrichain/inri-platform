@@ -5,6 +5,7 @@ import { withBasePath } from '@/lib/site'
 
 const INRI_CHAIN_ID = 3777
 const INRI_CHAIN_ID_HEX = '0xec1'
+const INRI_WALLETCONNECT_CHAIN_ID = `eip155:${INRI_CHAIN_ID}`
 const INRI_RPC_URL = 'https://rpc.inri.life'
 const INRI_EXPLORER_URL = 'https://explorer.inri.life'
 const INRI_WALLET_URL = 'https://wallet.inri.life'
@@ -15,7 +16,7 @@ const STORAGE_KEY = 'inri_wc_connected_v1'
 type WalletConnectProvider = {
   connect: () => Promise<unknown>
   disconnect: () => Promise<void>
-  request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
+  request: (args: { method: string; params?: unknown[] | object; chainId?: string }) => Promise<any>
   on?: (event: string, handler: (...args: any[]) => void) => void
   removeListener?: (event: string, handler: (...args: any[]) => void) => void
   session?: any
@@ -236,6 +237,7 @@ export async function switchWalletConnectToInri() {
     await provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: INRI_CHAIN_ID_HEX }],
+      chainId: INRI_WALLETCONNECT_CHAIN_ID,
     })
   } catch {
     await provider.request({
@@ -253,10 +255,11 @@ export async function switchWalletConnectToInri() {
           blockExplorerUrls: [INRI_EXPLORER_URL],
         },
       ],
+      chainId: INRI_WALLETCONNECT_CHAIN_ID,
     })
   }
 
-  return provider.request({ method: 'eth_chainId' }) as Promise<string>
+  return provider.request({ method: 'eth_chainId', chainId: INRI_WALLETCONNECT_CHAIN_ID }) as Promise<string>
 }
 
 export async function subscribeWalletConnect(
