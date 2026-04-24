@@ -654,3 +654,1026 @@ textarea {
   .inri-button-primary,
   .inri-button-secondary { width: 100%; }
 }
+
+/* INRI v14: sharper professional system inspired by Base / Optimism / Uniswap / Arbitrum */
+:root {
+  --inri-radius-card: 18px;
+  --inri-radius-button: 12px;
+  --inri-line: rgba(130, 220, 255, .16);
+  --inri-surface: rgba(5, 18, 34, .78);
+}
+
+body {
+  background:
+    radial-gradient(circle at 0% -10%, rgba(19,164,255,.24), transparent 36rem),
+    radial-gradient(circle at 100% 6%, rgba(125,220,255,.14), transparent 34rem),
+    linear-gradient(180deg,#020914 0%,#000 46%,#020914 100%) !important;
+}
+
+.inri-premium-main,
+main.bg-black,
+main[class*="bg-[radial-gradient"] {
+  background:
+    radial-gradient(circle at 0% -10%, rgba(19,164,255,.20), transparent 34rem),
+    radial-gradient(circle at 100% 8%, rgba(125,220,255,.10), transparent 34rem),
+    linear-gradient(180deg,#020914 0%,#000 48%,#020914 100%) !important;
+}
+
+.inri-hero-surface {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(19,164,255,.23), transparent 34rem),
+    linear-gradient(180deg, rgba(4,13,27,.98), rgba(0,0,0,.99)) !important;
+}
+
+/* sharper containers: fewer bubbles, stronger premium panels */
+.inri-premium-hero-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card,
+.inri-premium-tile,
+article[class*="rounded"],
+div[class*="rounded-[1."],
+div[class*="rounded-[2."] {
+  border-radius: var(--inri-radius-card) !important;
+}
+
+.inri-premium-hero-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card {
+  border: 1px solid var(--inri-line) !important;
+  background:
+    linear-gradient(135deg, rgba(19,164,255,.10), transparent 30%),
+    linear-gradient(180deg, rgba(8,22,42,.82), rgba(2,9,18,.90)) !important;
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.34),
+    0 0 0 1px rgba(255,255,255,.03) inset,
+    0 1px 0 rgba(255,255,255,.08) inset !important;
+}
+
+.inri-premium-hero-card {
+  border-color: rgba(125,220,255,.20) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.20), transparent 28rem),
+    linear-gradient(180deg, rgba(8,24,45,.74), rgba(2,8,17,.88)) !important;
+}
+
+.inri-premium-tile {
+  border: 1px solid rgba(255,255,255,.11) !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+/* all buttons: more square, serious, unified */
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary,
+button[class*="rounded-full"],
+a[class*="rounded-full"] {
+  border-radius: var(--inri-radius-button) !important;
+}
+
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary {
+  min-height: 50px !important;
+  padding-inline: 1.35rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .01em !important;
+}
+
+.inri-button-primary {
+  color: #03111c !important;
+  border: 1px solid rgba(255,255,255,.58) !important;
+  background: linear-gradient(135deg, #f6fdff 0%, #70d7ff 42%, #119fff 100%) !important;
+  box-shadow: 0 16px 44px rgba(19,164,255,.30), inset 0 1px 0 rgba(255,255,255,.86) !important;
+}
+
+.inri-button-secondary {
+  color: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(125,220,255,.24) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.inri-button-primary:hover,
+.inri-button-secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125,220,255,.58) !important;
+}
+
+/* Navigation: sharper active state */
+header nav a,
+header nav button {
+  border-radius: 10px !important;
+}
+
+/* form fields should match the sharper card language */
+input,
+select,
+textarea,
+.inri-input-modern {
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(0,0,0,.30) !important;
+}
+
+/* chips stay pill-shaped but smaller and cleaner */
+.inri-chip {
+  border-radius: 999px !important;
+  background: rgba(19,164,255,.075) !important;
+}
+
+/* footer without boxed container */
+footer {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.12), transparent 30rem),
+    linear-gradient(180deg,#020914,#000) !important;
+}
+footer > div > div:first-child {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* embedded/legacy apps inside P2P and Pool also inherit the new sharper standard */
+:where(.inri-premium-card, .inri-section-surface) .card,
+:where(.inri-premium-card, .inri-section-surface) .offer,
+:where(.inri-premium-card, .inri-section-surface) .tabs,
+:where(.inri-premium-card, .inri-section-surface) .panel,
+:where(.inri-premium-card, .inri-section-surface) .modal {
+  border-radius: 16px !important;
+}
+
+/* INRI V15 — visible redesign: sharp premium system, no soft bubble UI */
+:root {
+  --inri-v15-radius: 14px;
+  --inri-v15-radius-lg: 18px;
+  --inri-v15-blue: #13a4ff;
+  --inri-v15-cyan: #7ce3ff;
+  --inri-v15-surface: rgba(6, 18, 34, 0.86);
+  --inri-v15-border: rgba(124, 227, 255, 0.20);
+}
+
+body {
+  background:
+    linear-gradient(rgba(124,227,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,227,255,.035) 1px, transparent 1px),
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.28), transparent 34rem),
+    radial-gradient(circle at 100% 16%, rgba(124,227,255,.14), transparent 36rem),
+    linear-gradient(180deg,#030814 0%,#000 54%,#020814 100%) !important;
+  background-size: 56px 56px, 56px 56px, auto, auto, auto !important;
+}
+
+.inri-premium-main,
+main.bg-black,
+main[class*="bg-[radial-gradient"] {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.22), transparent 34rem),
+    radial-gradient(circle at 100% 10%, rgba(124,227,255,.10), transparent 34rem),
+    linear-gradient(180deg,#030814 0%,#000 52%,#020814 100%) !important;
+}
+
+.inri-page-container {
+  max-width: 1440px !important;
+}
+
+.inri-hero-surface {
+  background:
+    linear-gradient(rgba(124,227,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,227,255,.045) 1px, transparent 1px),
+    radial-gradient(circle at 10% 0%, rgba(19,164,255,.24), transparent 34rem),
+    linear-gradient(180deg, rgba(5,18,34,.98), rgba(0,0,0,.98)) !important;
+  background-size: 58px 58px, 58px 58px, auto, auto !important;
+  border-bottom: 1px solid rgba(124,227,255,.16) !important;
+}
+
+/* Strong, unified panels */
+.inri-premium-hero-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card,
+.inri-premium-tile,
+article[class*="border"],
+section article,
+main section div[class*="border"] {
+  border-radius: var(--inri-v15-radius-lg) !important;
+  border-color: var(--inri-v15-border) !important;
+  background:
+    linear-gradient(135deg, rgba(19,164,255,.14), transparent 32%),
+    linear-gradient(180deg, rgba(8,23,43,.90), rgba(2,8,18,.94)) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.40),
+    0 0 0 1px rgba(255,255,255,.045) inset,
+    0 1px 0 rgba(255,255,255,.10) inset !important;
+}
+
+.inri-premium-hero-card {
+  border-radius: 22px !important;
+  border-color: rgba(124,227,255,.26) !important;
+  background:
+    linear-gradient(135deg, rgba(19,164,255,.22), transparent 30%),
+    linear-gradient(180deg, rgba(9,28,54,.86), rgba(2,8,18,.96)) !important;
+}
+
+.inri-premium-tile,
+.inri-section-surface .inri-premium-tile,
+div[class*="bg-white/[0.03]"] {
+  border-radius: 12px !important;
+  border-color: rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.045) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+/* Buttons: visibly square, product-grade */
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary,
+button[class*="inri-button"],
+a[class*="inri-button"] {
+  border-radius: 10px !important;
+  min-height: 48px !important;
+  padding: 0 1.35rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease !important;
+}
+
+.inri-button-primary,
+button.inri-button-primary,
+a.inri-button-primary {
+  color: #02111d !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  background: linear-gradient(135deg,#ffffff 0%,#8ce5ff 38%,#13a4ff 100%) !important;
+  box-shadow: 0 18px 46px rgba(19,164,255,.34), inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+
+.inri-button-secondary,
+button.inri-button-secondary,
+a.inri-button-secondary {
+  color: rgba(255,255,255,.94) !important;
+  border: 1px solid rgba(124,227,255,.28) !important;
+  background: linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.025)) !important;
+  box-shadow: 0 14px 36px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+.inri-button-primary:hover,
+.inri-button-secondary:hover,
+button.inri-button-primary:hover,
+button.inri-button-secondary:hover,
+a.inri-button-primary:hover,
+a.inri-button-secondary:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(124,227,255,.70) !important;
+  box-shadow: 0 22px 58px rgba(19,164,255,.28), inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+
+/* force old pill buttons/cards to stop looking rounded */
+a[class*="rounded-full"],
+button[class*="rounded-full"] {
+  border-radius: 10px !important;
+}
+
+.inri-chip,
+span[class*="rounded-full"] {
+  border-radius: 10px !important;
+  background: rgba(19,164,255,.09) !important;
+  border-color: rgba(124,227,255,.20) !important;
+}
+
+input,
+select,
+textarea,
+.inri-input-modern {
+  border-radius: 10px !important;
+  border-color: rgba(124,227,255,.16) !important;
+  background: rgba(0,0,0,.36) !important;
+}
+
+/* Header / footer final overrides */
+header {
+  background: rgba(2,8,18,.84) !important;
+  border-bottom: 1px solid rgba(124,227,255,.14) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.38) !important;
+}
+
+header nav {
+  border: 1px solid rgba(124,227,255,.14) !important;
+  background: rgba(255,255,255,.035) !important;
+  padding: 5px !important;
+  border-radius: 14px !important;
+}
+
+header nav a,
+header nav button {
+  border-radius: 9px !important;
+}
+
+footer {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,.12), transparent 34rem),
+    linear-gradient(180deg,#020814,#000) !important;
+}
+footer > div > div:first-child {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* embedded app cleanup */
+:where(.inri-premium-card, .inri-section-surface) .card,
+:where(.inri-premium-card, .inri-section-surface) .offer,
+:where(.inri-premium-card, .inri-section-surface) .tabs,
+:where(.inri-premium-card, .inri-section-surface) .modal,
+:where(.inri-premium-card, .inri-section-surface) .panel {
+  border-radius: 12px !important;
+}
+
+@media (max-width: 640px) {
+  .inri-button-primary,
+  .inri-button-secondary {
+    width: 100% !important;
+  }
+}
+
+/* INRI VISUAL SYSTEM V16 — obvious premium redesign */
+:root {
+  --inri-bg: #03070f;
+  --inri-panel: rgba(7, 18, 34, 0.78);
+  --inri-panel-2: rgba(10, 27, 48, 0.86);
+  --inri-border: rgba(115, 214, 255, 0.20);
+  --inri-blue: #13a4ff;
+  --inri-blue-soft: #73d6ff;
+  --inri-text: #f2fbff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(circle at 18% -10%, rgba(19, 164, 255, 0.24), transparent 34rem),
+    radial-gradient(circle at 88% 10%, rgba(115, 214, 255, 0.13), transparent 36rem),
+    linear-gradient(180deg, #030710 0%, #000 48%, #020814 100%) !important;
+}
+
+.inri-page-shell,
+.inri-premium-main {
+  min-height: 100vh;
+  color: white;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(19, 164, 255, 0.18), transparent 34rem),
+    radial-gradient(circle at 92% 18%, rgba(115, 214, 255, 0.12), transparent 38rem),
+    linear-gradient(180deg, #030710 0%, #000 50%, #020814 100%) !important;
+}
+
+.inri-page-container {
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .inri-page-container { padding-left: 2rem; padding-right: 2rem; }
+}
+
+@media (min-width: 1280px) {
+  .inri-page-container { padding-left: 3rem; padding-right: 3rem; }
+}
+
+.inri-hero-showcase,
+.inri-hero-surface {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(115, 214, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(115, 214, 255, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 12% 4%, rgba(19, 164, 255, 0.24), transparent 34rem),
+    radial-gradient(circle at 90% 12%, rgba(115, 214, 255, 0.13), transparent 32rem),
+    linear-gradient(180deg, #06101e 0%, #000 100%) !important;
+  background-size: 56px 56px, 56px 56px, auto, auto, auto;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.inri-glass-hero,
+.inri-dashboard-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card {
+  border-radius: 20px !important;
+  border: 1px solid var(--inri-border) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.018) 38%),
+    radial-gradient(circle at 0% 0%, rgba(19,164,255,0.18), transparent 18rem),
+    linear-gradient(180deg, rgba(7, 18, 34, 0.86), rgba(2, 7, 15, 0.95)) !important;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(18px);
+}
+
+.inri-glass-hero {
+  min-height: 650px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.inri-dashboard-card:hover,
+.inri-premium-card:hover,
+.inri-product-card:hover,
+.inri-route-tile:hover {
+  border-color: rgba(115, 214, 255, 0.42) !important;
+}
+
+.inri-route-tile,
+.inri-product-card,
+.inri-campaign-box,
+.inri-data-box,
+.inri-premium-tile {
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,0.11) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.018)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.inri-route-tile,
+.inri-product-card {
+  display: block;
+  padding: 1.15rem;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.inri-product-card {
+  padding: 1.55rem;
+  min-height: 230px;
+}
+
+.inri-route-tile:hover,
+.inri-product-card:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(180deg, rgba(19,164,255,0.13), rgba(255,255,255,0.026)) !important;
+}
+
+.inri-campaign-box,
+.inri-data-box {
+  padding: 1rem;
+}
+
+.inri-icon-box {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(115,214,255,0.28);
+  background: rgba(19,164,255,0.11);
+  color: var(--inri-blue);
+}
+
+.inri-tag,
+.inri-chip {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px !important;
+  border: 1px solid rgba(115, 214, 255, 0.25) !important;
+  background: rgba(19, 164, 255, 0.09) !important;
+  padding: .42rem .75rem;
+  color: rgba(242,251,255,.80);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .20em;
+  text-transform: uppercase;
+}
+
+.inri-button-primary,
+.inri-button-secondary {
+  min-height: 50px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  border-radius: 14px !important;
+  padding: 0 1.25rem !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, filter 160ms ease;
+}
+
+.inri-button-primary {
+  color: #03111c !important;
+  border: 1px solid rgba(255,255,255,0.65) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #aee9ff 42%, #13a4ff 100%) !important;
+  box-shadow: 0 18px 45px rgba(19,164,255,.35), inset 0 1px 0 rgba(255,255,255,.96) !important;
+}
+
+.inri-button-secondary {
+  color: rgba(242,251,255,.95) !important;
+  border: 1px solid rgba(115,214,255,.30) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025)) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.09) !important;
+}
+
+.inri-button-primary:hover,
+.inri-button-secondary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  border-color: rgba(115,214,255,.60) !important;
+}
+
+.inri-back-to-top {
+  border-radius: 14px !important;
+  border: 1px solid rgba(115, 214, 255, 0.34) !important;
+  background: linear-gradient(180deg, rgba(10, 27, 48, .94), rgba(2, 8, 17, .96)) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+.inri-premium-card input,
+.inri-premium-card select,
+.inri-premium-card textarea,
+.inri-section-surface input,
+.inri-section-surface select,
+.inri-section-surface textarea {
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(0,0,0,.36) !important;
+  color: white !important;
+}
+
+@media (max-width: 640px) {
+  .inri-glass-hero { min-height: auto; }
+  .inri-button-primary,
+  .inri-button-secondary {
+    width: 100%;
+  }
+}
+
+
+/* INRI VISUAL SYSTEM V17 — full visual rebuild */
+:root{
+  --inri-bg0:#020612;
+  --inri-bg1:#041428;
+  --inri-card:#07182d;
+  --inri-card2:#0a203a;
+  --inri-line:rgba(120,220,255,.24);
+  --inri-line-strong:rgba(120,220,255,.44);
+  --inri-blue:#12a8ff;
+  --inri-cyan:#7fe6ff;
+  --inri-text:#f5fbff;
+  --inri-muted:rgba(245,251,255,.64);
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 10% 0%,rgba(18,168,255,.32),transparent 34rem),
+    radial-gradient(circle at 80% 12%,rgba(127,230,255,.22),transparent 36rem),
+    linear-gradient(180deg,#030812 0%,#000 52%,#020916 100%)!important;
+}
+
+.inri-site-v2,
+.inri-page-shell,
+.inri-premium-main{
+  min-height:100vh;
+  color:white;
+  background:
+    radial-gradient(circle at 14% -6%,rgba(18,168,255,.30),transparent 34rem),
+    radial-gradient(circle at 88% 8%,rgba(127,230,255,.18),transparent 38rem),
+    linear-gradient(180deg,#030814 0%,#000 48%,#03101f 100%)!important;
+}
+
+.inri-page-container{
+  width:100%;
+  max-width:1520px;
+  margin:0 auto;
+  padding-left:1rem;
+  padding-right:1rem;
+}
+@media(min-width:640px){.inri-page-container{padding-left:2rem;padding-right:2rem}}
+@media(min-width:1280px){.inri-page-container{padding-left:3rem;padding-right:3rem}}
+
+.inri-v2-hero,
+.inri-hero-showcase,
+.inri-hero-surface{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(rgba(127,230,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(127,230,255,.045) 1px,transparent 1px),
+    radial-gradient(circle at 18% 0%,rgba(18,168,255,.30),transparent 36rem),
+    radial-gradient(circle at 88% 10%,rgba(127,230,255,.18),transparent 40rem),
+    linear-gradient(180deg,#06172b 0%,#000 100%)!important;
+  background-size:64px 64px,64px 64px,auto,auto,auto;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.inri-v2-hero:before,
+.inri-hero-showcase:before,
+.inri-hero-surface:before{
+  content:"";
+  position:absolute;
+  inset:-20% -10% auto auto;
+  width:52rem;
+  height:52rem;
+  border-radius:999px;
+  pointer-events:none;
+  background:radial-gradient(circle,rgba(18,168,255,.22),transparent 62%);
+  filter:blur(20px);
+  opacity:.9;
+}
+.inri-v2-hero:after,
+.inri-hero-showcase:after,
+.inri-hero-surface:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,transparent 0 48%,rgba(127,230,255,.08) 49%,transparent 64%),
+    linear-gradient(180deg,transparent 0%,rgba(0,0,0,.20) 100%);
+}
+.inri-v2-hero>*,
+.inri-hero-showcase>*,
+.inri-hero-surface>*{position:relative;z-index:1}
+
+.inri-v2-panel,
+.inri-v2-card,
+.inri-v2-feature,
+.inri-glass-hero,
+.inri-dashboard-card,
+.inri-premium-card,
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card{
+  border-radius:18px!important;
+  border:1px solid var(--inri-line)!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.018) 38%),
+    radial-gradient(circle at 0% 0%,rgba(18,168,255,.20),transparent 18rem),
+    linear-gradient(180deg,rgba(7,24,45,.88),rgba(2,8,18,.96))!important;
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.10)!important;
+  backdrop-filter:blur(20px);
+}
+
+.inri-v2-panel{
+  position:relative;
+  overflow:hidden;
+}
+.inri-v2-panel:before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(127,230,255,.70),transparent);
+}
+.inri-v2-panel>*{position:relative;z-index:1}
+
+.inri-v2-feature,
+.inri-route-tile,
+.inri-product-card,
+.inri-campaign-box,
+.inri-data-box,
+.inri-premium-tile{
+  border-radius:14px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.018))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+.inri-v2-feature:hover,
+.inri-route-tile:hover,
+.inri-product-card:hover{
+  transform:translateY(-3px);
+  border-color:var(--inri-line-strong)!important;
+  background:
+    linear-gradient(180deg,rgba(18,168,255,.14),rgba(255,255,255,.026))!important;
+  box-shadow:0 18px 48px rgba(18,168,255,.12), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.inri-v2-kicker,
+.inri-tag,
+.inri-chip{
+  min-height:34px;
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  border-radius:9px!important;
+  border:1px solid rgba(127,230,255,.28)!important;
+  background:rgba(18,168,255,.11)!important;
+  padding:.42rem .72rem;
+  color:rgba(245,251,255,.82);
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.20em;
+  text-transform:uppercase;
+}
+
+.inri-v2-heading{
+  color:white;
+  font-weight:950;
+  letter-spacing:-.06em;
+  line-height:.9;
+}
+
+.inri-v2-text{color:var(--inri-muted);line-height:1.8}
+
+.inri-icon-box,
+.inri-v2-icon{
+  width:46px;
+  height:46px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  border:1px solid rgba(127,230,255,.30);
+  background:linear-gradient(180deg,rgba(18,168,255,.18),rgba(18,168,255,.06));
+  color:var(--inri-blue);
+}
+
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary{
+  min-height:50px!important;
+  border-radius:12px!important;
+  padding:0 1.35rem!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  letter-spacing:.01em;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:.65rem!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease,filter .16s ease!important;
+}
+.inri-button-primary{
+  color:#04111c!important;
+  border:1px solid rgba(255,255,255,.70)!important;
+  background:linear-gradient(180deg,#fff 0%,#b9eeff 42%,#12a8ff 100%)!important;
+  box-shadow:0 20px 52px rgba(18,168,255,.38), inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+.inri-button-secondary{
+  color:rgba(245,251,255,.96)!important;
+  border:1px solid rgba(127,230,255,.32)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.026))!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.09)!important;
+}
+.inri-button-primary:hover,
+.inri-button-secondary:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.06);
+  border-color:rgba(127,230,255,.64)!important;
+}
+
+.inri-back-to-top{
+  border-radius:12px!important;
+  border:1px solid rgba(127,230,255,.36)!important;
+  background:linear-gradient(180deg,rgba(10,29,52,.95),rgba(2,8,17,.98))!important;
+}
+
+.inri-v2-grid{
+  display:grid;
+  gap:1rem;
+}
+@media(min-width:768px){.inri-v2-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1280px){.inri-v2-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.inri-v2-stat{
+  border-left:2px solid rgba(18,168,255,.60);
+  background:rgba(255,255,255,.035);
+  padding:1rem;
+  border-radius:0 12px 12px 0;
+}
+
+.inri-v2-card input,
+.inri-v2-card select,
+.inri-v2-card textarea,
+.inri-v2-panel input,
+.inri-v2-panel select,
+.inri-v2-panel textarea,
+.inri-dashboard-card input,
+.inri-dashboard-card select,
+.inri-dashboard-card textarea,
+.inri-premium-card input,
+.inri-premium-card select,
+.inri-premium-card textarea{
+  min-height:52px;
+  border-radius:10px!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  background:rgba(0,0,0,.38)!important;
+  color:white!important;
+}
+
+@media(max-width:640px){
+  .inri-button-primary,.inri-button-secondary{width:100%}
+}
+
+
+/* INRI V18 HARD RESET — visible change confirmation */
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary {
+  border-radius: 12px !important;
+  min-height: 52px !important;
+  padding: 0 1.4rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.inri-button-primary {
+  color: #03121d !important;
+  border: 1px solid rgba(255,255,255,0.72) !important;
+  background: linear-gradient(180deg,#ffffff 0%,#b8efff 42%,#08a8ff 100%) !important;
+  box-shadow: 0 22px 55px rgba(8,168,255,0.42), inset 0 1px 0 rgba(255,255,255,0.95) !important;
+}
+
+.inri-button-secondary {
+  color: white !important;
+  border: 1px solid rgba(125,225,255,0.34) !important;
+  background: linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.025)) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-dashboard-card,
+.inri-premium-card,
+.inri-v2-panel,
+.inri-v2-card,
+.inri-section-surface,
+.inri-soft-card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(125,225,255,0.22) !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.018) 38%),
+    radial-gradient(circle at top left,rgba(8,168,255,0.18),transparent 20rem),
+    linear-gradient(180deg,rgba(7,22,42,0.90),rgba(1,7,16,0.96)) !important;
+  box-shadow: 0 30px 100px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-chip,
+.inri-tag,
+.inri-v2-kicker {
+  border-radius: 10px !important;
+}
+
+
+/* INRI V19 VISUAL STANDARD */
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary {
+  border-radius: 12px !important;
+  min-height: 52px !important;
+  padding: 0 1.4rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.inri-button-primary {
+  color: #03121d !important;
+  border: 1px solid rgba(255,255,255,0.72) !important;
+  background: linear-gradient(180deg,#ffffff 0%,#b8efff 42%,#08a8ff 100%) !important;
+  box-shadow: 0 22px 55px rgba(8,168,255,0.42), inset 0 1px 0 rgba(255,255,255,0.95) !important;
+}
+
+.inri-button-secondary {
+  color: white !important;
+  border: 1px solid rgba(125,225,255,0.34) !important;
+  background: linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.025)) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-dashboard-card,
+.inri-premium-card,
+.inri-v2-panel,
+.inri-v2-card,
+.inri-section-surface,
+.inri-soft-card {
+  border-radius: 22px !important;
+  border: 1px solid rgba(125,225,255,0.18) !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.018) 38%),
+    radial-gradient(circle at top left,rgba(8,168,255,0.18),transparent 20rem),
+    linear-gradient(180deg,rgba(7,22,42,0.90),rgba(1,7,16,0.96)) !important;
+  box-shadow: 0 30px 100px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-chip,
+.inri-tag,
+.inri-v2-kicker {
+  border-radius: 10px !important;
+}
+
+
+/* INRI V21 SAFE VISUAL POLISH — preserve page content, improve visuals */
+:root {
+  --inri-ui-blue: #08a8ff;
+  --inri-ui-cyan: #b8efff;
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(0,174,255,0.24), transparent 32rem),
+    radial-gradient(circle at 82% 10%, rgba(122,232,255,0.14), transparent 36rem),
+    linear-gradient(180deg,#02040a 0%,#000 48%,#04101e 100%) !important;
+}
+
+.inri-button-primary,
+.inri-button-secondary,
+button.inri-button-primary,
+button.inri-button-secondary,
+a.inri-button-primary,
+a.inri-button-secondary {
+  border-radius: 12px !important;
+  min-height: 52px !important;
+  padding: 0 1.4rem !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .65rem !important;
+}
+
+.inri-button-primary {
+  color: #03121d !important;
+  border: 1px solid rgba(255,255,255,0.72) !important;
+  background: linear-gradient(180deg,#ffffff 0%,#b8efff 42%,#08a8ff 100%) !important;
+  box-shadow: 0 22px 55px rgba(8,168,255,0.36), inset 0 1px 0 rgba(255,255,255,0.95) !important;
+}
+
+.inri-button-secondary {
+  color: white !important;
+  border: 1px solid rgba(125,225,255,0.34) !important;
+  background: linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.025)) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-button-primary:hover,
+.inri-button-secondary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.inri-section-surface,
+.inri-soft-card,
+.inri-stat-card,
+.inri-premium-card,
+.inri-dashboard-card {
+  border-radius: 22px !important;
+  border: 1px solid rgba(125,225,255,0.18) !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,0.075),rgba(255,255,255,0.018) 38%),
+    radial-gradient(circle at top left,rgba(8,168,255,0.15),transparent 18rem),
+    linear-gradient(180deg,rgba(7,22,42,0.88),rgba(1,7,16,0.96)) !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+.inri-chip,
+.inri-tag,
+.inri-v2-kicker {
+  border-radius: 10px !important;
+  border-color: rgba(125,225,255,0.28) !important;
+  background: rgba(8,168,255,0.11) !important;
+}
+
+/* Keep wallet cards visible and not flat */
+article {
+  border-color: rgba(125,225,255,0.16) !important;
+}
+
+/* Prevent accidental nested shells from creating ugly extra top margins */
+main main {
+  min-height: auto !important;
+}

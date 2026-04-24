@@ -1,4 +1,10 @@
 import { InriPageTemplate } from '@/components/inri-page-template'
+import { createPageMetadata } from '@/lib/metadata'
+
+export const metadata = createPageMetadata(
+  'INRI Wallet',
+  'Official wallet access route for INRI CHAIN.',
+)
 
 export default function Page() {
   return (

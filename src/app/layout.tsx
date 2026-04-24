@@ -2,22 +2,40 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import { Suspense } from 'react'
 import './globals.css'
-
 import { GoogleAnalyticsRouteTracker } from '@/components/google-analytics-route-tracker'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarConfigProvider } from '@/contexts/sidebar-context'
 import { ubuntu } from '@/lib/fonts'
 import { withBasePath } from '@/lib/site'
 
+const SITE_URL = 'https://www.inri.life'
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-M1ZJQTCXPT'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: 'INRI CHAIN',
   title: {
     default: 'INRI CHAIN',
     template: '%s | INRI CHAIN',
   },
   description:
-    'Official INRI CHAIN website with wallets, swap, token factory, mining, pool, staking, P2P, explorer and whitepaper access.',
+    'Official INRI CHAIN website with wallet access, explorer, mining, pool, staking, token factory, P2P routes and whitepaper.',
+  openGraph: {
+    title: 'INRI CHAIN',
+    description:
+      'Official INRI CHAIN website with wallet access, explorer, mining, pool, staking, token factory, P2P routes and whitepaper.',
+    url: SITE_URL,
+    siteName: 'INRI CHAIN',
+    type: 'website',
+    images: ['/inri-logo.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'INRI CHAIN',
+    description:
+      'Official INRI CHAIN website with wallet access, explorer, mining, pool, staking, token factory, P2P routes and whitepaper.',
+    images: ['/inri-logo.png'],
+  },
   icons: {
     icon: [
       { url: withBasePath('/icon.png'), sizes: '32x32', type: 'image/png' },
