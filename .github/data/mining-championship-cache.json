@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastScannedBlock": 1080300,
+  "lastScannedBlock": 1080318,
   "participants": {
     "0x2878ad14e2252119ad793df7d54e93914e141414": {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -11,9 +11,9 @@
     },
     "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42": {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 37849,
-      "lastBlock": 1080300,
-      "chainSoloBlocks": 37849,
+      "blocks": 37862,
+      "lastBlock": 1080315,
+      "chainSoloBlocks": 37862,
       "poolSoloBlocks": 0
     },
     "0x85eebfe1b1db893dc90079c785c7c70e78fb3028": {
