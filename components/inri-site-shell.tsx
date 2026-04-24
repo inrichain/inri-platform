@@ -131,7 +131,7 @@ const socialLinks: SocialLink[] = [
 ]
 
 const navLinkClass =
-  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[10px] px-3 text-[14px] font-extrabold transition-all after:absolute after:bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-4'
+  'notranslate relative inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] px-3 text-[14px] font-extrabold transition-all after:absolute after:bottom-1 after:left-1/2 after:h-[2px] after:-translate-x-1/2 after:rounded-full after:bg-primary after:transition-all xl:px-4'
 
 function NavLink({ item }: { item: InriNavItem }) {
   const pathname = usePathname()
@@ -247,7 +247,7 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
@@ -290,7 +290,7 @@ function MobileMenu() {
                     key={`${item.label}-${item.href}-${index}`}
                     href={item.href}
                     translate="no"
-                    className={`notranslate block w-full rounded-[10px] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
+                    className={`notranslate block w-full rounded-[12px] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
                       active
                         ? 'border-primary/50 bg-primary/[0.10] text-white'
                         : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
@@ -312,8 +312,8 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/82 shadow-[0_12px_40px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
-      <div className="border-b border-white/[0.08] bg-[linear-gradient(90deg,rgba(19,164,255,0.20),rgba(103,212,255,0.10),rgba(19,164,255,0.20))]">
+    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#020812]/86 shadow-[0_18px_54px_rgba(0,0,0,0.34)] backdrop-blur-2xl">
+      <div className="border-b border-white/[0.08] bg-[linear-gradient(90deg,rgba(8,168,255,0.26),rgba(184,239,255,0.12),rgba(8,168,255,0.26))]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
@@ -333,7 +333,7 @@ export function InriHeader() {
           </div>
 
           <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <nav className="flex items-center justify-center gap-1 rounded-[14px] border border-white/[0.10] bg-white/[0.035] p-1">
+            <nav className="flex items-center justify-center gap-1 rounded-[14px] border border-primary/15 bg-white/[0.045] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -408,7 +408,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
     >
       {link.icon}
     </Link>
