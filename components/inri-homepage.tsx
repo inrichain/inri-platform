@@ -4,13 +4,18 @@ import {
   Blocks,
   Coins,
   Factory,
+  FileText,
   Pickaxe,
   ShieldCheck,
   Trophy,
   Wallet,
   Zap,
+  Activity,
+  Cpu,
+  Layers3,
 } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
+import { NetworkPulse } from '@/components/network-pulse'
 
 const primaryRoutes = [
   { title: 'Wallet', text: 'Open the official wallet and connect to INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
@@ -19,6 +24,22 @@ const primaryRoutes = [
   { title: 'Token Factory', text: 'Create tokens directly on INRI Chain 3777.', href: '/token-factory', icon: Factory },
   { title: 'Staking', text: 'Stake INRI and manage positions.', href: '/staking', icon: ShieldCheck },
   { title: 'P2P Market', text: 'Trade INRI through the escrow market.', href: '/p2p', icon: Coins },
+]
+
+const stats = [
+  ['Chain', '3777'],
+  ['Consensus', 'PoW'],
+  ['Runtime', 'EVM'],
+  ['Status', 'Mainnet'],
+]
+
+const ecosystemCards = [
+  { title: 'Mining Pool', text: 'Track pool modes, payouts, blocks and miner lookup.', href: '/pool', icon: Layers3 },
+  { title: 'Mining Championship', text: 'Solo mining rewards, ranking and campaign status.', href: '/mining-championship/', icon: Trophy },
+  { title: 'Whitepaper', text: 'Read the structure, token model and direction of INRI.', href: '/whitepaper', icon: FileText },
+  { title: 'Windows Mining', text: 'Mining setup for Windows users.', href: '/mining-windows', icon: Cpu },
+  { title: 'Ubuntu Mining', text: 'Server/VPS mining route for Ubuntu.', href: '/mining-ubuntu', icon: Activity },
+  { title: 'Swap', text: 'Prepared route for the INRI liquidity layer.', href: '/swap', icon: Zap },
 ]
 
 export function InriHomepage() {
@@ -41,7 +62,7 @@ export function InriHomepage() {
               </h1>
 
               <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72 sm:text-xl">
-                Wallet, explorer, mining, staking, token launch and P2P trading in one stronger network interface.
+                Wallet, explorer, mining, staking, token launch, pool, whitepaper and P2P trading in one stronger network interface.
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
@@ -57,12 +78,7 @@ export function InriHomepage() {
               </div>
 
               <div className="mt-10 grid gap-3 sm:grid-cols-4">
-                {[
-                  ['Chain', '3777'],
-                  ['Consensus', 'PoW'],
-                  ['Runtime', 'EVM'],
-                  ['Status', 'Mainnet'],
-                ].map(([label, value]) => (
+                {stats.map(([label, value]) => (
                   <div key={label} className="border-l-2 border-cyan-300/70 bg-white/[0.045] px-4 py-3 backdrop-blur-xl">
                     <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
                     <div className="mt-2 text-xl font-black text-white">{value}</div>
@@ -116,11 +132,21 @@ export function InriHomepage() {
 
         <section className="border-b border-white/10 bg-[linear-gradient(180deg,#02040a,#04101e)] py-16">
           <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
+            <div className="mb-9 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Active campaign</p>
+                <h2 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl">
+                  Mining Championship is live on the INRI home.
+                </h2>
+              </div>
+              <InriLinkButton href="/mining-championship/">Open Championship</InriLinkButton>
+            </div>
+
             <div className="grid gap-4 md:grid-cols-3">
               {[
-                ['Mining Championship', '150,000 INRI reward campaign with solo mining route.', Trophy],
-                ['Token Factory', 'Launch community assets directly on INRI.', Factory],
-                ['P2P Market', 'Escrow market for direct INRI trades.', Coins],
+                ['150,000 INRI', 'Total reward campaign for solo miners.', Trophy],
+                ['0.20 INRI', 'Per valid solo-mined block.', Pickaxe],
+                ['CPU valid', 'Legitimate solo blocks qualify.', Cpu],
               ].map(([title, text, Icon]) => (
                 <div key={String(title)} className="rounded-[22px] border border-cyan-300/18 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
@@ -130,6 +156,46 @@ export function InriHomepage() {
                   <p className="mt-3 text-sm leading-7 text-white/62">{String(text)}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <NetworkPulse />
+
+        <section className="border-t border-white/10 bg-[#02040a] py-16 lg:py-20">
+          <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
+            <div className="mb-9 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Ecosystem</p>
+                <h2 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl">
+                  More official INRI routes.
+                </h2>
+              </div>
+              <p className="max-w-2xl text-base leading-8 text-white/60">
+                These sections restore the useful routes that existed before, now with the same visual direction as the new Home.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {ecosystemCards.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="group rounded-[22px] border border-cyan-300/16 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition hover:-translate-y-1 hover:border-cyan-300/42 hover:bg-cyan-300/[0.07]"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-cyan-300 transition group-hover:translate-x-1" />
+                    </div>
+                    <h3 className="mt-6 text-2xl font-black text-white">{item.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>

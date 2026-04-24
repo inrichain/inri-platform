@@ -45,59 +45,61 @@ export function InriPageTemplate({
 }: InriPageTemplateProps) {
   return (
     <InriShell>
-      <main className="inri-site-v2">
-        <section className="inri-v2-hero">
-          <div className="inri-page-container py-10 sm:py-14 lg:py-16">
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-stretch">
-              <div className="inri-v2-panel flex min-h-[430px] flex-col justify-center p-6 sm:p-8 lg:p-10">
-                <div className="flex flex-wrap gap-2.5">
-                  <span className="inri-v2-kicker">{eyebrow}</span>
-                  <span className="inri-v2-kicker">Official route</span>
-                  <span className="inri-v2-kicker">Chain 3777</span>
-                </div>
-                <h1 className="inri-v2-heading mt-8 max-w-5xl text-[2.8rem] sm:text-[4.2rem] lg:text-[5.7rem]">
-                  {title}
-                </h1>
-                <p className="inri-v2-text mt-7 max-w-3xl text-lg">{description}</p>
+      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.45),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.22),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
 
-                {actions.length > 0 ? (
-                  <div className="mt-9 grid gap-3 sm:flex sm:flex-wrap">
-                    {actions.map((action) => (
-                      <InriLinkButton
-                        key={`${action.label}-${action.href}`}
-                        href={action.href}
-                        external={action.external}
-                        variant={action.variant || 'primary'}
-                      >
-                        {action.label}
-                      </InriLinkButton>
-                    ))}
-                  </div>
-                ) : null}
+          <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:py-18 xl:px-12">
+            <div className="flex min-h-[420px] flex-col justify-center">
+              <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                {eyebrow}
               </div>
 
-              <div className="inri-v2-panel p-6">
-                <div className="inri-v2-icon">
-                  <Layers3 className="h-5 w-5" />
+              <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.5rem]">
+                {title}
+              </h1>
+
+              <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
+                {description}
+              </p>
+
+              {actions.length > 0 ? (
+                <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
+                  {actions.map((action) => (
+                    <InriLinkButton
+                      key={`${action.label}-${action.href}`}
+                      href={action.href}
+                      external={action.external}
+                      variant={action.variant || 'primary'}
+                    >
+                      {action.label}
+                    </InriLinkButton>
+                  ))}
                 </div>
-                <p className="mt-6 text-[11px] font-black uppercase tracking-[0.24em] text-primary">INRI interface</p>
-                <h2 className="mt-3 text-3xl font-black leading-tight text-white">Same system. Every page.</h2>
-                <p className="mt-4 text-sm leading-7 text-white/62">
-                  Every internal route now follows the same structure: strong hero, visible cards, clear actions and the same INRI blue/black visual language.
-                </p>
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.055] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                <Layers3 className="h-6 w-6" />
               </div>
+              <p className="mt-6 text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">INRI V2 Interface</p>
+              <h2 className="mt-3 text-4xl font-black leading-tight tracking-[-0.04em] text-white">Same standard. Every page.</h2>
+              <p className="mt-4 text-sm leading-7 text-white/62">
+                This route follows the same visual direction as the new Home: stronger hero, better contrast and clearer action areas.
+              </p>
             </div>
           </div>
         </section>
 
         {items.length > 0 ? (
-          <section className="py-10 sm:py-12">
-            <div className="inri-page-container">
-              <div className="inri-v2-grid">
+          <section className="border-t border-white/10 bg-[#02040a] py-12">
+            <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
-                  <div key={item.title} className="inri-v2-card p-6">
+                  <div key={item.title} className="rounded-[22px] border border-cyan-300/18 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
                     <h3 className="text-2xl font-black text-white">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-white/64">{item.text}</p>
+                    <p className="mt-3 text-sm leading-7 text-white/62">{item.text}</p>
                   </div>
                 ))}
               </div>
@@ -105,32 +107,30 @@ export function InriPageTemplate({
           </section>
         ) : null}
 
-        <section className="pb-16 pt-4 sm:pb-20">
-          <div className="inri-page-container">
-            <div className="inri-v2-panel p-5 sm:p-8 lg:p-10">
+        <section className="border-t border-white/10 bg-[linear-gradient(180deg,#02040a,#04101e)] py-12">
+          <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.045] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:p-8">
               {children ? <div className="mb-8">{children}</div> : null}
 
               {resources.length > 0 ? (
                 <>
-                  <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">Resources</p>
-                    <h2 className="mt-3 text-4xl font-black tracking-[-0.035em] text-white">Useful routes</h2>
-                  </div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Resources</p>
+                  <h2 className="mt-3 text-4xl font-black tracking-[-0.04em] text-white">Useful routes</h2>
 
-                  <div className="mt-8 inri-v2-grid">
+                  <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {resources.map((resource) => (
                       <Link
                         key={`${resource.title}-${resource.href}`}
                         href={resource.href}
                         {...(resource.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                        className="group inri-v2-feature block p-6"
+                        className="group rounded-[22px] border border-cyan-300/16 bg-black/20 p-6 transition hover:-translate-y-1 hover:border-cyan-300/42 hover:bg-cyan-300/[0.07]"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <h3 className="text-xl font-black text-white">{resource.title}</h3>
-                          <ArrowRight className="h-4 w-4 text-primary transition group-hover:translate-x-1" />
+                          <ArrowRight className="h-4 w-4 text-cyan-300 transition group-hover:translate-x-1" />
                         </div>
                         <p className="mt-4 text-sm leading-7 text-white/64">{resource.text}</p>
-                        <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-primary">
+                        <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-cyan-300">
                           Open
                           {resource.external ? <ExternalLink className="h-4 w-4" /> : null}
                         </span>
@@ -141,7 +141,7 @@ export function InriPageTemplate({
               ) : null}
 
               {note ? (
-                <div className="mt-8 border-l-2 border-primary bg-primary/10 p-5 text-sm leading-7 text-white/80">
+                <div className="mt-8 border-l-2 border-cyan-300 bg-cyan-300/10 p-5 text-sm leading-7 text-white/80">
                   {note}
                 </div>
               ) : null}
