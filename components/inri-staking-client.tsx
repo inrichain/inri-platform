@@ -40,11 +40,9 @@ type ActiveWalletBridge = {
   provider?: EthereumProvider
 } | null
 
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider
-    __INRI_ACTIVE_WALLET__?: ActiveWalletBridge
-  }
+type InriStakingWindow = Window & {
+  ethereum?: EthereumProvider
+  __INRI_ACTIVE_WALLET__?: ActiveWalletBridge
 }
 
 type SelectorMap = Record<string, string>
@@ -101,12 +99,12 @@ const initialContractStats: ContractStats = {
 
 function getInjectedEthereum(): EthereumProvider | undefined {
   if (typeof window === 'undefined') return undefined
-  return window.ethereum
+  return (window as InriStakingWindow).ethereum
 }
 
 function getActiveWalletBridge(): ActiveWalletBridge {
   if (typeof window === 'undefined') return null
-  return window.__INRI_ACTIVE_WALLET__ || null
+  return (window as InriStakingWindow).__INRI_ACTIVE_WALLET__ || null
 }
 
 function getActiveProvider(): EthereumProvider | undefined {
