@@ -1,56 +1,41 @@
 import {
   Coins,
   Factory,
-  FileText,
   Globe2,
   Pickaxe,
   ShieldCheck,
-  Sparkles,
   Trophy,
   Wallet,
 } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
-import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-unified'
+import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-premium-model'
 import { NetworkPulse } from '@/components/network-pulse'
 
-const routes = [
+const cards = [
   {
-    title: 'INRI Wallet',
-    text: 'Official wallet route for users to create, connect and use INRI ecosystem tools.',
+    title: 'Official Wallet',
+    text: 'Create, connect and use INRI from the official ecosystem wallet.',
     href: 'https://wallet.inri.life',
     external: true,
     icon: <Wallet className="h-5 w-5" />,
   },
   {
-    title: 'Explorer',
-    text: 'Inspect blocks, transactions, addresses and contracts on the INRI network.',
-    href: 'https://explorer.inri.life',
-    external: true,
-    icon: <Globe2 className="h-5 w-5" />,
-  },
-  {
-    title: 'Mining',
-    text: 'Windows, Ubuntu, pool mining and solo competition routes in one mining hub.',
-    href: '/mining',
+    title: 'Mining Pool',
+    text: 'Live miners, blocks, payments and network participation in one route.',
+    href: '/pool',
     icon: <Pickaxe className="h-5 w-5" />,
   },
   {
-    title: 'Staking',
-    text: 'Open the staking route and manage participation through the official interface.',
+    title: 'Staking Program',
+    text: 'A cleaner reward interface for long-term ecosystem participants.',
     href: '/staking',
-    icon: <Coins className="h-5 w-5" />,
+    icon: <ShieldCheck className="h-5 w-5" />,
   },
   {
     title: 'Token Factory',
-    text: 'Launch tokens on INRI with a cleaner, professional product flow.',
+    text: 'Launch assets on INRI with a premium builder-focused product flow.',
     href: '/token-factory',
     icon: <Factory className="h-5 w-5" />,
-  },
-  {
-    title: 'P2P Market',
-    text: 'Use the INRI P2P escrow market inside the same network design system.',
-    href: '/p2p',
-    icon: <ShieldCheck className="h-5 w-5" />,
   },
 ] as const
 
@@ -59,44 +44,43 @@ export function InriHomepage() {
     <InriShell>
       <main>
         <InriHero
-          eyebrow="INRI CHAIN OFFICIAL"
-          title="A premium Proof-of-Work EVM network interface."
-          description="Wallet, explorer, mining, staking, token factory, P2P and campaign pages follow one professional INRI dark-blue visual standard."
+          eyebrow="Official INRI Network"
+          title="Mining, staking and building on one premium INRI interface."
+          description="A dark-blue network experience for miners, builders and users — wallet, explorer, pool, staking, token factory and P2P routes unified under one professional standard."
           actions={[
-            { label: 'Open INRI Wallet', href: 'https://wallet.inri.life', external: true },
-            { label: 'Explore Chain', href: 'https://explorer.inri.life', external: true, variant: 'secondary' },
+            { label: 'Start with Wallet', href: 'https://wallet.inri.life', external: true },
+            { label: 'Explore Network', href: 'https://explorer.inri.life', external: true, variant: 'secondary' },
             { label: 'Start Mining', href: '/mining', variant: 'secondary' },
           ]}
           stats={[
-            { label: 'Chain ID', value: '3777', note: 'INRI mainnet' },
-            { label: 'Runtime', value: 'EVM', note: 'Compatible' },
-            { label: 'Consensus', value: 'PoW', note: 'Open mining' },
-            { label: 'Interface', value: 'Unified', note: 'One standard' },
+            { label: 'Chain ID', value: '3777' },
+            { label: 'Consensus', value: 'Proof-of-Work' },
+            { label: 'Runtime', value: 'EVM' },
+            { label: 'Ecosystem', value: 'Wallet · Pool · P2P' },
           ]}
-          sideTitle="Built like a serious blockchain product."
-          sideText="The interface uses INRI blue identity, premium dark cards, stronger hierarchy and clear action areas."
+          sideTitle="Built to look like a real chain, not a test page."
+          sideText="Every page follows the same structure: strong hero, glass cards, clean actions and INRI blue highlights."
           sideItems={[
-            { title: 'Consistent pages', text: 'Every main page uses the same hero, card and CTA language.', icon: <Sparkles className="h-4 w-4" /> },
-            { title: 'Functions preserved', text: 'Pool, staking, P2P, token factory and championship remain active.', icon: <ShieldCheck className="h-4 w-4" /> },
-            { title: 'Campaign-ready', text: 'A stronger look for mining, staking and social growth.', icon: <Trophy className="h-4 w-4" /> },
+            { title: 'Explorer + RPC', text: 'Clear route to chain information and verification.', icon: <Globe2 className="h-4 w-4" /> },
+            { title: 'Mining Ready', text: 'Windows, Ubuntu, pool and championship paths.', icon: <Pickaxe className="h-4 w-4" /> },
+            { title: 'Campaign Grade', text: 'Made for growth posts and official announcements.', icon: <Trophy className="h-4 w-4" /> },
           ]}
         />
 
         <InriSection
-          eyebrow="Main ecosystem"
-          title="Official routes, one INRI standard."
-          description="A professional blockchain site needs clear paths, premium surfaces and strong CTAs across every route."
+          eyebrow="Ecosystem"
+          title="All routes under the same INRI brand system."
+          description="No more each page looking different. Cards, containers, buttons and spacing follow one professional direction."
         >
-          <InriCardGrid>
-            {routes.map((route) => (
+          <InriCardGrid cols={4}>
+            {cards.map((item) => (
               <InriCard
-                key={route.title}
-                title={route.title}
-                text={route.text}
-                href={route.href}
-                external={'external' in route ? route.external : false}
-                icon={route.icon}
-                cta="Open route"
+                key={item.title}
+                title={item.title}
+                text={item.text}
+                href={item.href}
+                external={'external' in item ? item.external : false}
+                icon={item.icon}
               />
             ))}
           </InriCardGrid>
@@ -105,30 +89,26 @@ export function InriHomepage() {
         <NetworkPulse />
 
         <InriSection
-          eyebrow="Active campaign"
-          title="Mining Championship visible from the home."
-          description="The campaign entry looks official and connects directly to the full ranking/search page."
+          eyebrow="Active Campaign"
+          title="Mining championship and community growth."
+          description="The site is ready for public campaigns, staking posts, mining posts and ecosystem onboarding with one premium design."
         >
-          <div className="rounded-[28px] border border-cyan-300/12 bg-[radial-gradient(circle_at_top_left,rgba(25,168,255,0.10),transparent_28rem),linear-gradient(180deg,rgba(10,18,31,0.94),rgba(4,9,17,0.98))] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] lg:p-8">
-            <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <div className="inline-flex w-fit items-center rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.20em] text-cyan-200">
-                  150,000 INRI Rewards
-                </div>
-                <h2 className="mt-5 max-w-4xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white lg:text-6xl">
-                  Solo mining campaign with official ecosystem visibility.
-                </h2>
-                <p className="mt-5 max-w-3xl text-base leading-8 text-white/62">
-                  Promote the championship with stronger visual credibility while keeping the full ranking/search functionality on the dedicated page.
-                </p>
-              </div>
-              <a
-                href="/mining-championship/"
-                className="inline-flex min-h-[52px] items-center justify-center rounded-[16px] border border-cyan-200/70 bg-[linear-gradient(180deg,#7ddcff_0%,#27baff_48%,#0c92e8_100%)] px-5 text-sm font-black text-[#031019] shadow-[0_18px_44px_rgba(25,168,255,0.25),inset_0_1px_0_rgba(255,255,255,0.45)] transition hover:-translate-y-px hover:brightness-105"
-              >
-                Open Championship
-              </a>
-            </div>
+          <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+            <InriCard
+              title="Solo Mining Championship"
+              text="Open the campaign page with ranking, wallet lookup and reward visibility."
+              href="/mining-championship/"
+              icon={<Trophy className="h-5 w-5" />}
+              cta="Open championship"
+            />
+            <InriCard
+              title="INRI Network Explorer"
+              text="Verify blocks, contracts, addresses and public network activity."
+              href="https://explorer.inri.life"
+              external
+              icon={<Globe2 className="h-5 w-5" />}
+              cta="Open explorer"
+            />
           </div>
         </InriSection>
       </main>

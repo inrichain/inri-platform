@@ -1,14 +1,14 @@
 import { Store, Users, Wallet } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
 import { InriP2PClient } from '@/components/inri-p2p-client'
-import { InriClientFrame, InriHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-premium-model'
 
 export function InriP2PPage() {
   return (
     <InriShell>
       <main>
         <InriHero
-          eyebrow="INRI P2P MARKET"
+          eyebrow="INRI P2P Market"
           title="A cleaner escrow marketplace for direct INRI trades."
           description="The P2P client remains active, but now appears inside the same official dark-blue ecosystem interface as staking, pool and token factory."
           actions={[
@@ -17,9 +17,10 @@ export function InriP2PPage() {
             { label: 'Token Factory', href: '/token-factory', variant: 'secondary' },
           ]}
           stats={[
-            { label: 'Market', value: 'Escrow', note: 'P2P route' },
-            { label: 'Flow', value: 'Offer / Accept', note: 'Protected actions' },
-            { label: 'Wallet', value: 'INRI', note: 'Network connected' },
+            { label: 'Market', value: 'Escrow' },
+            { label: 'Flow', value: 'Offer / Accept' },
+            { label: 'Wallet', value: 'INRI' },
+            { label: 'Network', value: '3777' },
           ]}
           sideTitle="P2P with official credibility."
           sideText="The marketplace should look safer, cleaner and more aligned with the rest of the ecosystem."

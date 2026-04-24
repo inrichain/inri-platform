@@ -1,25 +1,26 @@
 import { Coins, LockKeyhole, ShieldCheck, Wallet2 } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
 import { InriStakingClient } from '@/components/inri-staking-client'
-import { InriClientFrame, InriHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-premium-model'
 
 export function InriStakingPage() {
   return (
     <InriShell>
       <main>
         <InriHero
-          eyebrow="INRI STAKING"
+          eyebrow="INRI Staking"
           title="Stake INRI inside a stronger official ecosystem interface."
-          description="The staking app remains fully functional and is now presented with the same premium card, button and container standard as the rest of INRI."
+          description="The staking app remains fully functional and is now presented with the same premium cards, buttons and containers as the rest of INRI."
           actions={[
             { label: 'Open Wallet', href: 'https://wallet.inri.life', external: true },
             { label: 'Explorer', href: 'https://explorer.inri.life', external: true, variant: 'secondary' },
             { label: 'Whitepaper', href: '/whitepaper', variant: 'secondary' },
           ]}
           stats={[
-            { label: 'Program', value: 'Staking', note: 'Official route' },
-            { label: 'Wallet', value: 'Connect', note: 'Header + app flow' },
-            { label: 'Contract', value: 'On-chain', note: 'Explorer visible' },
+            { label: 'Program', value: 'Staking' },
+            { label: 'Wallet', value: 'Connect' },
+            { label: 'Status', value: 'On-chain' },
+            { label: 'Network', value: 'INRI' },
           ]}
           sideTitle="Reward flow with more trust."
           sideText="Users should feel they are inside a serious network product when depositing, claiming or unstaking."

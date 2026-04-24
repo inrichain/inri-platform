@@ -12,23 +12,23 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 export type InriNavItem = { label: string; href: string; external?: boolean }
 
 export const inriNavItems: InriNavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Wallets', href: '/wallets' },
+  { label: 'Network', href: '/' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
-  { label: 'Championship', href: '/mining-championship/' },
+  { label: 'Factory', href: '/token-factory' },
+  { label: 'P2P', href: '/p2p' },
+  { label: 'Docs', href: '/whitepaper' },
 ]
 
 const LIVE_WALLET_URL = 'https://wallet.inri.life'
 const EXPLORER_URL = 'https://explorer.inri.life'
 
 const utilityNavItems: InriNavItem[] = [
+  { label: 'Wallets', href: '/wallets' },
+  { label: 'Championship', href: '/mining-championship/' },
   { label: 'Explorer', href: EXPLORER_URL, external: true },
-  { label: 'Whitepaper', href: '/whitepaper' },
-  { label: 'Token Factory', href: '/token-factory' },
   { label: 'Swap', href: '/swap' },
-  { label: 'P2P', href: '/p2p' },
   { label: 'Windows', href: '/mining-windows' },
   { label: 'Ubuntu', href: '/mining-ubuntu' },
 ]
@@ -57,7 +57,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
   {
     title: 'Resources',
     links: [
-      { label: 'Championship', href: '/mining-championship/' },
+      { label: 'Mining Championship', href: '/mining-championship/' },
       { label: 'Mining Windows', href: '/mining-windows' },
       { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
       { label: 'Privacy Policy', href: '/privacy-policy' },
@@ -65,18 +65,6 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
     ],
   },
 ]
-
-function uniqueNavItems(items: InriNavItem[]) {
-  const seen = new Set<string>()
-  return items.filter((item) => {
-    const key = `${item.label}::${item.href}`
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
-const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems, { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true }])
 
 function normalizePath(path: string) {
   if (!path) return '/'
@@ -121,10 +109,8 @@ function NavLink({ item }: { item: InriNavItem }) {
     <Link
       href={item.href}
       translate="no"
-      className={`notranslate inline-flex h-10 items-center justify-center rounded-[14px] px-3 text-[13px] font-black transition ${
-        active
-          ? 'bg-cyan-400/12 text-white shadow-[inset_0_0_0_1px_rgba(125,220,255,0.15),0_10px_22px_rgba(0,0,0,0.18)]'
-          : 'text-white/68 hover:bg-white/[0.055] hover:text-white'
+      className={`notranslate rounded-[14px] px-4 py-2.5 text-sm font-black transition ${
+        active ? 'bg-cyan-400/10 text-white shadow-[inset_0_0_0_1px_rgba(103,232,249,0.14)]' : 'text-white/65 hover:bg-white/[0.055] hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
       {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
@@ -149,16 +135,16 @@ export function InriLinkButton({
 }) {
   const styles =
     variant === 'primary'
-      ? 'border border-cyan-200/70 bg-[linear-gradient(180deg,#7ddcff_0%,#27baff_48%,#0c92e8_100%)] text-[#031019] shadow-[0_18px_44px_rgba(25,168,255,0.25),inset_0_1px_0_rgba(255,255,255,0.45)]'
+      ? 'border-cyan-200/70 bg-[linear-gradient(180deg,#8be7ff_0%,#2bbcff_48%,#0a8fe0_100%)] text-[#021019] shadow-[0_18px_44px_rgba(14,165,233,0.28),inset_0_1px_0_rgba(255,255,255,0.45)]'
       : variant === 'secondary'
-        ? 'border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.025))] text-white shadow-[0_16px_36px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-cyan-300/30 hover:bg-cyan-400/10'
+        ? 'border-white/12 bg-white/[0.045] text-white shadow-[0_16px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.04)] hover:border-cyan-300/30 hover:bg-cyan-400/10'
         : 'text-white/78 hover:text-white'
 
   return (
     <Link
       href={href}
       translate={noTranslate ? 'no' : undefined}
-      className={`inline-flex min-h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[16px] px-5 text-sm font-black tracking-[-0.01em] transition hover:-translate-y-px hover:brightness-105 ${
+      className={`inline-flex h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-[16px] border px-5 text-sm font-black transition hover:-translate-y-px hover:brightness-105 ${
         noTranslate ? 'notranslate' : ''
       } ${styles}`}
       {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
@@ -170,6 +156,7 @@ export function InriLinkButton({
 
 function MobileMenu() {
   const pathname = usePathname()
+  const mobileItems = [...inriNavItems, ...utilityNavItems, { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true }]
 
   return (
     <Sheet>
@@ -179,11 +166,7 @@ function MobileMenu() {
           <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
-
-      <SheetContent
-        side="right"
-        className="flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden border-l border-cyan-300/15 bg-[linear-gradient(180deg,#07101d,#03060b)] p-0 text-white sm:max-w-md"
-      >
+      <SheetContent side="right" className="flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden border-l border-cyan-300/15 bg-[linear-gradient(180deg,#07101d,#03060b)] p-0 text-white sm:max-w-md">
         <SheetHeader className="shrink-0 border-b border-cyan-300/10 px-5 py-5 text-left">
           <SheetTitle className="text-left text-white">
             <Logo showText size={52} />
@@ -192,23 +175,17 @@ function MobileMenu() {
             Official routes for the INRI mainnet.
           </SheetDescription>
         </SheetHeader>
-
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
-          <div className="flex flex-col gap-6 pb-24">
-            <div className="grid gap-3">
-              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-                INRI Wallet
-              </InriLinkButton>
-              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-                Explorer
-              </InriLinkButton>
-              <div className="w-full min-w-0">
-                <ConnectWalletButton compact />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              {mobileNavItems.map((item, index) => {
+          <div className="grid gap-3 pb-24">
+            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
+              INRI Wallet
+            </InriLinkButton>
+            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
+              Explorer
+            </InriLinkButton>
+            <ConnectWalletButton compact />
+            <div className="mt-4 grid gap-2">
+              {mobileItems.map((item, index) => {
                 const active = isPathActive(pathname || '/', item.href)
                 return (
                   <Link
@@ -216,9 +193,7 @@ function MobileMenu() {
                     href={item.href}
                     translate="no"
                     className={`notranslate block w-full rounded-[14px] border px-4 py-3 text-sm font-bold transition ${
-                      active
-                        ? 'border-cyan-300/30 bg-cyan-400/12 text-white'
-                        : 'border-cyan-300/12 bg-white/[0.035] text-white/75 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-white'
+                      active ? 'border-cyan-300/30 bg-cyan-400/12 text-white' : 'border-cyan-300/12 bg-white/[0.035] text-white/75 hover:border-cyan-300/30 hover:bg-cyan-400/10 hover:text-white'
                     }`}
                     aria-current={active ? 'page' : undefined}
                     {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
@@ -237,36 +212,28 @@ function MobileMenu() {
 
 export function InriHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-cyan-300/10 bg-[#03060b]/86 shadow-[0_18px_46px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
-      <div className="border-b border-cyan-300/10 bg-[linear-gradient(90deg,rgba(6,33,55,0.92),rgba(7,20,35,0.76),rgba(6,33,55,0.92))] px-4 py-2 text-center">
-        <p translate="no" className="notranslate text-[10px] font-black uppercase tracking-[0.28em] text-cyan-100/84">
-          INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
-        </p>
+    <header className="sticky top-0 z-50 border-b border-cyan-300/10 bg-[#03060b]/82 backdrop-blur-2xl">
+      <div className="border-b border-cyan-300/10 bg-[linear-gradient(90deg,rgba(6,33,55,0.92),rgba(7,20,35,0.76),rgba(6,33,55,0.92))] py-2 text-center text-[10px] font-black uppercase tracking-[0.28em] text-cyan-100/84">
+        INRI MAINNET · PROOF-OF-WORK · CHAIN 3777 · EVM COMPATIBLE
       </div>
-
-      <div className="mx-auto grid min-h-[82px] max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8 xl:px-10">
-        <div className="min-w-0 justify-self-start">
-          <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full">
-            <Logo showText size={48} />
-          </Link>
-        </div>
-
-        <div className="hidden min-w-0 items-center justify-center xl:flex">
-          <nav className="flex items-center justify-center gap-1 rounded-[18px] border border-cyan-300/12 bg-white/[0.04] p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.045)]">
-            {[...inriNavItems, ...utilityNavItems].map((item) => (
-              <NavLink key={`${item.label}-${item.href}`} item={item} />
-            ))}
-          </nav>
-        </div>
-
-        <div className="hidden items-center justify-self-end gap-2 md:flex">
+      <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-5 px-4 py-4 sm:px-6 xl:px-8">
+        <Logo showText size={48} />
+        <nav className="hidden items-center gap-1 rounded-[18px] border border-cyan-300/12 bg-white/[0.04] p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.045)] xl:flex">
+          {inriNavItems.map((item) => (
+            <NavLink key={`${item.label}-${item.href}`} item={item} />
+          ))}
+          <div className="mx-1 h-6 w-px bg-cyan-300/12" />
+          {utilityNavItems.map((item) => (
+            <NavLink key={`${item.label}-${item.href}`} item={item} />
+          ))}
+        </nav>
+        <div className="hidden items-center gap-2 md:flex">
           <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
             INRI Wallet
           </InriLinkButton>
           <ConnectWalletButton compact />
         </div>
-
-        <div className="flex items-center justify-self-end gap-2 md:hidden">
+        <div className="md:hidden">
           <MobileMenu />
         </div>
       </div>
@@ -276,7 +243,6 @@ export function InriHeader() {
 
 function BackToTopButton() {
   const [visible, setVisible] = useState(false)
-
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 560)
     onScroll()
@@ -300,7 +266,9 @@ function BackToTopButton() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#03060b_0%,#07101d_46%,#020409_100%)] text-white">
+    <div className="min-h-screen overflow-hidden bg-[#02050a] text-white">
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_-10%,rgba(14,165,233,0.24),transparent_34rem),radial-gradient(circle_at_88%_-8%,rgba(125,220,255,0.10),transparent_30rem),linear-gradient(180deg,#03060b_0%,#06101d_48%,#02050a_100%)]" />
+      <div className="fixed inset-0 -z-10 bg-[linear-gradient(rgba(125,220,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,220,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px] opacity-45 [mask-image:linear-gradient(180deg,black,transparent_82%)]" />
       <InriHeader />
       {children}
       <InriFooter />
@@ -311,14 +279,7 @@ export function InriShell({ children }: { children: ReactNode }) {
 
 function FooterSocialIcon({ link }: { link: SocialLink }) {
   return (
-    <Link
-      href={link.href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={link.label}
-      title={link.label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-cyan-300/12 bg-white/[0.04] text-white/68 transition-all hover:-translate-y-px hover:border-cyan-300/35 hover:bg-cyan-400/10 hover:text-white"
-    >
+    <Link href={link.href} target="_blank" rel="noreferrer" aria-label={link.label} title={link.label} className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-cyan-300/12 bg-white/[0.04] text-white/68 transition-all hover:-translate-y-px hover:border-cyan-300/35 hover:bg-cyan-400/10 hover:text-white">
       {link.icon}
     </Link>
   )
@@ -327,7 +288,7 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
 export function InriFooter() {
   return (
     <footer className="border-t border-cyan-300/10 bg-[radial-gradient(circle_at_top_left,rgba(25,168,255,0.12),transparent_28rem),linear-gradient(180deg,#07101d_0%,#020409_100%)]">
-      <div className="mx-auto max-w-[1520px] px-4 py-16 sm:px-6 lg:px-8 lg:py-20 xl:px-10">
+      <div className="mx-auto max-w-[1500px] px-4 py-16 sm:px-6 lg:py-20 xl:px-8">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,0.75fr))] lg:gap-10">
           <div className="max-w-md">
             <Logo showText size={78} />
@@ -345,25 +306,18 @@ export function InriFooter() {
               <p>Mainnet • Chain 3777 • Proof-of-Work • EVM Compatible</p>
             </div>
           </div>
-
           {footerGroups.map((group) => (
             <div key={group.title}>
               <h3 className="text-[1.05rem] font-black uppercase tracking-[0.14em] text-white">{group.title}</h3>
               <div className="mt-6 grid gap-4">
                 {group.links.map((item) => (
-                  <Link
-                    key={`${group.title}-${item.label}-${item.href}`}
-                    href={item.href}
-                    className="text-[15px] font-semibold text-white/58 transition hover:text-cyan-200"
-                    {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  >
+                  <Link key={`${group.title}-${item.label}-${item.href}`} href={item.href} className="text-[15px] font-semibold text-white/58 transition hover:text-cyan-200" {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}>
                     {item.label}
                   </Link>
                 ))}
               </div>
             </div>
           ))}
-
           <div>
             <h3 className="text-[1.05rem] font-black uppercase tracking-[0.14em] text-white">Network</h3>
             <div className="mt-6 grid gap-3 text-[15px] text-white/60">

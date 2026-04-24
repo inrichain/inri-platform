@@ -1,25 +1,26 @@
 import { Factory, Rocket, Sparkles } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
 import { InriTokenFactoryClient } from '@/components/inri-token-factory-client'
-import { InriClientFrame, InriHero } from '@/components/inri-unified'
+import { InriClientFrame, InriHero } from '@/components/inri-premium-model'
 
 export function InriTokenFactoryPage() {
   return (
     <InriShell>
       <main>
         <InriHero
-          eyebrow="INRI TOKEN FACTORY"
+          eyebrow="INRI Token Factory"
           title="Launch tokens on INRI with a product-grade creation interface."
           description="The token factory client is preserved and framed as a premium INRI product route for builders and communities."
           actions={[
-            { label: 'Connect Wallet', href: 'https://wallet.inri.life', external: true },
+            { label: 'Open Wallet', href: 'https://wallet.inri.life', external: true },
             { label: 'Explorer', href: 'https://explorer.inri.life', external: true, variant: 'secondary' },
             { label: 'P2P Market', href: '/p2p', variant: 'secondary' },
           ]}
           stats={[
-            { label: 'Tool', value: 'Factory', note: 'Token launcher' },
-            { label: 'Network', value: 'INRI', note: 'Chain 3777' },
-            { label: 'Users', value: 'Builders', note: 'Creator route' },
+            { label: 'Tool', value: 'Factory' },
+            { label: 'Network', value: 'INRI' },
+            { label: 'Users', value: 'Builders' },
+            { label: 'Runtime', value: 'EVM' },
           ]}
           sideTitle="A real launch product."
           sideText="Token creation should feel like a premium feature, not a utility hidden inside an unfinished page."

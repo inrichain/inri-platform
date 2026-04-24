@@ -1,6 +1,6 @@
 import { Cpu, MonitorSmartphone, Pickaxe, Server, Trophy } from 'lucide-react'
 import { InriShell } from '@/components/inri-site-shell'
-import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-unified'
+import { InriCard, InriCardGrid, InriHero, InriSection } from '@/components/inri-premium-model'
 
 const miningRoutes = [
   { title: 'Windows Mining', text: 'Mining setup route for Windows users with a cleaner official flow.', href: '/mining-windows', icon: <MonitorSmartphone className="h-5 w-5" /> },
@@ -14,7 +14,7 @@ export function InriMiningPage() {
     <InriShell>
       <main>
         <InriHero
-          eyebrow="INRI MINING HUB"
+          eyebrow="INRI Mining Hub"
           title="Mining routes organized like a serious network product."
           description="Windows, Ubuntu, pool mining and championship pages share the same premium INRI interface so miners do not feel like they are jumping between different websites."
           actions={[
@@ -23,9 +23,10 @@ export function InriMiningPage() {
             { label: 'Pool Dashboard', href: '/pool', variant: 'secondary' },
           ]}
           stats={[
-            { label: 'Consensus', value: 'PoW', note: 'Open mining' },
-            { label: 'Guides', value: 'Windows / Ubuntu', note: 'Setup routes' },
-            { label: 'Campaign', value: 'Solo', note: 'Championship route' },
+            { label: 'Consensus', value: 'PoW' },
+            { label: 'Guides', value: 'Windows / Ubuntu' },
+            { label: 'Campaign', value: 'Solo' },
+            { label: 'Network', value: 'INRI' },
           ]}
           sideTitle="Mining deserves a premium hub."
           sideText="The miner journey now uses the same hierarchy, CTAs and cards as the rest of the INRI ecosystem."
@@ -35,8 +36,7 @@ export function InriMiningPage() {
             { title: 'Campaign ready', text: 'Championship links stay visible.', icon: <Trophy className="h-4 w-4" /> },
           ]}
         />
-
-        <InriSection eyebrow="Mining paths" title="Choose the right mining route." description="All mining pages are connected by the same design system and action language.">
+        <InriSection eyebrow="Mining paths" title="Choose the right mining route." description="All mining pages are connected by the same approved design system and action language.">
           <InriCardGrid cols={4}>
             {miningRoutes.map((route) => (
               <InriCard key={route.title} title={route.title} text={route.text} href={route.href} icon={route.icon} cta="Open" />
