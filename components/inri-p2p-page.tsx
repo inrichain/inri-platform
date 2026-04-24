@@ -1,66 +1,65 @@
-import { ShieldCheck, Store, Wallet, Layers3 } from 'lucide-react'
+import { Coins, ShieldCheck, Store, Wallet } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { InriP2PClient } from '@/components/inri-p2p-client'
 
 export function InriP2PPage() {
   return (
     <InriShell>
-      <main className="inri-bright-main">
-        <section className="inri-bright-hero">
-          <div className="inri-page-container py-14 lg:py-20">
-            <div className="grid gap-7 xl:grid-cols-[minmax(0,1.04fr)_390px] xl:items-stretch">
-              <div className="inri-bright-card flex flex-col justify-center">
-                <div className="inri-bright-chip w-fit">P2P MARKET</div>
-                <h1 className="mt-6 max-w-5xl text-4xl font-black leading-[0.95] tracking-[-0.05em] text-slate-900 sm:text-5xl xl:text-[4.4rem]">
-                  P2P trading page with the same clean premium identity as the full INRI platform.
-                </h1>
-                <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-                  The P2P route should feel like part of the same official ecosystem — not a darker and disconnected tool. This layout gives the escrow market a stronger and more attractive presentation.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
+      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.45),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.22),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
+          <div className="absolute -left-28 top-20 h-[30rem] w-[30rem] rounded-full bg-cyan-400/18 blur-3xl" />
+
+          <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:py-18 xl:px-12">
+            <div className="flex min-h-[440px] flex-col justify-center">
+              <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                P2P Escrow
+              </div>
+
+              <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.5rem]">
+                Trade INRI through a cleaner P2P market.
+              </h1>
+
+              <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
+                Use the same wallet from the top header, sync the market and manage offers from the same INRI control-room interface.
+              </p>
+
+              <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
                   <InriLinkButton href="https://wallet.inri.life" external>Open Wallet</InriLinkButton>
                   <InriLinkButton href="https://explorer.inri.life" external variant="secondary">Explorer</InriLinkButton>
-                  <InriLinkButton href="/whitepaper" variant="secondary">Whitepaper</InriLinkButton>
-                </div>
               </div>
-              <aside className="inri-bright-card">
-                <div className="grid gap-3">
-                  {[
-                    { title: 'Escrow market', text: 'Create, accept and manage offers inside a cleaner interface.', icon: <Store className="h-5 w-5" /> },
-                    { title: 'Same wallet journey', text: 'The user moves from wallet to P2P without breaking the site experience.', icon: <Wallet className="h-5 w-5" /> },
-                    { title: 'Unified design system', text: 'Cards, sections and CTA buttons match the rest of the website.', icon: <Layers3 className="h-5 w-5" /> },
-                  ].map((item) => (
-                    <div key={item.title} className="inri-bright-subcard">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-600">{item.icon}</div>
-                        <div className="text-base font-black text-slate-900">{item.title}</div>
-                      </div>
-                      <p className="mt-3 text-sm leading-7 text-slate-600">{item.text}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-[1.25rem] border border-sky-200 bg-sky-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-white text-sky-600">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-black uppercase tracking-[0.16em] text-sky-700">Visual rule</div>
-                      <p className="mt-2 text-sm leading-7 text-slate-700">The P2P route should feel safer and more official through a cleaner, brighter interface.</p>
-                    </div>
+            </div>
+
+            <div className="grid content-center gap-4">
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <Store className="h-5 w-5" />
                   </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Escrow market</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Create offers, accept, mark paid and release.</p>
                 </div>
-              </aside>
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Header wallet</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">No second wallet style inside the page.</p>
+                </div>
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Protected flow</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Disputes and release actions remain inside the route.</p>
+                </div>
             </div>
           </div>
         </section>
 
-        <section className="inri-bright-section pt-0">
-          <div className="inri-page-container">
-            <div className="inri-bright-card p-3 sm:p-5 lg:p-6">
-              <div className="inri-bright-embed rounded-[1.5rem] p-3 sm:p-4 lg:p-6">
-                <InriP2PClient />
-              </div>
+        <section className="border-t border-white/10 bg-[#02040a] py-10 sm:py-12 lg:py-16">
+          <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.045] p-4 shadow-[0_40px_120px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:p-6 lg:p-8">
+              <InriP2PClient />
             </div>
           </div>
         </section>

@@ -1,150 +1,61 @@
-import { ArrowRight, Blocks, Cpu, Download, Pickaxe, ShieldCheck, Trophy } from 'lucide-react'
+import { MonitorSmartphone, Pickaxe, Server, Trophy } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
-
-const cards = [
-  {
-    title: 'Pool mining',
-    text: 'Open the pool route with the same premium layout and a clearer path for active miners.',
-    href: '/pool',
-    label: 'Open pool',
-    icon: <Blocks className="h-5 w-5" />,
-  },
-  {
-    title: 'Windows miner',
-    text: 'Access the Windows guide with a lighter and better organized step-by-step experience.',
-    href: '/mining-windows',
-    label: 'Open Windows guide',
-    icon: <Download className="h-5 w-5" />,
-  },
-  {
-    title: 'Ubuntu miner',
-    text: 'Keep the Ubuntu install flow official, clear and easier to follow on desktop and mobile.',
-    href: '/mining-ubuntu',
-    label: 'Open Ubuntu guide',
-    icon: <Cpu className="h-5 w-5" />,
-  },
-  {
-    title: 'Championship',
-    text: 'Connect solo mining with the official competition route inside the same design language.',
-    href: '/mining-championship/',
-    label: 'Open championship',
-    icon: <Trophy className="h-5 w-5" />,
-  },
-] as const
 
 export function InriMiningPage() {
   return (
     <InriShell>
-      <main className="inri-bright-main">
-        <section className="inri-bright-hero">
-          <div className="inri-page-container py-14 lg:py-20">
-            <div className="grid gap-7 xl:grid-cols-[minmax(0,1.05fr)_380px] xl:items-stretch">
-              <div className="inri-bright-card flex flex-col justify-center">
-                <div className="inri-bright-chip w-fit">INRI MINING HUB</div>
-                <h1 className="mt-6 max-w-5xl text-4xl font-black leading-[0.95] tracking-[-0.05em] text-slate-900 sm:text-5xl xl:text-[4.4rem]">
-                  Mining pages that finally match the quality of the home page.
-                </h1>
-                <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-                  The mining area should feel official, attractive and organized — not like a separate dark website. This route now works as the clean gateway to pool mining, solo mining, guides and championship pages.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <InriLinkButton href="/pool">Open pool</InriLinkButton>
-                  <InriLinkButton href="/mining-windows" variant="secondary">Windows mining</InriLinkButton>
-                  <InriLinkButton href="/mining-ubuntu" variant="secondary">Ubuntu mining</InriLinkButton>
-                </div>
+      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.45),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.22),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
+          <div className="absolute -left-28 top-20 h-[30rem] w-[30rem] rounded-full bg-cyan-400/18 blur-3xl" />
+
+          <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:py-18 xl:px-12">
+            <div className="flex min-h-[440px] flex-col justify-center">
+              <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                Mining
               </div>
-              <aside className="inri-bright-card">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[18px] border border-sky-200 bg-sky-50 text-sky-600">
-                  <Pickaxe className="h-6 w-6" />
+
+              <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.5rem]">
+                Mine INRI from one clear control route.
+              </h1>
+
+              <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
+                Choose Windows, Ubuntu, pool mining or the active championship inside the same visual language as the Home.
+              </p>
+
+              <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
+                  <InriLinkButton href="/mining-windows">Windows Setup</InriLinkButton>
+                  <InriLinkButton href="/mining-ubuntu" variant="secondary">Ubuntu Setup</InriLinkButton>
+                  <InriLinkButton href="/mining-championship/" variant="secondary">Championship</InriLinkButton>
+              </div>
+            </div>
+
+            <div className="grid content-center gap-4">
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <MonitorSmartphone className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Windows setup</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Mining instructions for Windows users.</p>
                 </div>
-                <p className="inri-bright-kicker mt-5">Mining focus</p>
-                <h2 className="mt-3 text-3xl font-black leading-tight text-slate-900">One visual language for every miner journey.</h2>
-                <div className="mt-5 grid gap-3">
-                  {[
-                    ['Better first impression', 'The mining hub now feels more premium and easier to navigate.'],
-                    ['Unified routes', 'Guides, pool, solo mining and championship feel connected.'],
-                    ['Responsive layout', 'Cards and actions keep the same rhythm on mobile and desktop.'],
-                  ].map(([label, text]) => (
-                    <div key={label} className="inri-bright-subcard">
-                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-700">{label}</div>
-                      <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
-                    </div>
-                  ))}
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <Server className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Ubuntu setup</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Server and VPS route for Ubuntu.</p>
                 </div>
-              </aside>
+                <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
+                    <Trophy className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-black text-white">Championship</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Open the active solo mining campaign.</p>
+                </div>
             </div>
           </div>
         </section>
 
-        <section className="inri-bright-section">
-          <div className="inri-page-container">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {cards.map((card) => (
-                <div key={card.title} className="inri-bright-card">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-sky-200 bg-sky-50 text-sky-600">
-                    {card.icon}
-                  </div>
-                  <h3 className="mt-5 text-2xl font-black text-slate-900">{card.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">{card.text}</p>
-                  <div className="mt-6">
-                    <InriLinkButton href={card.href} variant="secondary">{card.label}</InriLinkButton>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="inri-bright-section pt-0">
-          <div className="inri-page-container">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_380px]">
-              <div className="inri-bright-card">
-                <p className="inri-bright-kicker">Essential routes</p>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.04em] text-slate-900">What users should find instantly.</h2>
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  {[
-                    {
-                      title: 'Get started fast',
-                      text: 'Give users a direct path to mining setup without visual confusion.',
-                    },
-                    {
-                      title: 'Stay official',
-                      text: 'Routes should feel like one INRI platform, not different sites stitched together.',
-                    },
-                    {
-                      title: 'Highlight actions',
-                      text: 'Pool, Windows, Ubuntu and Championship should always be visible and obvious.',
-                    },
-                  ].map((item) => (
-                    <div key={item.title} className="inri-bright-subcard">
-                      <div className="text-lg font-black text-slate-900">{item.title}</div>
-                      <p className="mt-2 text-sm leading-7 text-slate-600">{item.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="inri-bright-card">
-                <div className="rounded-[1.25rem] border border-sky-200 bg-sky-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-white text-sky-600">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-black uppercase tracking-[0.16em] text-sky-700">Visual standard</div>
-                      <p className="mt-2 text-sm leading-7 text-slate-700">
-                        Premium white cards, cleaner buttons and consistent spacing help the mining section feel stronger and more trustworthy.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <InriLinkButton href="/mining-championship/">Open championship</InriLinkButton>
-                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary">Explorer</InriLinkButton>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </InriShell>
   )
