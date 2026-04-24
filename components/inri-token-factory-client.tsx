@@ -502,6 +502,8 @@ export function InriTokenFactoryClient() {
         options: {
           address: createdToken,
           symbol: form.symbol.trim().slice(0, 11),
+          name: form.name.trim(),
+          image: `${window.location.origin}/icon.png`,
           decimals: Number(form.decimals),
         },
       })
