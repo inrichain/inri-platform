@@ -503,8 +503,6 @@ export function InriTokenFactoryClient() {
           address: createdToken,
           symbol: form.symbol.trim().slice(0, 11),
           decimals: Number(form.decimals),
-          name: form.name.trim(),
-          image: 'https://wallet.inri.life/token-inri.png',
         },
       })
     } catch (err) {
