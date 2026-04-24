@@ -467,7 +467,7 @@ export function InriStakingClient() {
         return
       }
 
-      const provider = snapshot.provider || getActiveWalletProvider()
+      const provider = snapshot.provider || getActiveWalletProvider() || activeProvider
       if (!provider) {
         setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
         return
@@ -490,7 +490,7 @@ export function InriStakingClient() {
   }
 
   const switchNetwork = async () => {
-    const provider = activeProvider || getActiveWalletProvider()
+    const provider = getActiveWalletProvider() || activeProvider
     if (!provider) {
       setError('No wallet detected.')
       return
@@ -509,7 +509,7 @@ export function InriStakingClient() {
   }
 
   const ensureCanWrite = () => {
-    const provider = activeProvider || getActiveWalletProvider()
+    const provider = getActiveWalletProvider() || activeProvider
     if (!provider || !account) throw new Error('Connect INRI Wallet from the top header first.')
     if (!networkReady) throw new Error('Select INRI CHAIN before using staking.')
     return provider

@@ -322,6 +322,22 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     }
   }, [effectiveConnector, address, chainId, wcAddress, injectedAddress, injectedProvider])
 
+  function publishActiveWalletBridge(next: { connector: ConnectorType; address: string; chainId: string; provider?: ProviderLike }) {
+    if (typeof window === 'undefined') return
+
+    window.__INRI_ACTIVE_WALLET__ = next
+    window.dispatchEvent(
+      new CustomEvent('inri:wallet-state', {
+        detail: {
+          connector: next.connector,
+          address: next.address,
+          chainId: next.chainId,
+          hasProvider: Boolean(next.provider),
+        },
+      }),
+    )
+  }
+
   async function connectInjected(entry?: WalletEntry) {
     try {
       setBusy(true)
@@ -350,6 +366,12 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       setInjectedAddress(first || '')
       setInjectedChainId(nextChainId || '')
       setConnector('injected')
+      publishActiveWalletBridge({
+        connector: 'injected',
+        address: first || '',
+        chainId: nextChainId || '',
+        provider: target,
+      })
 
       if (entry?.key) setActiveProviderKey(entry.key)
       setOpen(false)
@@ -378,9 +400,18 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       })
 
       if (state.connected) {
+        const wcProvider = (await getWalletConnectProvider()) as ProviderLike
+        const nextChainId = state.chainId || INRI_CHAIN_ID_HEX
+
         setWcAddress(state.address)
-        setWcChainId(state.chainId)
+        setWcChainId(nextChainId)
         setConnector('walletconnect')
+        publishActiveWalletBridge({
+          connector: 'walletconnect',
+          address: state.address,
+          chainId: nextChainId,
+          provider: wcProvider,
+        })
         setOpen(false)
       }
     } catch (e: any) {
@@ -463,6 +494,10 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     }
 
     setConnector('')
+    if (typeof window !== 'undefined') {
+      window.__INRI_ACTIVE_WALLET__ = null
+      window.dispatchEvent(new CustomEvent('inri:wallet-state', { detail: { connector: '', address: '', chainId: '', hasProvider: false } }))
+    }
   }
 
   async function copyAddress() {

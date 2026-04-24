@@ -324,7 +324,7 @@ export function InriTokenFactoryClient() {
         return
       }
 
-      const provider = snapshot.provider || activeProvider || getActiveWalletProvider()
+      const provider = snapshot.provider || getActiveWalletProvider() || activeProvider
       if (!provider) {
         setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
         return
@@ -348,7 +348,7 @@ export function InriTokenFactoryClient() {
   }
 
   const switchToInri = async () => {
-    const provider = activeProvider || getActiveWalletProvider()
+    const provider = getActiveWalletProvider() || activeProvider
     if (!provider) {
       setError('No wallet detected to switch networks.')
       return
@@ -419,7 +419,7 @@ export function InriTokenFactoryClient() {
   }, [estimateGas])
 
   const createToken = async () => {
-    const provider = activeProvider || getActiveWalletProvider()
+    const provider = getActiveWalletProvider() || activeProvider
     if (!provider) {
       setError('No wallet detected. Use INRI Wallet or another EVM wallet.')
       return
@@ -493,7 +493,7 @@ export function InriTokenFactoryClient() {
   }
 
   const addTokenToWallet = async () => {
-    const provider = activeProvider || getActiveWalletProvider()
+    const provider = getActiveWalletProvider() || activeProvider
     if (!provider || !createdToken) return
     try {
       await requestFromActiveWallet(provider, 'wallet_watchAsset',

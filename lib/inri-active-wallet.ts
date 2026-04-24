@@ -15,9 +15,28 @@ export type EthereumRequestArgs = {
 }
 
 export type EthereumProvider = {
-  request: (args: EthereumRequestArgs) => Promise<unknown>
+  request: (args: EthereumRequestArgs, chainId?: string) => Promise<unknown>
   on?: (event: string, handler: (...args: unknown[]) => void) => void
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
+}
+
+type WalletConnectClientLike = {
+  request?: (args: {
+    topic: string
+    chainId: string
+    request: {
+      method: string
+      params?: unknown[] | Record<string, unknown>
+    }
+  }) => Promise<unknown>
+}
+
+type WalletConnectLike = EthereumProvider & {
+  client?: WalletConnectClientLike
+  signer?: { client?: WalletConnectClientLike }
+  session?: { topic?: string; namespaces?: unknown } | null
+  setDefaultChain?: (chainId: number | string) => Promise<void> | void
+  chainId?: number | string
 }
 
 export type ActiveWalletBridge = {
@@ -64,7 +83,15 @@ export function getActiveWalletBridge(): ActiveWalletBridge {
 }
 
 export function getActiveWalletProvider(): EthereumProvider | undefined {
-  return getActiveWalletBridge()?.provider || getInjectedEthereum()
+  const bridge = getActiveWalletBridge()
+
+  // Important: when the top header says INRI Wallet / WalletConnect is active,
+  // never silently fall back to window.ethereum. That fallback opens MetaMask.
+  if (bridge?.connector === 'walletconnect') {
+    return bridge.provider
+  }
+
+  return bridge?.provider || getInjectedEthereum()
 }
 
 export function getErrorMessage(cause: unknown, fallback = 'Request failed') {
@@ -72,7 +99,7 @@ export function getErrorMessage(cause: unknown, fallback = 'Request failed') {
   const raw = String(error?.shortMessage || error?.reason || error?.message || fallback)
 
   if (raw.includes('Cannot read properties of undefined') && raw.includes('includes')) {
-    return 'WalletConnect could not route the request to INRI CHAIN. Disconnect INRI Wallet in the top button, connect again, and try once more.'
+    return 'WalletConnect did not route the request to INRI CHAIN. Disconnect INRI Wallet in the top button, reconnect it, and try once more.'
   }
 
   return raw
@@ -86,36 +113,86 @@ function buildRequestArgs(method: string, params?: unknown[] | Record<string, un
   }
 }
 
+function looksLikeWalletConnect(provider: EthereumProvider) {
+  const candidate = provider as WalletConnectLike
+  return Boolean(candidate.session || candidate.client || candidate.signer?.client || candidate.setDefaultChain)
+}
+
+async function forceWalletConnectInriChain(provider: WalletConnectLike) {
+  try {
+    await provider.setDefaultChain?.(INRI_CHAIN_ID_DECIMAL)
+  } catch {
+    try {
+      await provider.setDefaultChain?.(INRI_WALLETCONNECT_CHAIN_ID)
+    } catch {
+      // Some provider builds do not expose setDefaultChain.
+    }
+  }
+
+  try {
+    if (!provider.chainId) provider.chainId = INRI_CHAIN_ID_DECIMAL
+  } catch {
+    // chainId may be read-only in some builds.
+  }
+}
+
+async function requestViaWalletConnectClient(
+  provider: WalletConnectLike,
+  method: string,
+  params?: unknown[] | Record<string, unknown>,
+) {
+  const client = provider.client || provider.signer?.client
+  const topic = provider.session?.topic
+
+  if (!client?.request || !topic) {
+    throw new Error('WalletConnect client is not ready yet.')
+  }
+
+  return client.request({
+    topic,
+    chainId: INRI_WALLETCONNECT_CHAIN_ID,
+    request: {
+      method,
+      ...(params !== undefined ? { params } : {}),
+    },
+  })
+}
+
 export async function requestFromActiveWallet(
   provider: EthereumProvider,
   method: string,
   params?: unknown[] | Record<string, unknown>,
 ) {
   const bridge = getActiveWalletBridge()
-  const isWalletConnect = bridge?.connector === 'walletconnect'
+  const isWalletConnect = bridge?.connector === 'walletconnect' || looksLikeWalletConnect(provider)
 
   if (!isWalletConnect) {
     return provider.request(buildRequestArgs(method, params))
   }
 
-  // Reown / WalletConnect v2 needs the namespace chain id on many requests.
-  // Without it, some provider builds throw: Cannot read properties of undefined (reading 'includes').
+  const wcProvider = provider as WalletConnectLike
+  await forceWalletConnectInriChain(wcProvider)
+
+  // Best route for WalletConnect v2: send directly to the approved session topic
+  // and explicit eip155:3777 chain. This avoids MetaMask and avoids undefined
+  // routing errors from some EthereumProvider wrappers.
   try {
-    return await provider.request(buildRequestArgs(method, params, INRI_WALLETCONNECT_CHAIN_ID))
-  } catch (cause) {
-    const message = getErrorMessage(cause, '')
-
-    // Compatibility fallback for injected-like providers or older WalletConnect wrappers.
-    if (
-      message.includes('WalletConnect could not route') ||
-      message.toLowerCase().includes('chainid') ||
-      message.toLowerCase().includes('namespace') ||
-      message.toLowerCase().includes('not initialized')
-    ) {
-      return provider.request(buildRequestArgs(method, params))
+    return await requestViaWalletConnectClient(wcProvider, method, params)
+  } catch (firstCause) {
+    // Fallbacks for provider builds that do not expose client.request.
+    try {
+      return await provider.request(buildRequestArgs(method, params), INRI_WALLETCONNECT_CHAIN_ID)
+    } catch {
+      try {
+        return await provider.request(buildRequestArgs(method, params, INRI_WALLETCONNECT_CHAIN_ID))
+      } catch {
+        try {
+          return await provider.request(buildRequestArgs(method, params))
+        } catch {
+          throw firstCause
+        }
+      }
     }
-
-    throw cause
   }
 }
 
@@ -125,6 +202,17 @@ export async function readActiveWalletSnapshot(): Promise<ActiveWalletSnapshot> 
   }
 
   const bridge = getActiveWalletBridge()
+
+  if (bridge?.connector === 'walletconnect') {
+    return {
+      provider: bridge.provider || null,
+      providerReady: Boolean(bridge.provider),
+      account: bridge.address || null,
+      chainId: bridge.chainId || INRI_CHAIN_ID_HEX,
+      connector: 'walletconnect',
+    }
+  }
+
   if (bridge?.address && bridge?.provider) {
     return {
       provider: bridge.provider,
@@ -209,6 +297,13 @@ export async function estimateGasWithFallback(
 }
 
 export async function switchProviderToInri(provider: EthereumProvider) {
+  const bridge = getActiveWalletBridge()
+
+  if (bridge?.connector === 'walletconnect' || looksLikeWalletConnect(provider)) {
+    await forceWalletConnectInriChain(provider as WalletConnectLike)
+    return INRI_CHAIN_ID_HEX
+  }
+
   try {
     await requestFromActiveWallet(provider, 'wallet_switchEthereumChain', [{ chainId: INRI_CHAIN_ID_HEX }])
   } catch {

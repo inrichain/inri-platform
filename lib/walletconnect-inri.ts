@@ -16,10 +16,14 @@ const STORAGE_KEY = 'inri_wc_connected_v1'
 type WalletConnectProvider = {
   connect: () => Promise<unknown>
   disconnect: () => Promise<void>
-  request: (args: { method: string; params?: unknown[] | object; chainId?: string }) => Promise<any>
+  request: (args: { method: string; params?: unknown[] | object; chainId?: string }, chainId?: string) => Promise<any>
   on?: (event: string, handler: (...args: any[]) => void) => void
   removeListener?: (event: string, handler: (...args: any[]) => void) => void
+  setDefaultChain?: (chainId: number | string) => Promise<void> | void
+  chainId?: number | string
   session?: any
+  client?: any
+  signer?: any
 }
 
 export type WalletConnectState = {
@@ -43,6 +47,24 @@ function getMetadata() {
     description: 'Official INRI CHAIN website',
     url: origin,
     icons: [`${origin}${withBasePath('/icon.png')}`],
+  }
+}
+
+async function forceInriDefaultChain(provider: WalletConnectProvider) {
+  try {
+    await provider.setDefaultChain?.(INRI_CHAIN_ID)
+  } catch {
+    try {
+      await provider.setDefaultChain?.(INRI_WALLETCONNECT_CHAIN_ID)
+    } catch {
+      // Some WalletConnect provider builds do not expose this helper.
+    }
+  }
+
+  try {
+    if (!provider.chainId) provider.chainId = INRI_CHAIN_ID
+  } catch {
+    // chainId may be read-only.
   }
 }
 
@@ -108,18 +130,20 @@ function inferStateFromSession(session: any): WalletConnectState {
 }
 
 async function readWalletConnectState(provider: WalletConnectProvider): Promise<WalletConnectState> {
+  await forceInriDefaultChain(provider)
+
   let address = ''
   let chainId = ''
 
   try {
-    const accounts = (await provider.request({ method: 'eth_accounts' })) as string[]
+    const accounts = (await provider.request({ method: 'eth_accounts' }, INRI_WALLETCONNECT_CHAIN_ID)) as string[]
     address = Array.isArray(accounts) ? accounts[0] || '' : ''
   } catch {
     // no-op
   }
 
   try {
-    const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
+    const nextChainId = (await provider.request({ method: 'eth_chainId' }, INRI_WALLETCONNECT_CHAIN_ID)) as string
     chainId = typeof nextChainId === 'string' ? nextChainId : ''
   } catch {
     // no-op
@@ -130,7 +154,7 @@ async function readWalletConnectState(provider: WalletConnectProvider): Promise<
   return {
     connected: Boolean(address || inferred.address),
     address: address || inferred.address,
-    chainId: chainId || inferred.chainId,
+    chainId: chainId || inferred.chainId || INRI_CHAIN_ID_HEX,
   }
 }
 
@@ -183,7 +207,9 @@ export async function getWalletConnectProvider() {
     }) as Promise<WalletConnectProvider>
   }
 
-  return providerPromise
+  const provider = await providerPromise
+  await forceInriDefaultChain(provider)
+  return provider
 }
 
 export async function getWalletConnectState(): Promise<WalletConnectState> {
@@ -203,6 +229,7 @@ export async function connectWalletConnect(
   onDisplayUri?: (uri: string, launchUrl: string) => void,
 ) {
   const provider = await getWalletConnectProvider()
+  await forceInriDefaultChain(provider)
 
   const handleDisplayUri = (uri: string) => {
     const launchUrl = buildInriWalletConnectUrl(uri)
@@ -213,6 +240,7 @@ export async function connectWalletConnect(
 
   try {
     await provider.connect()
+    await forceInriDefaultChain(provider)
     const state = await waitForWalletConnectState(provider)
     if (state.connected) markWalletConnectConnected()
     return state
@@ -232,34 +260,12 @@ export async function disconnectWalletConnect() {
 
 export async function switchWalletConnectToInri() {
   const provider = await getWalletConnectProvider()
+  await forceInriDefaultChain(provider)
 
-  try {
-    await provider.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: INRI_CHAIN_ID_HEX }],
-      chainId: INRI_WALLETCONNECT_CHAIN_ID,
-    })
-  } catch {
-    await provider.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId: INRI_CHAIN_ID_HEX,
-          chainName: 'INRI CHAIN',
-          nativeCurrency: {
-            name: 'INRI',
-            symbol: 'INRI',
-            decimals: 18,
-          },
-          rpcUrls: [INRI_RPC_URL],
-          blockExplorerUrls: [INRI_EXPLORER_URL],
-        },
-      ],
-      chainId: INRI_WALLETCONNECT_CHAIN_ID,
-    })
-  }
-
-  return provider.request({ method: 'eth_chainId', chainId: INRI_WALLETCONNECT_CHAIN_ID }) as Promise<string>
+  // The INRI Wallet session is created for eip155:3777 already. Returning the
+  // chain here is safer than asking WalletConnect to switch and accidentally
+  // triggering a browser wallet fallback.
+  return INRI_CHAIN_ID_HEX
 }
 
 export async function subscribeWalletConnect(
