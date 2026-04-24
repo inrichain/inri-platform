@@ -1,46 +1,61 @@
-import { Layers3, Pickaxe, RadioTower, Search } from 'lucide-react'
-import { InriShell } from '@/components/inri-site-shell'
+import { Activity, Coins, Pickaxe, ShieldCheck } from 'lucide-react'
+import { InriShell, InriLinkButton } from '@/components/inri-site-shell'
 import { InriPoolClient } from '@/components/inri-pool-client'
-import { InriPageHero, InriPanelFrame } from '@/components/inri-design-system'
 
 export function InriPoolPage() {
   return (
     <InriShell>
-      <main className="inri-site-v2 overflow-hidden">
-        <InriPageHero
-          eyebrow="Mining Pool"
-          title="Monitor the INRI pool with a stronger dashboard frame."
-          description="Pool stats, recent blocks, payments and miner lookup now live inside the same premium page structure used by the rest of INRI."
-          actions={[
-            { label: 'Open pool dashboard', href: '#pool-dashboard' },
-            { label: 'Mining setup', href: '/mining', variant: 'secondary' },
-          ]}
-          stats={[
-            { label: 'Modes', value: 'PPLNS / SOLO', text: 'Pool routes' },
-            { label: 'Lookup', value: 'Miner', text: 'Address search' },
-            { label: 'Blocks', value: 'Live-style', text: 'Pool data' },
-            { label: 'Payouts', value: 'Tracked', text: 'Payment view' },
-          ]}
-          features={[
-            { title: 'PPLNS / SOLO', text: 'Follow pool modes from one route.', icon: Layers3 },
-            { title: 'Miner lookup', text: 'Search miners and payout status without changing page style.', icon: Search },
-            { title: 'Live-style stats', text: 'Keep mining data in a polished mainnet view.', icon: RadioTower },
-            { title: 'Reward context', text: 'Connect pool behavior with mining and championship routes.', icon: Pickaxe },
-          ]}
-          visualEyebrow="Pool analytics"
-          visualTitle="The data panel now feels like part of the same INRI product."
-          visualText="The old dashboard remains functional, but it is placed inside a cleaner premium shell with stronger visual hierarchy."
-        />
+      <main className="inri-bright-main">
+        <section className="inri-bright-hero">
+          <div className="inri-page-container py-14 lg:py-20">
+            <div className="grid gap-7 xl:grid-cols-[minmax(0,1.04fr)_390px] xl:items-stretch">
+              <div className="inri-bright-card flex flex-col justify-center">
+                <div className="inri-bright-chip w-fit">INRI POOL</div>
+                <h1 className="mt-6 max-w-5xl text-4xl font-black leading-[0.95] tracking-[-0.05em] text-slate-900 sm:text-5xl xl:text-[4.4rem]">
+                  Pool page with the same bright premium identity as the rest of the platform.
+                </h1>
+                <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
+                  The pool should look official, easy to trust and visually aligned with the home page. This page now presents the pool area in a cleaner and more highlighted way instead of another heavy dark block.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <InriLinkButton href="/mining">Open mining hub</InriLinkButton>
+                  <InriLinkButton href="https://wallet.inri.life" external variant="secondary">INRI Wallet</InriLinkButton>
+                  <InriLinkButton href="https://explorer.inri.life" external variant="secondary">Explorer</InriLinkButton>
+                </div>
+              </div>
 
-        <div id="pool-dashboard">
-          <InriPanelFrame
-            eyebrow="Pool dashboard"
-            title="Stats, miners, blocks and payments in one premium panel."
-            description="The functional pool client is preserved and wrapped in the same visual system as staking, token factory and P2P."
-          >
-            <InriPoolClient />
-          </InriPanelFrame>
-        </div>
+              <aside className="inri-bright-card">
+                <div className="grid gap-3">
+                  {[
+                    { title: 'Cleaner dashboard frame', text: 'The pool client now sits inside a white premium shell.', icon: <Activity className="h-5 w-5" /> },
+                    { title: 'Better user trust', text: 'Bright surfaces and better spacing help the pool feel more serious and polished.', icon: <ShieldCheck className="h-5 w-5" /> },
+                    { title: 'Direct mining flow', text: 'Users can move between mining, wallet and pool routes without visual friction.', icon: <Pickaxe className="h-5 w-5" /> },
+                  ].map((item) => (
+                    <div key={item.title} className="inri-bright-subcard">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-600">
+                          {item.icon}
+                        </div>
+                        <div className="text-base font-black text-slate-900">{item.title}</div>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-600">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section className="inri-bright-section pt-0">
+          <div className="inri-page-container">
+            <div className="inri-bright-card p-3 sm:p-5 lg:p-6">
+              <div className="inri-bright-embed rounded-[1.5rem] p-3 sm:p-4 lg:p-6">
+                <InriPoolClient />
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </InriShell>
   )
