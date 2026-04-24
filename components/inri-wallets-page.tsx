@@ -69,7 +69,7 @@ export function InriWalletsPage() {
                 <p className="mt-3 text-sm leading-7 text-slate-600">{card.description}</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   {card.actions.map((action) => (
-                    <InriLinkButton key={action.label} href={action.href} external={action.external} variant={action.external ? 'primary' : 'secondary'}>
+                    <InriLinkButton key={action.label} href={action.href} external={'external' in action ? action.external : false} variant={('external' in action && action.external) ? 'primary' : 'secondary'}>
                       {action.label}
                     </InriLinkButton>
                   ))}

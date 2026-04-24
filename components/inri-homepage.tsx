@@ -199,7 +199,7 @@ export function InriHomepage() {
                   <h3 className="mt-5 text-2xl font-black text-slate-900">{card.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{card.text}</p>
                   <div className="mt-6">
-                    <InriLinkButton href={card.href} external={card.external} variant="secondary">
+                    <InriLinkButton href={card.href} external={'external' in card ? card.external : false} variant="secondary">
                       {card.hrefLabel}
                     </InriLinkButton>
                   </div>

@@ -124,7 +124,7 @@ export function InriLegalPage({
                       { title: 'Privacy Policy', href: '/privacy-policy', text: 'Review the privacy practices for site use.', icon: <Lock className="h-5 w-5" /> },
                       { title: 'Terms', href: '/terms-and-conditions', text: 'See conditions, limitations and responsibilities.', icon: <Scale className="h-5 w-5" /> },
                     ].map((item) => (
-                      <Link key={item.title} href={item.href} {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})} className="inri-bright-subcard transition hover:-translate-y-px hover:border-sky-300">
+                      <Link key={item.title} href={item.href} {...(('external' in item && item.external) ? { target: '_blank', rel: 'noreferrer' } : {})} className="inri-bright-subcard transition hover:-translate-y-px hover:border-sky-300">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-600">{item.icon}</div>
                         <h3 className="mt-4 text-lg font-black text-slate-900">{item.title}</h3>
                         <p className="mt-2 text-sm leading-7 text-slate-600">{item.text}</p>
