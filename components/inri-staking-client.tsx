@@ -13,11 +13,22 @@ import {
   Sparkles,
   Wallet2,
 } from 'lucide-react'
+import type { EthereumProvider } from '@/lib/inri-active-wallet'
+import {
+  INRI_CHAIN_ID_HEX,
+  estimateGasWithFallback,
+  getActiveWalletProvider,
+  getInjectedEthereum,
+  getLegacyGasPrice,
+  normalizeChainId,
+  readActiveWalletSnapshot,
+  rpcCall,
+  switchProviderToInri,
+  toHex,
+} from '@/lib/inri-active-wallet'
 
 const STAKING_ADDRESS = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 const EXPLORER_URL = `https://explorer.inri.life/address/${STAKING_ADDRESS}`
-const INRI_CHAIN_ID_HEX = '0xec1'
-const INRI_RPC_URL = 'https://rpc.inri.life'
 const ONE_INRI = 10n ** 18n
 const GAS_RESERVE = 2n * 10n ** 16n // 0.02 INRI kept for gas when using Max
 
@@ -26,94 +37,6 @@ const PLAN_META = [
   { id: 1, title: 'Plan 180', days: 180, multiplier: '1.30x', penalty: '7%', accent: 'Higher weight' },
   { id: 2, title: 'Plan 360', days: 360, multiplier: '1.60x', penalty: '9%', accent: 'Maximum long lock' },
 ] as const
-
-type EthereumProvider = {
-  request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
-  on?: (event: string, handler: (...args: unknown[]) => void) => void
-  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
-}
-
-type ActiveWalletBridge = {
-  connector?: '' | 'injected' | 'walletconnect'
-  address?: string
-  chainId?: string
-  provider?: EthereumProvider
-} | null
-
-type InriStakingWindow = Window & {
-  ethereum?: EthereumProvider
-  __INRI_ACTIVE_WALLET__?: ActiveWalletBridge
-}
-
-type SelectorMap = Record<string, string>
-
-type ContractStats = {
-  started: boolean
-  newStakesPaused: boolean
-  emergencyExitEnabled: boolean
-  startTime: bigint
-  programEnd: bigint
-  totalWeight: bigint
-  baseRewardsRemaining: bigint
-  minStake: bigint
-  maxPerPlan: bigint
-  claimCooldown: bigint
-  currentEra: bigint
-  emissionPerDay: bigint
-  contractBalance: bigint
-}
-
-type PlanView = {
-  principal: bigint
-  weight: bigint
-  unlockAt: bigint
-  rewardDebt: bigint
-  pendingRewards: bigint
-  active: boolean
-}
-
-type UserState = {
-  pendingRewards: bigint
-  canClaim: boolean
-  nextClaimAt: bigint
-  walletBalance: bigint
-  positions: PlanView[]
-  timeUntilUnlock: bigint[]
-}
-
-const initialContractStats: ContractStats = {
-  started: false,
-  newStakesPaused: false,
-  emergencyExitEnabled: false,
-  startTime: 0n,
-  programEnd: 0n,
-  totalWeight: 0n,
-  baseRewardsRemaining: 0n,
-  minStake: 0n,
-  maxPerPlan: 0n,
-  claimCooldown: 0n,
-  currentEra: 0n,
-  emissionPerDay: 0n,
-  contractBalance: 0n,
-}
-
-function getInjectedEthereum(): EthereumProvider | undefined {
-  if (typeof window === 'undefined') return undefined
-  return (window as InriStakingWindow).ethereum
-}
-
-function getActiveWalletBridge(): ActiveWalletBridge {
-  if (typeof window === 'undefined') return null
-  return (window as InriStakingWindow).__INRI_ACTIVE_WALLET__ || null
-}
-
-function getActiveProvider(): EthereumProvider | undefined {
-  return getActiveWalletBridge()?.provider || getInjectedEthereum()
-}
-
-function normalizeChainId(value?: string | null) {
-  return String(value || '').toLowerCase()
-}
 
 function strip0x(value: string) {
   return value.startsWith('0x') ? value.slice(2) : value
@@ -197,18 +120,6 @@ function percentOf(value: bigint, max: bigint) {
   if (max <= 0n || value <= 0n) return 0
   const scaled = Number((value * 10000n) / max) / 100
   return Math.max(0, Math.min(100, scaled))
-}
-
-async function rpcCall(method: string, params: unknown[] = []) {
-  const response = await fetch(INRI_RPC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
-  })
-  if (!response.ok) throw new Error(`RPC HTTP ${response.status}`)
-  const data = (await response.json()) as { result?: unknown; error?: { message?: string } }
-  if (data.error) throw new Error(data.error.message || 'RPC error')
-  return data.result
 }
 
 async function fetchSelector(signature: string) {
@@ -433,39 +344,12 @@ export function InriStakingClient() {
   }, [account, runRead, selectors])
 
   const syncWalletState = useCallback(async () => {
-    if (typeof window === 'undefined') return
-
-    const bridge = getActiveWalletBridge()
-    if (bridge?.address && bridge?.provider) {
-      setActiveProvider(bridge.provider)
-      setProviderReady(true)
-      setAccount(bridge.address)
-      setChainId(bridge.chainId || null)
-      setConnectionType(bridge.connector === 'walletconnect' ? 'walletconnect' : 'injected')
-      return
-    }
-
-    const eth = getInjectedEthereum()
-    setActiveProvider(eth || null)
-    setProviderReady(Boolean(eth))
-    setConnectionType(eth ? 'injected' : '')
-
-    if (!eth) {
-      setAccount(null)
-      setChainId(null)
-      return
-    }
-
-    try {
-      const [accounts, currentChainId] = (await Promise.all([
-        eth.request({ method: 'eth_accounts' }),
-        eth.request({ method: 'eth_chainId' }),
-      ])) as [string[], string]
-      setAccount(accounts?.[0] || null)
-      setChainId(currentChainId || null)
-    } catch {
-      // noop
-    }
+    const snapshot = await readActiveWalletSnapshot()
+    setActiveProvider(snapshot.provider)
+    setProviderReady(snapshot.providerReady)
+    setAccount(snapshot.account)
+    setChainId(snapshot.chainId)
+    setConnectionType(snapshot.connector)
   }, [])
 
   useEffect(() => {
@@ -514,7 +398,7 @@ export function InriStakingClient() {
   }, [refreshContract, refreshUser, syncWalletState])
 
   const connectWallet = async () => {
-    const provider = getActiveProvider()
+    const provider = getActiveWalletProvider()
     if (!provider) {
       setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
       return
@@ -537,7 +421,7 @@ export function InriStakingClient() {
   }
 
   const switchNetwork = async () => {
-    const provider = activeProvider || getActiveProvider()
+    const provider = activeProvider || getActiveWalletProvider()
     if (!provider) {
       setError('No wallet detected.')
       return
@@ -545,35 +429,18 @@ export function InriStakingClient() {
     try {
       setBusyAction('network')
       setError(null)
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
-      const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
+      const nextChainId = await switchProviderToInri(provider)
       setChainId(nextChainId || INRI_CHAIN_ID_HEX)
       setStatus('INRI CHAIN ready. You can use the staking app now.')
     } catch (cause) {
-      try {
-        await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: INRI_CHAIN_ID_HEX,
-            chainName: 'INRI CHAIN',
-            nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-            rpcUrls: [INRI_RPC_URL],
-            blockExplorerUrls: ['https://explorer.inri.life'],
-          }],
-        })
-        const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
-        setChainId(nextChainId || INRI_CHAIN_ID_HEX)
-        setStatus('INRI CHAIN added to the wallet.')
-      } catch (inner) {
-        setError(inner instanceof Error ? inner.message : (cause instanceof Error ? cause.message : 'Unable to switch network'))
-      }
+      setError(cause instanceof Error ? cause.message : 'Unable to switch network')
     } finally {
       setBusyAction(null)
     }
   }
 
   const ensureCanWrite = () => {
-    const provider = activeProvider || getActiveProvider()
+    const provider = activeProvider || getActiveWalletProvider()
     if (!provider || !account) throw new Error('Connect INRI Wallet from the top header first.')
     if (!networkReady) throw new Error('Select INRI CHAIN before using staking.')
     return provider
@@ -583,13 +450,25 @@ export function InriStakingClient() {
     const provider = ensureCanWrite()
     const selector = selectors[signature]
     if (!selector) throw new Error(`Missing selector for ${signature}`)
-    const tx = {
+    const baseTx = {
       from: account,
       to: STAKING_ADDRESS,
       data: `${selector}${encodedArgs}`,
-      chainId: INRI_CHAIN_ID_HEX,
-      ...(typeof value === 'bigint' ? { value: `0x${value.toString(16)}` } : {}),
+      ...(typeof value === 'bigint' ? { value: toHex(value) } : {}),
     }
+    const fallbackGas = signature === 'claimAll()' ? 350000n : 450000n
+
+    const [gasLimit, gasPrice] = await Promise.all([
+      estimateGasWithFallback(baseTx, fallbackGas),
+      getLegacyGasPrice(),
+    ])
+
+    const tx = {
+      ...baseTx,
+      gas: toHex(gasLimit),
+      gasPrice: toHex(gasPrice),
+    }
+
     const txResult = (await provider.request({ method: 'eth_sendTransaction', params: [tx] })) as string
     setTxHash(txResult)
     setStatus(pendingText || 'Transaction sent. Waiting for confirmation on INRI CHAIN...')

@@ -4,9 +4,21 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck } from 'lucide-react'
+import type { EthereumProvider, InriWalletConnector } from '@/lib/inri-active-wallet'
+import {
+  INRI_CHAIN_ID_HEX,
+  getActiveWalletProvider,
+  getInjectedEthereum,
+  getLegacyGasPrice,
+  isInriChain,
+  readActiveWalletSnapshot,
+  rpcCall,
+  switchProviderToInri,
+  toHex,
+  withGasBuffer,
+} from '@/lib/inri-active-wallet'
 
 const FACTORY_ADDRESS = '0x1D760E78D92aA5B46b484bc054Bbfae11198B751'
-const INRI_CHAIN_ID_HEX = '0xec1'
 
 const CREATE_TOKEN_SIGNATURES = [
   'createToken(string,string,uint8,uint256)',
@@ -15,17 +27,6 @@ const CREATE_TOKEN_SIGNATURES = [
 
 const TOTAL_TOKENS_SIGNATURE = 'totalTokens()'
 const ALL_TOKENS_SIGNATURE = 'allTokens(uint256)'
-
-type EthereumProvider = {
-  request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
-  on?: (event: string, handler: (...args: unknown[]) => void) => void
-  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
-}
-
-function getEthereum(): EthereumProvider | undefined {
-  if (typeof window === 'undefined') return undefined
-  return (window as Window & { ethereum?: EthereumProvider }).ethereum
-}
 
 type FormState = {
   name: string
@@ -96,24 +97,20 @@ function isValidAddress(value?: string | null) {
   return typeof value === 'string' && /^0x[a-fA-F0-9]{40}$/.test(value)
 }
 
-async function rpcCall(method: string, params: unknown[] = []) {
-  const response = await fetch('https://rpc.inri.life', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
-  })
-
-  if (!response.ok) throw new Error(`RPC HTTP ${response.status}`)
-
-  const data = (await response.json()) as { result?: unknown; error?: { message?: string } }
-  if (data.error) throw new Error(data.error.message || 'RPC error')
-  return data.result
-}
-
 async function fetchSelector(signature: string) {
   const result = await rpcCall('web3_sha3', [asciiToHex(signature)])
   if (typeof result !== 'string' || result.length < 10) throw new Error(`Selector not found for ${signature}`)
   return result.slice(2, 10)
+}
+
+async function estimateFactoryGas(tx: Record<string, unknown>) {
+  const raw = await rpcCall('eth_estimateGas', [tx])
+  if (typeof raw !== 'string' || !raw.startsWith('0x')) {
+    throw new Error('Invalid gas estimate returned by INRI RPC')
+  }
+  const estimated = BigInt(raw)
+  if (estimated <= 0n) throw new Error('Invalid zero gas estimate returned by INRI RPC')
+  return withGasBuffer(estimated, 650000n)
 }
 
 function Surface({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -179,6 +176,8 @@ type ResolvedCreateCall = {
 
 export function InriTokenFactoryClient() {
   const [providerReady, setProviderReady] = useState(false)
+  const [activeProvider, setActiveProvider] = useState<EthereumProvider | null>(null)
+  const [connectionType, setConnectionType] = useState<InriWalletConnector>('')
   const [account, setAccount] = useState<string | null>(null)
   const [chainId, setChainId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(initialForm)
@@ -196,7 +195,7 @@ export function InriTokenFactoryClient() {
   const [selectors, setSelectors] = useState<Record<string, string>>({})
   const [resolvedSignature, setResolvedSignature] = useState<string | null>(null)
 
-  const networkReady = chainId?.toLowerCase() === INRI_CHAIN_ID_HEX
+  const networkReady = isInriChain(chainId)
 
   const previewItems = useMemo(
     () => [
@@ -270,57 +269,60 @@ export function InriTokenFactoryClient() {
     refreshFactoryStats().catch(() => undefined)
   }, [refreshFactoryStats, selectors])
 
+  const syncWalletState = useCallback(async () => {
+    const snapshot = await readActiveWalletSnapshot()
+    setActiveProvider(snapshot.provider)
+    setProviderReady(snapshot.providerReady)
+    setAccount(snapshot.account)
+    setChainId(snapshot.chainId)
+    setConnectionType(snapshot.connector)
+  }, [])
+
   useEffect(() => {
-    const eth = getEthereum()
-    setProviderReady(Boolean(eth))
-    if (!eth) return
+    const eth = getInjectedEthereum()
 
-    const syncState = async () => {
-      try {
-        const [accounts, currentChainId] = (await Promise.all([
-          eth.request({ method: 'eth_accounts' }),
-          eth.request({ method: 'eth_chainId' }),
-        ])) as [string[], string]
-        setAccount(accounts[0] || null)
-        setChainId(currentChainId || null)
-      } catch {
-        // noop
-      }
+    const handleWalletState = () => {
+      void syncWalletState()
     }
-
     const handleAccountsChanged = (accounts: unknown) => {
       const next = Array.isArray(accounts) ? (accounts[0] as string | undefined) : undefined
       setAccount(next || null)
+      void syncWalletState()
     }
-
     const handleChainChanged = (nextChainId: unknown) => {
       if (typeof nextChainId === 'string') setChainId(nextChainId)
+      void syncWalletState()
     }
 
-    syncState().catch(() => undefined)
-    eth.on?.('accountsChanged', handleAccountsChanged)
-    eth.on?.('chainChanged', handleChainChanged)
+    void syncWalletState()
+    window.addEventListener('inri:wallet-state', handleWalletState as EventListener)
+    eth?.on?.('accountsChanged', handleAccountsChanged)
+    eth?.on?.('chainChanged', handleChainChanged)
 
     return () => {
-      eth.removeListener?.('accountsChanged', handleAccountsChanged)
-      eth.removeListener?.('chainChanged', handleChainChanged)
+      window.removeEventListener('inri:wallet-state', handleWalletState as EventListener)
+      eth?.removeListener?.('accountsChanged', handleAccountsChanged)
+      eth?.removeListener?.('chainChanged', handleChainChanged)
     }
-  }, [])
+  }, [syncWalletState])
 
   const connectWallet = async () => {
-    const eth = getEthereum()
-    if (!eth) {
-      setError('No wallet detected. Open this page with INRI Wallet, MetaMask or another EVM wallet.')
+    const provider = activeProvider || getActiveWalletProvider()
+    if (!provider) {
+      setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
       return
     }
 
     try {
       setIsConnecting(true)
       setError(null)
-      const [selected] = (await eth.request({ method: 'eth_requestAccounts' })) as string[]
-      const currentChainId = (await eth.request({ method: 'eth_chainId' })) as string
+      const [selected] = (await provider.request({ method: 'eth_requestAccounts' })) as string[]
+      const currentChainId = (await provider.request({ method: 'eth_chainId' })) as string
+      setActiveProvider(provider)
+      setProviderReady(true)
       setAccount(selected || null)
       setChainId(currentChainId)
+      setConnectionType(selected ? (connectionType || 'injected') : connectionType)
       setStatus(selected ? 'Wallet connected. Review the token details and continue.' : 'Wallet connection canceled.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wallet connection failed.')
@@ -330,8 +332,8 @@ export function InriTokenFactoryClient() {
   }
 
   const switchToInri = async () => {
-    const eth = getEthereum()
-    if (!eth) {
+    const provider = activeProvider || getActiveWalletProvider()
+    if (!provider) {
       setError('No wallet detected to switch networks.')
       return
     }
@@ -339,41 +341,18 @@ export function InriTokenFactoryClient() {
     try {
       setIsSwitching(true)
       setError(null)
-      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
-      setChainId(INRI_CHAIN_ID_HEX)
+      const nextChainId = await switchProviderToInri(provider)
+      setChainId(nextChainId || INRI_CHAIN_ID_HEX)
       setStatus('INRI CHAIN selected. The app is ready to send the launch transaction.')
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      if (message.includes('4902') || message.toLowerCase().includes('unrecognized chain')) {
-        try {
-          await eth.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: INRI_CHAIN_ID_HEX,
-                chainName: 'INRI CHAIN',
-                nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-                rpcUrls: ['https://rpc.inri.life'],
-                blockExplorerUrls: ['https://explorer.inri.life'],
-              },
-            ],
-          })
-          setChainId(INRI_CHAIN_ID_HEX)
-          setStatus('INRI CHAIN added to the wallet. Review the network and continue.')
-        } catch (addErr) {
-          setError(addErr instanceof Error ? addErr.message : 'Could not add INRI CHAIN to the wallet.')
-        }
-      } else {
-        setError(message || 'Could not switch network.')
-      }
+      setError(err instanceof Error ? err.message : 'Could not switch network.')
     } finally {
       setIsSwitching(false)
     }
   }
 
   const resolveCreateCall = useCallback(async (): Promise<ResolvedCreateCall> => {
-    const eth = getEthereum()
-    if (!eth || !account || !networkReady) throw new Error('Connect the wallet on INRI CHAIN first.')
+    if (!account || !networkReady) throw new Error('Connect the wallet on INRI CHAIN first.')
 
     const cleanSupply = sanitizeSupply(form.supply)
     const decimals = Number(form.decimals)
@@ -394,12 +373,7 @@ export function InriTokenFactoryClient() {
       const data = encodeCreateTokenWithSelector(selector, name, symbol, decimals, supply, signature)
 
       try {
-        const gasHex = (await eth.request({
-          method: 'eth_estimateGas',
-          params: [{ from: account, to: FACTORY_ADDRESS, data }],
-        })) as string
-
-        const gas = BigInt(gasHex)
+        const gas = await estimateFactoryGas({ from: account, to: FACTORY_ADDRESS, data })
         setResolvedSignature(signature)
         return { signature, selector, data, gas }
       } catch (cause) {
@@ -429,8 +403,8 @@ export function InriTokenFactoryClient() {
   }, [estimateGas])
 
   const createToken = async () => {
-    const eth = getEthereum()
-    if (!eth) {
+    const provider = activeProvider || getActiveWalletProvider()
+    if (!provider) {
       setError('No wallet detected. Use INRI Wallet or another EVM wallet.')
       return
     }
@@ -452,13 +426,20 @@ export function InriTokenFactoryClient() {
 
       const before = await refreshFactoryStats()
       const resolved = await resolveCreateCall()
-      const boostedGas = (resolved.gas * 125n) / 100n
+      const boostedGas = resolved.gas
+      const gasPrice = await getLegacyGasPrice()
       setGasEstimate(boostedGas.toString())
       setResolvedSignature(resolved.signature)
 
-      const hash = (await eth.request({
+      const hash = (await provider.request({
         method: 'eth_sendTransaction',
-        params: [{ from: account, to: FACTORY_ADDRESS, data: resolved.data, gas: `0x${boostedGas.toString(16)}` }],
+        params: [{
+          from: account,
+          to: FACTORY_ADDRESS,
+          data: resolved.data,
+          gas: toHex(boostedGas),
+          gasPrice: toHex(gasPrice),
+        }],
       })) as string
 
       setTxHash(hash)
@@ -466,7 +447,7 @@ export function InriTokenFactoryClient() {
 
       let receipt: { status?: string } | null = null
       for (let attempt = 0; attempt < 90; attempt += 1) {
-        receipt = (await eth.request({ method: 'eth_getTransactionReceipt', params: [hash] })) as { status?: string } | null
+        receipt = (await rpcCall('eth_getTransactionReceipt', [hash])) as { status?: string } | null
         if (receipt) break
         await new Promise((resolve) => window.setTimeout(resolve, 4000))
       }
@@ -498,10 +479,10 @@ export function InriTokenFactoryClient() {
   }
 
   const addTokenToWallet = async () => {
-    const eth = getEthereum()
-    if (!eth || !createdToken) return
+    const provider = activeProvider || getActiveWalletProvider()
+    if (!provider || !createdToken) return
     try {
-      await eth.request({
+      await provider.request({
         method: 'wallet_watchAsset',
         params: {
           type: 'ERC20',
@@ -533,6 +514,7 @@ export function InriTokenFactoryClient() {
         <div>
           <div className="flex flex-wrap gap-3">
             <StatusPill label="Wallet" value={shortAddress(account)} accent={Boolean(account)} />
+            <StatusPill label="Provider" value={connectionType === 'walletconnect' ? 'INRI Wallet' : connectionType === 'injected' ? 'Browser wallet' : 'Not connected'} accent={Boolean(connectionType)} />
             <StatusPill label="Network" value={networkReady ? 'INRI CHAIN' : 'Switch needed'} accent={networkReady} />
             <StatusPill label="Created" value={factoryCount} />
             <StatusPill label="Latest token" value={latestToken ? `${latestToken.slice(0, 6)}...${latestToken.slice(-4)}` : '-'} />
@@ -540,7 +522,46 @@ export function InriTokenFactoryClient() {
 
           {!providerReady ? (
             <div className="mt-4 rounded-[1.2rem] border border-amber-400/18 bg-amber-500/[0.08] px-4 py-4 text-sm leading-7 text-amber-100/88">
-              No wallet detected in this browser. Open this page with INRI Wallet, MetaMask or another EVM wallet.
+              No wallet provider detected yet. Connect INRI Wallet from the top header or open this page with another EVM wallet.
+            </div>
+          ) : null}
+
+          {!account || !networkReady ? (
+            <div className="mt-4 flex flex-wrap gap-3">
+              {!account ? (
+                <button
+                  type="button"
+                  onClick={connectWallet}
+                  disabled={isConnecting || !providerReady}
+                  className="inri-button-secondary min-w-[170px] text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isConnecting ? (
+                    <>
+                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    'Sync active wallet'
+                  )}
+                </button>
+              ) : null}
+              {account && !networkReady ? (
+                <button
+                  type="button"
+                  onClick={switchToInri}
+                  disabled={isSwitching || !providerReady}
+                  className="inri-button-primary min-w-[170px] text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSwitching ? (
+                    <>
+                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                      Switching...
+                    </>
+                  ) : (
+                    'Switch to INRI CHAIN'
+                  )}
+                </button>
+              ) : null}
             </div>
           ) : null}
 
