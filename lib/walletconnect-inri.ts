@@ -156,6 +156,7 @@ export async function getWalletConnectProvider() {
       projectId: getProjectId(),
       metadata: getMetadata(),
       showQrModal: false,
+      chains: [INRI_CHAIN_ID],
       optionalChains: [INRI_CHAIN_ID],
       rpcMap: {
         [INRI_CHAIN_ID]: INRI_RPC_URL,

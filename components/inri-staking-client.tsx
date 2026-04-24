@@ -3,11 +3,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, ShieldCheck, Sparkles, Wallet2 } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  LoaderCircle,
+  ShieldCheck,
+  Sparkles,
+  Wallet2,
+} from 'lucide-react'
 
 const STAKING_ADDRESS = '0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9'
 const EXPLORER_URL = `https://explorer.inri.life/address/${STAKING_ADDRESS}`
 const INRI_CHAIN_ID_HEX = '0xec1'
+const INRI_RPC_URL = 'https://rpc.inri.life'
+const ONE_INRI = 10n ** 18n
+const GAS_RESERVE = 2n * 10n ** 16n // 0.02 INRI kept for gas when using Max
 
 const PLAN_META = [
   { id: 0, title: 'Plan 90', days: 90, multiplier: '1.00x', penalty: '5%', accent: 'Balanced entry' },
@@ -19,6 +31,20 @@ type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] | Record<string, unknown> }) => Promise<unknown>
   on?: (event: string, handler: (...args: unknown[]) => void) => void
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
+}
+
+type ActiveWalletBridge = {
+  connector?: '' | 'injected' | 'walletconnect'
+  address?: string
+  chainId?: string
+  provider?: EthereumProvider
+} | null
+
+declare global {
+  interface Window {
+    ethereum?: EthereumProvider
+    __INRI_ACTIVE_WALLET__?: ActiveWalletBridge
+  }
 }
 
 type SelectorMap = Record<string, string>
@@ -52,6 +78,7 @@ type UserState = {
   pendingRewards: bigint
   canClaim: boolean
   nextClaimAt: bigint
+  walletBalance: bigint
   positions: PlanView[]
   timeUntilUnlock: bigint[]
 }
@@ -72,9 +99,22 @@ const initialContractStats: ContractStats = {
   contractBalance: 0n,
 }
 
-function getEthereum(): EthereumProvider | undefined {
+function getInjectedEthereum(): EthereumProvider | undefined {
   if (typeof window === 'undefined') return undefined
-  return (window as Window & { ethereum?: EthereumProvider }).ethereum
+  return window.ethereum
+}
+
+function getActiveWalletBridge(): ActiveWalletBridge {
+  if (typeof window === 'undefined') return null
+  return window.__INRI_ACTIVE_WALLET__ || null
+}
+
+function getActiveProvider(): EthereumProvider | undefined {
+  return getActiveWalletBridge()?.provider || getInjectedEthereum()
+}
+
+function normalizeChainId(value?: string | null) {
+  return String(value || '').toLowerCase()
 }
 
 function strip0x(value: string) {
@@ -94,7 +134,7 @@ function encodeAddress(address: string) {
 }
 
 function chunkWords(data: string) {
-  const clean = strip0x(data)
+  const clean = strip0x(data || '0x')
   const chunks: string[] = []
   for (let i = 0; i < clean.length; i += 64) chunks.push(clean.slice(i, i + 64))
   return chunks
@@ -103,6 +143,11 @@ function chunkWords(data: string) {
 function parseWordToBigInt(word?: string) {
   if (!word) return 0n
   return BigInt(`0x${word}`)
+}
+
+function parseHexToBigInt(value?: unknown) {
+  if (typeof value !== 'string' || !value.startsWith('0x')) return 0n
+  return BigInt(value)
 }
 
 function parseBoolWord(word?: string) {
@@ -146,8 +191,18 @@ function formatTimestamp(timestamp: bigint) {
   return new Date(Number(timestamp) * 1000).toLocaleString()
 }
 
+function minBigInt(a: bigint, b: bigint) {
+  return a < b ? a : b
+}
+
+function percentOf(value: bigint, max: bigint) {
+  if (max <= 0n || value <= 0n) return 0
+  const scaled = Number((value * 10000n) / max) / 100
+  return Math.max(0, Math.min(100, scaled))
+}
+
 async function rpcCall(method: string, params: unknown[] = []) {
-  const response = await fetch('https://rpc.inri.life', {
+  const response = await fetch(INRI_RPC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
@@ -182,6 +237,15 @@ function StatCard({ label, value, note }: { label: string; value: string; note: 
   )
 }
 
+function InfoRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="rounded-[1rem] border border-white/10 bg-black/25 p-3">
+      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/38">{label}</div>
+      <div className={`mt-1 break-words text-sm font-bold text-white/82 ${mono ? 'font-mono' : ''}`}>{value}</div>
+    </div>
+  )
+}
+
 function ActionButton({ children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
@@ -193,23 +257,24 @@ function ActionButton({ children, className = '', ...props }: ButtonHTMLAttribut
   )
 }
 
-
 export function InriStakingClient() {
   const [selectors, setSelectors] = useState<SelectorMap>({})
   const [providerReady, setProviderReady] = useState(false)
+  const [activeProvider, setActiveProvider] = useState<EthereumProvider | null>(null)
+  const [connectionType, setConnectionType] = useState<'injected' | 'walletconnect' | ''>('')
   const [account, setAccount] = useState<string | null>(null)
   const [chainId, setChainId] = useState<string | null>(null)
   const [contractStats, setContractStats] = useState<ContractStats>(initialContractStats)
   const [userState, setUserState] = useState<UserState | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<0 | 1 | 2>(0)
   const [amount, setAmount] = useState('100')
-  const [status, setStatus] = useState('Use the top header to connect your wallet and confirm INRI CHAIN before staking.')
+  const [status, setStatus] = useState('Use the top header to connect INRI Wallet, then confirm INRI CHAIN before staking.')
   const [error, setError] = useState<string | null>(null)
   const [busyAction, setBusyAction] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const networkReady = chainId?.toLowerCase() === INRI_CHAIN_ID_HEX
+  const networkReady = normalizeChainId(chainId) === INRI_CHAIN_ID_HEX
 
   const selectorSignatures = useMemo(
     () => [
@@ -327,7 +392,8 @@ export function InriStakingClient() {
     }
     try {
       const encodedAddress = encodeAddress(account)
-      const [pendingHex, canClaimHex, nextClaimHex, plan0, plan1, plan2, unlock0, unlock1, unlock2] = await Promise.all([
+      const [balanceHex, pendingHex, canClaimHex, nextClaimHex, plan0, plan1, plan2, unlock0, unlock1, unlock2] = await Promise.all([
+        rpcCall('eth_getBalance', [account, 'latest']),
         runRead('pendingRewardsOf(address)', encodedAddress),
         runRead('canClaim(address)', encodedAddress),
         runRead('nextClaimAt(address)', encodedAddress),
@@ -352,6 +418,7 @@ export function InriStakingClient() {
       }
 
       setUserState({
+        walletBalance: parseHexToBigInt(balanceHex),
         pendingRewards: parseWordToBigInt(chunkWords(pendingHex)[0]),
         canClaim: parseBoolWord(chunkWords(canClaimHex)[0]),
         nextClaimAt: parseWordToBigInt(chunkWords(nextClaimHex)[0]),
@@ -367,41 +434,69 @@ export function InriStakingClient() {
     }
   }, [account, runRead, selectors])
 
-  useEffect(() => {
-    const eth = getEthereum()
-    setProviderReady(Boolean(eth))
-    if (!eth) return
+  const syncWalletState = useCallback(async () => {
+    if (typeof window === 'undefined') return
 
-    const syncState = async () => {
-      try {
-        const [accounts, currentChainId] = (await Promise.all([
-          eth.request({ method: 'eth_accounts' }),
-          eth.request({ method: 'eth_chainId' }),
-        ])) as [string[], string]
-        setAccount(accounts[0] || null)
-        setChainId(currentChainId || null)
-      } catch {
-        // noop
-      }
+    const bridge = getActiveWalletBridge()
+    if (bridge?.address && bridge?.provider) {
+      setActiveProvider(bridge.provider)
+      setProviderReady(true)
+      setAccount(bridge.address)
+      setChainId(bridge.chainId || null)
+      setConnectionType(bridge.connector === 'walletconnect' ? 'walletconnect' : 'injected')
+      return
     }
 
+    const eth = getInjectedEthereum()
+    setActiveProvider(eth || null)
+    setProviderReady(Boolean(eth))
+    setConnectionType(eth ? 'injected' : '')
+
+    if (!eth) {
+      setAccount(null)
+      setChainId(null)
+      return
+    }
+
+    try {
+      const [accounts, currentChainId] = (await Promise.all([
+        eth.request({ method: 'eth_accounts' }),
+        eth.request({ method: 'eth_chainId' }),
+      ])) as [string[], string]
+      setAccount(accounts?.[0] || null)
+      setChainId(currentChainId || null)
+    } catch {
+      // noop
+    }
+  }, [])
+
+  useEffect(() => {
+    const eth = getInjectedEthereum()
+
+    const handleWalletState = () => {
+      void syncWalletState()
+    }
     const handleAccountsChanged = (accounts: unknown) => {
       const next = Array.isArray(accounts) ? (accounts[0] as string | undefined) : undefined
       setAccount(next || null)
+      void syncWalletState()
     }
     const handleChainChanged = (nextChainId: unknown) => {
       if (typeof nextChainId === 'string') setChainId(nextChainId)
+      void syncWalletState()
     }
 
-    syncState().catch(() => undefined)
-    eth.on?.('accountsChanged', handleAccountsChanged)
-    eth.on?.('chainChanged', handleChainChanged)
+    void syncWalletState()
+    window.addEventListener('inri:wallet-state', handleWalletState as EventListener)
+    eth?.on?.('accountsChanged', handleAccountsChanged)
+    eth?.on?.('chainChanged', handleChainChanged)
 
     return () => {
-      eth.removeListener?.('accountsChanged', handleAccountsChanged)
-      eth.removeListener?.('chainChanged', handleChainChanged)
+      window.removeEventListener('inri:wallet-state', handleWalletState as EventListener)
+      eth?.removeListener?.('accountsChanged', handleAccountsChanged)
+      eth?.removeListener?.('chainChanged', handleChainChanged)
     }
-  }, [])
+  }, [syncWalletState])
 
   useEffect(() => {
     refreshContract().catch(() => undefined)
@@ -411,17 +506,28 @@ export function InriStakingClient() {
     refreshUser().catch(() => undefined)
   }, [refreshUser])
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      refreshContract().catch(() => undefined)
+      refreshUser().catch(() => undefined)
+      syncWalletState().catch(() => undefined)
+    }, 10000)
+    return () => window.clearInterval(intervalId)
+  }, [refreshContract, refreshUser, syncWalletState])
+
   const connectWallet = async () => {
-    const eth = getEthereum()
-    if (!eth) {
-      setError('No wallet detected. Open this page with INRI Wallet, MetaMask or another EVM wallet.')
+    const provider = getActiveProvider()
+    if (!provider) {
+      setError('No wallet detected. Use the Connect Wallet button in the top header or open this page with an EVM wallet.')
       return
     }
     try {
       setBusyAction('connect')
       setError(null)
-      const [selected] = (await eth.request({ method: 'eth_requestAccounts' })) as string[]
-      const currentChainId = (await eth.request({ method: 'eth_chainId' })) as string
+      const [selected] = (await provider.request({ method: 'eth_requestAccounts' })) as string[]
+      const currentChainId = (await provider.request({ method: 'eth_chainId' })) as string
+      setActiveProvider(provider)
+      setProviderReady(true)
       setAccount(selected || null)
       setChainId(currentChainId)
       setStatus(selected ? 'Wallet connected. Review your plan and continue.' : 'Wallet connection canceled.')
@@ -433,30 +539,32 @@ export function InriStakingClient() {
   }
 
   const switchNetwork = async () => {
-    const eth = getEthereum()
-    if (!eth) {
+    const provider = activeProvider || getActiveProvider()
+    if (!provider) {
       setError('No wallet detected.')
       return
     }
     try {
       setBusyAction('network')
       setError(null)
-      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
-      setChainId(INRI_CHAIN_ID_HEX)
+      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: INRI_CHAIN_ID_HEX }] })
+      const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
+      setChainId(nextChainId || INRI_CHAIN_ID_HEX)
       setStatus('INRI CHAIN ready. You can use the staking app now.')
     } catch (cause) {
       try {
-        await eth.request({
+        await provider.request({
           method: 'wallet_addEthereumChain',
           params: [{
             chainId: INRI_CHAIN_ID_HEX,
             chainName: 'INRI CHAIN',
             nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
-            rpcUrls: ['https://rpc.inri.life'],
+            rpcUrls: [INRI_RPC_URL],
             blockExplorerUrls: ['https://explorer.inri.life'],
           }],
         })
-        setChainId(INRI_CHAIN_ID_HEX)
+        const nextChainId = (await provider.request({ method: 'eth_chainId' })) as string
+        setChainId(nextChainId || INRI_CHAIN_ID_HEX)
         setStatus('INRI CHAIN added to the wallet.')
       } catch (inner) {
         setError(inner instanceof Error ? inner.message : (cause instanceof Error ? cause.message : 'Unable to switch network'))
@@ -466,18 +574,25 @@ export function InriStakingClient() {
     }
   }
 
+  const ensureCanWrite = () => {
+    const provider = activeProvider || getActiveProvider()
+    if (!provider || !account) throw new Error('Connect INRI Wallet from the top header first.')
+    if (!networkReady) throw new Error('Select INRI CHAIN before using staking.')
+    return provider
+  }
+
   const sendTransaction = async (signature: string, encodedArgs = '', value?: bigint, pendingText?: string) => {
-    const eth = getEthereum()
-    if (!eth || !account) throw new Error('Connect your wallet from the top header first')
+    const provider = ensureCanWrite()
     const selector = selectors[signature]
     if (!selector) throw new Error(`Missing selector for ${signature}`)
     const tx = {
       from: account,
       to: STAKING_ADDRESS,
       data: `${selector}${encodedArgs}`,
+      chainId: INRI_CHAIN_ID_HEX,
       ...(typeof value === 'bigint' ? { value: `0x${value.toString(16)}` } : {}),
     }
-    const txResult = (await eth.request({ method: 'eth_sendTransaction', params: [tx] })) as string
+    const txResult = (await provider.request({ method: 'eth_sendTransaction', params: [tx] })) as string
     setTxHash(txResult)
     setStatus(pendingText || 'Transaction sent. Waiting for confirmation on INRI CHAIN...')
 
@@ -496,17 +611,55 @@ export function InriStakingClient() {
     return txResult
   }
 
-  const stakeNow = async () => {
-    if (!networkReady) {
-      setError('Select INRI CHAIN from the top header before staking.')
-      return
+  const selectedPosition = userState?.positions[selectedPlan] || null
+  const selectedPlanInfo = PLAN_META[selectedPlan]
+  const maxPerPlan = contractStats.maxPerPlan || 10000n * ONE_INRI
+  const minStake = contractStats.minStake || 100n * ONE_INRI
+  const planRemaining = maxPerPlan > (selectedPosition?.principal || 0n) ? maxPerPlan - (selectedPosition?.principal || 0n) : 0n
+  const balanceAfterGas = userState?.walletBalance && userState.walletBalance > GAS_RESERVE ? userState.walletBalance - GAS_RESERVE : 0n
+  const maxStakeNow = minBigInt(planRemaining, balanceAfterGas)
+
+  const parsedAmount = useMemo(() => {
+    try {
+      return parseDecimalToWei(amount, 18)
+    } catch {
+      return null
     }
+  }, [amount])
+
+  const amountValidation = useMemo(() => {
+    if (!amount.trim()) return 'Enter an amount to stake.'
+    if (parsedAmount === null || parsedAmount <= 0n) return 'Enter a valid INRI amount.'
+    if (!userState) return ''
+    if (parsedAmount > userState.walletBalance) return 'Wallet balance is too low.'
+    if (parsedAmount > planRemaining) return `This plan only has ${formatAmount(planRemaining)} INRI remaining.`
+    if ((selectedPosition?.principal || 0n) === 0n && parsedAmount < minStake) return `First stake in a plan must be at least ${formatAmount(minStake)} INRI.`
+    return ''
+  }, [amount, minStake, parsedAmount, planRemaining, selectedPosition?.principal, userState])
+
+  const canStake = Boolean(
+    providerReady &&
+      account &&
+      networkReady &&
+      contractStats.started &&
+      !contractStats.newStakesPaused &&
+      !contractStats.emergencyExitEnabled &&
+      parsedAmount !== null &&
+      parsedAmount > 0n &&
+      !amountValidation,
+  )
+
+  const canClaim = Boolean(providerReady && account && networkReady && userState?.canClaim && userState.pendingRewards > 0n)
+  const canRestake = Boolean(providerReady && account && networkReady && !contractStats.newStakesPaused && userState && userState.pendingRewards > 0n)
+  const canUnstake = Boolean(providerReady && account && networkReady && selectedPosition && selectedPosition.principal > 0n)
+
+  const stakeNow = async () => {
     try {
       setBusyAction('stake')
       setError(null)
-      const wei = parseDecimalToWei(amount, 18)
-      if (wei <= 0n) throw new Error('Stake amount must be greater than zero')
-      await sendTransaction('stake(uint8)', encodeUint(BigInt(selectedPlan)), wei, 'Stake transaction sent. Waiting for confirmation...')
+      if (!canStake) throw new Error(amountValidation || 'Staking is not ready yet.')
+      await sendTransaction('stake(uint8)', encodeUint(BigInt(selectedPlan)), parsedAmount || 0n, 'Stake transaction sent. Waiting for confirmation...')
+      setAmount('')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Stake failed')
@@ -516,13 +669,10 @@ export function InriStakingClient() {
   }
 
   const claimAll = async () => {
-    if (!networkReady) {
-      setError('Select INRI CHAIN from the top header before claiming.')
-      return
-    }
     try {
       setBusyAction('claim')
       setError(null)
+      if (!canClaim) throw new Error('No rewards are ready to claim yet.')
       await sendTransaction('claimAll()', '', undefined, 'Claim transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
@@ -532,15 +682,12 @@ export function InriStakingClient() {
     }
   }
 
-  const restake = async () => {
-    if (!networkReady) {
-      setError('Select INRI CHAIN from the top header before restaking.')
-      return
-    }
+  const restake = async (planId = selectedPlan) => {
     try {
-      setBusyAction('restake')
+      setBusyAction(`restake-${planId}`)
       setError(null)
-      await sendTransaction('restakeToPlan(uint8)', encodeUint(BigInt(selectedPlan)), undefined, 'Restake transaction sent. Waiting for confirmation...')
+      if (!canRestake) throw new Error('No pending rewards are available to restake yet.')
+      await sendTransaction('restakeToPlan(uint8)', encodeUint(BigInt(planId)), undefined, 'Restake transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Restake failed')
@@ -549,15 +696,14 @@ export function InriStakingClient() {
     }
   }
 
-  const unstake = async () => {
-    if (!networkReady) {
-      setError('Select INRI CHAIN from the top header before unstaking.')
-      return
-    }
+  const unstake = async (planId = selectedPlan) => {
+    const position = userState?.positions[planId]
     try {
-      setBusyAction('unstake')
+      setBusyAction(`unstake-${planId}`)
       setError(null)
-      await sendTransaction('unstake(uint8)', encodeUint(BigInt(selectedPlan)), undefined, 'Unstake transaction sent. Waiting for confirmation...')
+      if (!position || position.principal <= 0n) throw new Error('No active position in this plan.')
+      if (!networkReady) throw new Error('Select INRI CHAIN before unstaking.')
+      await sendTransaction('unstake(uint8)', encodeUint(BigInt(planId)), undefined, 'Unstake transaction sent. Waiting for confirmation...')
       await Promise.all([refreshContract(), refreshUser()])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unstake failed')
@@ -576,31 +722,40 @@ export function InriStakingClient() {
     }
   }
 
-  const selectedPosition = userState?.positions[selectedPlan] || null
-  const selectedPlanInfo = PLAN_META[selectedPlan]
+  const setMaxAmount = () => {
+    if (maxStakeNow <= 0n) {
+      setAmount('')
+      return
+    }
+    setAmount(formatAmount(maxStakeNow, 18, 4).replace(/,/g, ''))
+  }
+
+  const totalPrincipal = userState?.positions.reduce((sum, position) => sum + position.principal, 0n) || 0n
+  const activePlans = userState?.positions.filter((position) => position.principal > 0n).length || 0
   const networkLabel = networkReady ? 'INRI CHAIN ready' : chainId ? `Wrong network · ${chainId}` : 'Network not selected'
+  const connectionLabel = connectionType === 'walletconnect' ? 'INRI Wallet · WalletConnect' : connectionType === 'injected' ? 'Browser wallet' : 'No provider'
 
   return (
     <div className="space-y-8">
       <Surface className="p-6 sm:p-7">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-start">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-primary">
               <Sparkles className="h-4 w-4" />
               Staking workspace
             </div>
             <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-white sm:text-[2.3rem]">
-              Manage the whole staking flow from one clearer control panel.
+              Manage staking like the INRI Wallet: balance, plan limits, claim, restake and unstake.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-white/62 sm:text-base">
-              Connect any compatible EVM wallet, add INRI CHAIN, review the live program stats and execute stake, claim, restake or unstake without the layout feeling compressed.
+              The site now listens to the active wallet from the top header, including INRI Wallet via WalletConnect. Once connected, staking actions use that same approved provider.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard label="Wallet" value={shortAddress(account)} note={providerReady ? 'Connected wallet status' : 'Open this route with an EVM wallet'} />
+              <StatCard label="Wallet" value={shortAddress(account)} note={connectionLabel} />
               <StatCard label="Network" value={networkReady ? 'INRI CHAIN' : 'Not ready'} note={networkLabel} />
-              <StatCard label="Current era" value={contractStats.currentEra.toString()} note="Year in the fixed 5-year schedule" />
-              <StatCard label="Emission / day" value={`${formatAmount(contractStats.emissionPerDay)} INRI`} note="Current scheduled emission" />
+              <StatCard label="Balance" value={`${formatAmount(userState?.walletBalance || 0n)} INRI`} note="Available in connected wallet" />
+              <StatCard label="Pending" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="Claimable or restakable rewards" />
             </div>
           </div>
 
@@ -619,18 +774,37 @@ export function InriStakingClient() {
               <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">Current address</div>
               <div className="mt-2 break-all text-sm font-semibold text-white">{account || 'Not connected yet'}</div>
               <div className="mt-3 text-sm leading-6 text-white/56">
-                Compatible wallets: INRI Wallet, MetaMask, Rabby, OKX, Coinbase Wallet and similar EVM wallets that support custom networks.
+                {connectionType === 'walletconnect'
+                  ? 'Connected through the official INRI Wallet session approved by WalletConnect.'
+                  : 'Use the top Connect Wallet button. Browser wallets and INRI Wallet are both supported.'}
               </div>
             </div>
 
-            <div className="mt-4 rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-4 text-sm leading-7 text-white/66">
-              Use the Connect Wallet button in the top header. Once the wallet is connected and INRI CHAIN is selected there, the staking actions below become ready here automatically.
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              {!account ? (
+                <ActionButton
+                  onClick={connectWallet}
+                  disabled={busyAction === 'connect'}
+                  className="border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] hover:-translate-y-px hover:brightness-105"
+                >
+                  {busyAction === 'connect' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Wallet2 className="h-4 w-4" />}
+                  Connect wallet
+                </ActionButton>
+              ) : null}
+              <ActionButton
+                onClick={switchNetwork}
+                disabled={busyAction === 'network' || !providerReady}
+                className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
+              >
+                {busyAction === 'network' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                {networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
+              </ActionButton>
             </div>
           </div>
         </div>
       </Surface>
 
-      <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.08fr)_380px] 2xl:items-start">
+      <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.08fr)_390px] 2xl:items-start">
         <div className="space-y-6">
           <Surface className="p-6 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -639,19 +813,11 @@ export function InriStakingClient() {
                 <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{STAKING_ADDRESS}</div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={copyAddress}
-                  className="inri-button-secondary min-w-[132px]"
-                >
+                <button onClick={copyAddress} className="inri-button-secondary min-w-[132px]">
                   <Copy className="h-4 w-4" />
                   {copied ? 'Copied' : 'Copy'}
                 </button>
-                <a
-                  href={EXPLORER_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inri-button-secondary min-w-[168px]"
-                >
+                <a href={EXPLORER_URL} target="_blank" rel="noreferrer" className="inri-button-secondary min-w-[168px]">
                   Official explorer
                   <ExternalLink className="h-4 w-4" />
                 </a>
@@ -659,9 +825,9 @@ export function InriStakingClient() {
             </div>
 
             <div className="mt-5 grid gap-3 md:grid-cols-3">
-              <StatCard label="Min stake" value={`${formatAmount(contractStats.minStake)} INRI`} note="Minimum amount required to enter" />
-              <StatCard label="Max per plan" value={`${formatAmount(contractStats.maxPerPlan)} INRI`} note="Maximum principal allowed in each plan" />
-              <StatCard label="Rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Base rewards still waiting to be emitted" />
+              <StatCard label="Total staked by you" value={`${formatAmount(totalPrincipal)} INRI`} note={`${activePlans} active plan${activePlans === 1 ? '' : 's'}`} />
+              <StatCard label="Min first stake" value={`${formatAmount(minStake)} INRI`} note="Required to open a fresh plan" />
+              <StatCard label="Max per plan" value={`${formatAmount(maxPerPlan)} INRI`} note="Principal cap inside each plan" />
             </div>
           </Surface>
 
@@ -669,96 +835,145 @@ export function InriStakingClient() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Choose your plan</div>
-                <h3 className="mt-2 text-2xl font-black text-white sm:text-[2rem]">Pick the lock period before sending INRI.</h3>
+                <h3 className="mt-2 text-2xl font-black text-white sm:text-[2rem]">Pick a lock period and see your live position.</h3>
               </div>
-              <div className="text-sm leading-6 text-white/54">Penalties only apply to early unlocks.</div>
+              <div className="text-sm leading-6 text-white/54">Early penalty is disabled if emergency exit is active.</div>
             </div>
 
             <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {PLAN_META.map((plan) => {
                 const position = userState?.positions[plan.id]
-                const active = position?.active
+                const active = Boolean(position && position.principal > 0n)
+                const fill = percentOf(position?.principal || 0n, maxPerPlan)
+                const restakeBusy = busyAction === `restake-${plan.id}`
+                const unstakeBusy = busyAction === `unstake-${plan.id}`
                 return (
-                  <button
+                  <div
                     key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`min-w-0 rounded-[1.55rem] border p-5 text-left transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]' : 'border-white/10 bg-white/[0.03] hover:border-primary/35 hover:bg-primary/[0.05]'}`}
+                    className={`min-w-0 rounded-[1.55rem] border p-5 transition ${selectedPlan === plan.id ? 'border-primary/50 bg-primary/[0.10] shadow-[0_0_0_1px_rgba(19,164,255,0.10)]' : 'border-white/10 bg-white/[0.03]'}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
-                        <div className="mt-2 text-3xl font-black leading-none text-white">{plan.days} days</div>
+                    <button onClick={() => setSelectedPlan(plan.id)} className="block w-full text-left" type="button">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">{plan.title}</div>
+                          <div className="mt-2 text-3xl font-black leading-none text-white">{plan.days} days</div>
+                        </div>
+                        <div className="rounded-full border border-white/12 bg-black/25 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
                       </div>
-                      <div className="rounded-full border border-white/12 bg-black/25 px-3 py-1.5 text-sm font-black text-white">{plan.multiplier}</div>
+                      <div className="mt-4 text-sm leading-7 text-white/58">Penalty {contractStats.emergencyExitEnabled ? 'disabled' : plan.penalty} before unlock. {plan.accent}.</div>
+                    </button>
+
+                    <div className="mt-4 grid gap-2">
+                      <InfoRow label="Your principal" value={`${formatAmount(position?.principal || 0n)} INRI`} />
+                      <InfoRow label="Plan pending" value={`${formatAmount(position?.pendingRewards || 0n, 18, 6)} INRI`} />
+                      <InfoRow label="Unlock at" value={position?.unlockAt ? formatTimestamp(position.unlockAt) : '—'} />
+                      <InfoRow label="Time left" value={active ? formatTime(userState?.timeUntilUnlock[plan.id] || 0n) : 'No active position'} />
                     </div>
-                    <div className="mt-4 text-sm leading-7 text-white/58">Penalty {plan.penalty} before unlock. {plan.accent}.</div>
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-                      <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${active ? 'border-primary/35 bg-primary/[0.10] text-primary' : 'border-white/12 bg-white/[0.03] text-white/50'}`}>
-                        {active ? 'Active position' : 'No position'}
-                      </span>
-                      <span className="text-white/44">{active ? `${formatAmount(position?.principal || 0n)} INRI` : '—'}</span>
+
+                    <div className="mt-4 grid gap-2">
+                      <div className="flex items-center justify-between gap-3 text-xs font-bold text-white/52">
+                        <span>Plan fill</span>
+                        <span>{fill.toFixed(fill >= 10 ? 0 : 1)}%</span>
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-[linear-gradient(90deg,#33c3ff_0%,#5a7cff_100%)]" style={{ width: `${fill}%` }} />
+                      </div>
                     </div>
-                  </button>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlan(plan.id)}
+                        disabled={selectedPlan === plan.id}
+                        className="rounded-full border border-white/12 bg-black/25 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-white transition hover:border-primary/40 disabled:opacity-60"
+                      >
+                        {selectedPlan === plan.id ? 'Selected' : 'Use for stake'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => restake(plan.id)}
+                        disabled={!canRestake || Boolean(busyAction)}
+                        className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-white transition hover:border-primary/40 disabled:opacity-50"
+                      >
+                        {restakeBusy ? 'Processing' : 'Restake here'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => unstake(plan.id)}
+                        disabled={!active || !networkReady || Boolean(busyAction)}
+                        className="rounded-full border border-rose-300/20 bg-rose-500/[0.06] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-rose-100 transition hover:border-rose-300/45 disabled:opacity-50"
+                      >
+                        {unstakeBusy ? 'Processing' : 'Unstake'}
+                      </button>
+                    </div>
+                  </div>
                 )
               })}
             </div>
           </Surface>
 
           <Surface className="p-6 sm:p-7">
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
               <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Create or manage position</div>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <label className="block min-w-0">
-                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected plan</div>
-                    <div className="mt-2 flex h-14 items-center rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white">
-                      {selectedPlanInfo.title} · {selectedPlanInfo.multiplier}
-                    </div>
-                  </label>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Create position</div>
+                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_150px]">
                   <label className="block min-w-0">
                     <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Amount in INRI</div>
                     <input
                       inputMode="decimal"
                       value={amount}
-                      onChange={(event) => setAmount(event.target.value)}
+                      onChange={(event) => setAmount(event.target.value.replace(/,/g, '.'))}
                       placeholder="100"
                       className="mt-2 h-14 w-full rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white outline-none transition placeholder:text-white/24 focus:border-primary/55"
                     />
                   </label>
+                  <div className="grid gap-2">
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/46">Selected</div>
+                    <div className="flex h-14 items-center rounded-[1.1rem] border border-white/12 bg-black/30 px-4 text-base font-semibold text-white">
+                      {selectedPlanInfo.title}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/30 p-4 text-sm leading-7 text-white/58">
-                  Stake native INRI into the selected plan. Claim, restake and unstake continue using the same connected wallet, so the whole staking flow stays in one place.
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <InfoRow label="Wallet available" value={`${formatAmount(userState?.walletBalance || 0n)} INRI`} />
+                  <InfoRow label="Plan remaining" value={`${formatAmount(planRemaining)} INRI`} />
+                  <InfoRow label="Minimum now" value={`${selectedPosition?.principal && selectedPosition.principal > 0n ? 'No minimum' : `${formatAmount(minStake)} INRI`}`} />
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {amountValidation ? (
+                  <div className="mt-4 rounded-[1.1rem] border border-amber-300/20 bg-amber-400/[0.08] p-4 text-sm font-bold leading-6 text-amber-100">
+                    {amountValidation}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[1.1rem] border border-primary/20 bg-primary/[0.07] p-4 text-sm font-bold leading-6 text-cyan-100">
+                    Ready to stake into {selectedPlanInfo.title}. A small gas reserve is kept when using Max.
+                  </div>
+                )}
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <ActionButton
+                    onClick={setMaxAmount}
+                    disabled={!userState || maxStakeNow <= 0n || Boolean(busyAction)}
+                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
+                  >
+                    Max
+                  </ActionButton>
                   <ActionButton
                     onClick={stakeNow}
-                    disabled={busyAction === 'stake' || !providerReady}
+                    disabled={!canStake || Boolean(busyAction)}
                     className="border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] hover:-translate-y-px hover:brightness-105"
                   >
-                    {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Stake INRI'}
+                    {busyAction === 'stake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                    Stake INRI
                   </ActionButton>
                   <ActionButton
                     onClick={claimAll}
-                    disabled={busyAction === 'claim' || !userState?.canClaim}
+                    disabled={!canClaim || Boolean(busyAction)}
                     className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
                   >
-                    {busyAction === 'claim' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Claim rewards'}
-                  </ActionButton>
-                  <ActionButton
-                    onClick={restake}
-                    disabled={busyAction === 'restake'}
-                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
-                  >
-                    {busyAction === 'restake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Restake rewards'}
-                  </ActionButton>
-                  <ActionButton
-                    onClick={unstake}
-                    disabled={busyAction === 'unstake'}
-                    className="border-white/14 bg-white/[0.04] text-white hover:-translate-y-px hover:border-primary/55 hover:bg-primary/10"
-                  >
-                    {busyAction === 'unstake' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Unstake selected'}
+                    {busyAction === 'claim' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                    Claim daily
                   </ActionButton>
                 </div>
               </div>
@@ -769,10 +984,10 @@ export function InriStakingClient() {
                   Position summary
                 </div>
                 <div className="mt-5 grid gap-3">
-                  <StatCard label="Pending rewards" value={`${formatAmount(userState?.pendingRewards || 0n)} INRI`} note="All unclaimed rewards across plans" />
                   <StatCard label="Selected principal" value={`${formatAmount(selectedPosition?.principal || 0n)} INRI`} note="Principal in the selected plan" />
-                  <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position on this plan'} />
+                  <StatCard label="Unlocks at" value={formatTimestamp(selectedPosition?.unlockAt || 0n)} note={selectedPosition?.principal ? `Time left: ${formatTime(userState?.timeUntilUnlock[selectedPlan] || 0n)}` : 'No active position on this plan'} />
                   <StatCard label="Can claim" value={userState?.canClaim ? 'Yes' : 'Not yet'} note={userState?.nextClaimAt ? `Next claim: ${formatTimestamp(userState.nextClaimAt)}` : 'Claim availability updates automatically'} />
+                  <StatCard label="Rewards left" value={`${formatAmount(contractStats.baseRewardsRemaining)} INRI`} note="Base rewards still waiting to be emitted" />
                 </div>
               </div>
             </div>
@@ -791,12 +1006,7 @@ export function InriStakingClient() {
                 </div>
               </div>
               {txHash ? (
-                <a
-                  href={`https://explorer.inri.life/tx/${txHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]"
-                >
+                <a href={`https://explorer.inri.life/tx/${txHash}`} target="_blank" rel="noreferrer" className="mt-4 block rounded-[1.2rem] border border-primary/24 bg-primary/[0.08] p-4 transition hover:bg-primary/[0.12]">
                   <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Latest transaction</div>
                   <div className="mt-2 break-all font-mono text-sm font-semibold text-white">{txHash}</div>
                 </a>
@@ -807,9 +1017,11 @@ export function InriStakingClient() {
           <Surface className="p-5 sm:p-6">
             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Program state</div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-1">
-              <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note="Started once with the funded amount" />
+              <StatCard label="Program started" value={contractStats.started ? 'Yes' : 'No'} note={`Started at ${formatTimestamp(contractStats.startTime)}`} />
+              <StatCard label="Program ends" value={formatTimestamp(contractStats.programEnd)} note="Five-year staking schedule" />
               <StatCard label="New stakes" value={contractStats.newStakesPaused ? 'Paused' : 'Open'} note="Controls fresh stake and restake entry" />
               <StatCard label="Emergency exit" value={contractStats.emergencyExitEnabled ? 'Enabled' : 'Off'} note="When enabled, unstake has no penalty" />
+              <StatCard label="Current era" value={contractStats.currentEra.toString()} note={`${formatAmount(contractStats.emissionPerDay)} INRI emitted per day`} />
               <StatCard label="Contract balance" value={`${formatAmount(contractStats.contractBalance)} INRI`} note="Current balance reported by the staking contract" />
             </div>
           </Surface>
@@ -819,16 +1031,11 @@ export function InriStakingClient() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-1">
               {([
                 { title: 'INRI Wallet', text: 'Open the official wallet before staking.', href: 'https://wallet.inri.life', external: true },
-                { title: 'Official explorer', text: 'Inspect the staking contract and transactions.', href: 'https://explorer.inri.life/address/0xbE7eB939065Fa28d9d81Ab7842e0b615F02e26c9', external: true },
+                { title: 'Official explorer', text: 'Inspect the staking contract and transactions.', href: EXPLORER_URL, external: true },
                 { title: 'Whitepaper', text: 'Read the tokenomics and program context.', href: '/whitepaper' },
                 { title: 'Pool', text: 'Compare mining and staking side by side.', href: '/pool' },
               ] as { title: string; text: string; href: string; external?: boolean }[]).map((item) => (
-                <Link
-                  key={item.title}
-                  href={item.href}
-                  {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  className="block rounded-[1.3rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10"
-                >
+                <Link key={item.title} href={item.href} {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})} className="block rounded-[1.3rem] border border-white/10 bg-black/28 p-4 transition hover:border-primary/40 hover:bg-primary/10">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-base font-black text-white">{item.title}</div>
