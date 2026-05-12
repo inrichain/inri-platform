@@ -1,18 +1,18 @@
 {
   "mode": "live",
-  "updatedAt": "2026-05-12T16:59:57.604Z",
-  "currentBlock": 1201630,
+  "updatedAt": "2026-05-12T19:02:32.858Z",
+  "currentBlock": 1202261,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1201630,
+  "lastScannedBlock": 1202261,
   "backfillComplete": true,
   "participants": [
     {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 127430,
-      "lastBlock": 1201630,
-      "chainSoloBlocks": 127430,
+      "blocks": 127832,
+      "lastBlock": 1202261,
+      "chainSoloBlocks": 127832,
       "poolSoloBlocks": 0
     },
     {
@@ -24,10 +24,10 @@
     },
     {
       "address": "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8",
-      "blocks": 8866,
-      "lastBlock": 1201604,
+      "blocks": 8920,
+      "lastBlock": 1202207,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 8866
+      "poolSoloBlocks": 8920
     },
     {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -38,17 +38,17 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 5502,
-      "lastBlock": 1201606,
+      "blocks": 5524,
+      "lastBlock": 1202243,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 5502
+      "poolSoloBlocks": 5524
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 5217,
-      "lastBlock": 1201595,
+      "blocks": 5314,
+      "lastBlock": 1202245,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 5184
+      "poolSoloBlocks": 5281
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -59,10 +59,10 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 3774,
-      "lastBlock": 1201479,
+      "blocks": 3792,
+      "lastBlock": 1202226,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 3774
+      "poolSoloBlocks": 3792
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
