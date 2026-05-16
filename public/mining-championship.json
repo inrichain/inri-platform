@@ -1,18 +1,18 @@
 {
   "mode": "live",
-  "updatedAt": "2026-05-16T19:40:58.904Z",
-  "currentBlock": 1229303,
+  "updatedAt": "2026-05-16T20:27:08.341Z",
+  "currentBlock": 1229473,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1229303,
+  "lastScannedBlock": 1229473,
   "backfillComplete": true,
   "participants": [
     {
       "address": "0x0b8f1f5e0a73faa3a66b4e8bb944e08171970c42",
-      "blocks": 139471,
-      "lastBlock": 1229303,
-      "chainSoloBlocks": 139471,
+      "blocks": 139573,
+      "lastBlock": 1229473,
+      "chainSoloBlocks": 139573,
       "poolSoloBlocks": 0
     },
     {
@@ -31,10 +31,10 @@
     },
     {
       "address": "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8",
-      "blocks": 10046,
-      "lastBlock": 1229283,
+      "blocks": 10055,
+      "lastBlock": 1229438,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10046
+      "poolSoloBlocks": 10055
     },
     {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -45,10 +45,10 @@
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
-      "blocks": 5925,
-      "lastBlock": 1229286,
+      "blocks": 5968,
+      "lastBlock": 1229453,
       "chainSoloBlocks": 16,
-      "poolSoloBlocks": 5909
+      "poolSoloBlocks": 5952
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
@@ -66,17 +66,17 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 4196,
-      "lastBlock": 1229287,
+      "blocks": 4200,
+      "lastBlock": 1229420,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 4196
+      "poolSoloBlocks": 4200
     },
     {
       "address": "0xcfb18f8bbaa3c4f869ce4c12f87d73b79ad75f5f",
-      "blocks": 1377,
-      "lastBlock": 1229188,
+      "blocks": 1379,
+      "lastBlock": 1229373,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 1377
+      "poolSoloBlocks": 1379
     },
     {
       "address": "0x9890a04be50614e375926de4ff324e40fdac8acf",
