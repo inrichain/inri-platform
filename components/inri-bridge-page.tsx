@@ -633,248 +633,329 @@ export function InriBridgePage() {
           : route.primaryAction
 
   return (
-    <section className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-        <div className="rounded-[28px] border border-white/10 bg-black/25 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:p-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100">
-            <ShieldCheck className="h-3.5 w-3.5" /> Official iUSD Bridge
-          </div>
-          <h1 className="mt-4 max-w-[560px] text-4xl font-black leading-[0.95] tracking-[-0.07em] text-white sm:text-5xl lg:text-6xl">
-            Bridge USDT and iUSD inside INRI.
-          </h1>
-          <p className="mt-4 max-w-xl text-sm font-semibold leading-7 text-white/64 sm:text-base">
-            One clean screen for the working bridge: connect, approve when needed, deposit or burn, auto-detect watcher signatures and claim.
-          </p>
-          <div className="mt-5 grid grid-cols-3 gap-2">
-            {[
-              ['0.2%', 'Fee'],
-              ['2 / 4', 'Signatures'],
-              ['3777', 'Chain ID'],
-            ].map(([value, label]) => (
-              <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                <div className="text-lg font-black text-white">{value}</div>
-                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">{label}</div>
+    <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.55),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.30),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.055)_1px,transparent_1px)] bg-[size:72px_72px]" />
+        <div className="absolute -left-28 top-24 h-[32rem] w-[32rem] rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="absolute -right-20 bottom-0 h-[30rem] w-[30rem] rounded-full bg-blue-500/20 blur-3xl" />
+
+        <div className="relative mx-auto max-w-[1460px] px-4 py-8 sm:px-8 lg:py-10 xl:px-12">
+          <div className="grid gap-5 lg:grid-cols-[0.74fr_0.92fr] lg:items-start">
+            <aside className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-6 lg:sticky lg:top-28">
+              <div className="inline-flex items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Official iUSD Bridge
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="rounded-[30px] border border-cyan-300/20 bg-[#071322]/88 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/85">Bridge</div>
-              <h2 className="text-2xl font-black tracking-[-0.05em] text-white">iUSD Transfer</h2>
-            </div>
-            <div className="w-full sm:w-auto">
-              <ConnectWalletButton />
-            </div>
-          </div>
+              <h1 className="mt-5 max-w-2xl text-[2.7rem] font-black leading-[0.88] tracking-[-0.075em] text-white sm:text-[3.6rem] xl:text-[4.6rem]">
+                Bridge USDT and iUSD inside INRI.
+              </h1>
 
-          <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/24 p-1.5">
-            {(['buy', 'sell'] as Direction[]).map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setDirection(item)}
-                className={`rounded-xl px-4 py-3 text-sm font-black transition ${
-                  direction === item
-                    ? 'bg-cyan-300 text-black shadow-[0_12px_35px_rgba(19,164,255,0.22)]'
-                    : 'text-white/55 hover:bg-white/[0.06] hover:text-white'
-                }`}
-              >
-                {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
-              </button>
-            ))}
-          </div>
+              <p className="mt-5 max-w-xl text-sm font-semibold leading-7 text-cyan-50/70 sm:text-base">
+                Tela única para o bridge que já funciona: conecta, aprova quando precisar, faz deposit/burn,
+                detecta o watcher e mostra o claim no lugar certo.
+              </p>
 
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-cyan-300/15 bg-white/[0.035] p-4">
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">From</div>
-              <div className="mt-2 flex items-end justify-between gap-4">
-                <div>
-                  <div className="text-2xl font-black text-white">{route.fromToken}</div>
-                  <div className="text-sm font-black text-cyan-100/70">{route.fromChain}</div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  ['0.2%', 'Fee'],
+                  ['2 / 4', 'Signatures'],
+                  ['3777', 'Chain ID'],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-[16px] border border-white/10 bg-white/[0.045] px-4 py-3">
+                    <div className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
+                    <div className="mt-2 text-lg font-black text-white">{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 grid gap-2 text-xs font-bold text-white/56">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
+                  Polygon USDT → INRI iUSD
                 </div>
-                <button type="button" onClick={() => void switchNetwork(route.sourceChain)} className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
-                  {onSourceNetwork ? 'Selected' : 'Switch'}
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
+                  INRI iUSD → Polygon USDT
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
+                  Auto-check a cada 5 segundos após a transação
+                </div>
+              </div>
+            </aside>
+
+            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.065] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.44),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-4">
+              <div className="rounded-[20px] border border-white/12 bg-[#061321]/82 p-4 sm:p-5">
+                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Bridge</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-[-0.045em] text-white sm:text-3xl">iUSD Transfer</h2>
+                  </div>
+                  <div className="w-full sm:w-auto">
+                    <ConnectWalletButton compact />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1">
+                  {(['buy', 'sell'] as Direction[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setDirection(item)}
+                      className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${
+                        direction === item
+                          ? 'bg-cyan-300 text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]'
+                          : 'text-white/55 hover:bg-white/[0.055] hover:text-white'
+                      }`}
+                    >
+                      {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-4 grid gap-2.5">
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">From</p>
+                        <p className="mt-2 text-2xl font-black text-white">{route.fromToken}</p>
+                        <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.fromChain}</p>
+                      </div>
+                      <span className="rounded-full border border-cyan-300/22 bg-cyan-300/[0.09] px-3 py-1.5 text-xs font-black text-cyan-100">
+                        Source
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
+                      className="-my-0.5 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_14px_32px_rgba(19,164,255,0.24)] transition hover:scale-105"
+                      aria-label="Reverse bridge route"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">To</p>
+                        <p className="mt-2 text-2xl font-black text-white">{route.toToken}</p>
+                        <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.toChain}</p>
+                      </div>
+                      <span className="rounded-full border border-emerald-300/22 bg-emerald-300/[0.08] px-3 py-1.5 text-xs font-black text-emerald-100">
+                        Auto claim
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/44">Amount</label>
+                    <button type="button" onClick={setMax} className="text-[11px] font-black uppercase tracking-[0.16em] text-cyan-200/80 hover:text-cyan-100">
+                      Max
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3 rounded-[15px] border border-white/10 bg-[#020914]/58 px-3 py-2.5">
+                    <input
+                      value={amount}
+                      onChange={(event) => setAmount(event.target.value)}
+                      inputMode="decimal"
+                      className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-[-0.035em] text-white outline-none placeholder:text-white/22 sm:text-3xl"
+                      placeholder="0.00"
+                    />
+                    <span className="shrink-0 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-sm font-black text-cyan-100">
+                      {route.fromToken}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
+                      <p className="text-white/42">You receive</p>
+                      <p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p>
+                    </div>
+                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
+                      <p className="text-white/42">Fee</p>
+                      <p className="mt-1 font-black text-white">0.2%</p>
+                    </div>
+                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
+                      <p className="text-white/42">Balance</p>
+                      <p className="mt-1 truncate font-black text-white">
+                        {balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {error ? (
+                  <div className="mt-3 rounded-[16px] border border-red-300/25 bg-red-300/[0.08] p-3 text-sm leading-6 text-red-100">
+                    <div className="flex gap-2">
+                      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => void submitSourceTx()}
+                    disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] bg-cyan-300 px-4 py-3 text-sm font-black text-black shadow-[0_18px_45px_rgba(19,164,255,0.26)] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                  >
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {busy ? 'Processing...' : mainButtonText}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => void claimDestination()}
+                    disabled={busy || !connected || !claim.id || (claim.status !== 'ready' && !claim.tx)}
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.045] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-42"
+                  >
+                    {claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                    {claim.status === 'ready'
+                      ? onClaimNetwork
+                        ? route.claimAction
+                        : `Switch to ${route.toChain} to claim`
+                      : 'Claim when ready'}
+                  </button>
+                </div>
+
+                <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/60">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-black text-white/82">Status</p>
+                      <p className="mt-1">{status}</p>
+                      <p className="mt-1">{claim.message}</p>
+                    </div>
+                    {bridgeIds.length ? (
+                      <button
+                        type="button"
+                        onClick={() => void checkApi(bridgeIds)}
+                        className="mt-2 inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/18 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 sm:mt-0"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Check
+                      </button>
+                    ) : null}
+                  </div>
+                  {claim.id ? <p className="mt-2 break-all text-xs font-bold text-cyan-200/70">ID: {claim.id}</p> : null}
+                  {sourceTx ? (
+                    <p className="mt-2 text-xs">
+                      TX:{' '}
+                      <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">
+                        {short(sourceTx, 10, 8)}
+                      </Link>
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Process</p>
+                  <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Live bridge steps</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => bridgeIds.length ? void checkApi(bridgeIds) : undefined}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                  aria-label="Refresh status"
+                >
+                  <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
-            </div>
 
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
-                className="-my-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300 text-black shadow-[0_14px_35px_rgba(19,164,255,0.22)] transition hover:scale-105"
-                aria-label="Reverse route"
-              >
-                <ArrowDown className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-cyan-300/15 bg-white/[0.035] p-4">
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">To</div>
-              <div className="mt-2 flex items-end justify-between gap-4">
-                <div>
-                  <div className="text-2xl font-black text-white">{route.toToken}</div>
-                  <div className="text-sm font-black text-cyan-100/70">{route.toChain}</div>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-black text-white/48">Auto claim</div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet in the header or bridge card.'} done={connected} />
+                <Step label="Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}.`} active={connected && !onSourceNetwork} done={onSourceNetwork} />
+                <Step label={direction === 'buy' ? 'Approve / Deposit' : 'Burn'} value={sourceTx ? `Submitted: ${short(sourceTx, 10, 8)}` : direction === 'buy' ? 'Approve USDT only if needed, then deposit.' : 'Burn iUSD to request Polygon release.'} active={busy} done={Boolean(sourceTx)} />
+                <Step label="Claim" value={claim.status === 'ready' ? 'Ready to claim.' : claim.status === 'done' ? 'Completed.' : claim.message} active={claim.status === 'checking'} done={claim.status === 'done'} />
               </div>
             </div>
-          </div>
 
-          <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Amount</span>
-              <button type="button" onClick={setMax} className="text-xs font-black text-cyan-100 hover:text-white">MAX</button>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                inputMode="decimal"
-                className="min-w-0 flex-1 bg-transparent text-4xl font-black tracking-[-0.06em] text-white outline-none placeholder:text-white/20"
-                placeholder="0.00"
-              />
-              <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-sm font-black text-cyan-100">{route.fromToken}</div>
-            </div>
-            <div className="mt-4 grid gap-2 text-xs font-bold text-white/55 sm:grid-cols-3">
-              <div className="rounded-xl bg-white/[0.035] p-3">
-                <div className="text-white/35">You receive</div>
-                <div className="mt-1 text-white">≈ {receiveText} {route.toToken}</div>
-              </div>
-              <div className="rounded-xl bg-white/[0.035] p-3">
-                <div className="text-white/35">Fee</div>
-                <div className="mt-1 text-white">0.2%</div>
-              </div>
-              <div className="rounded-xl bg-white/[0.035] p-3">
-                <div className="text-white/35">Balance</div>
-                <div className="mt-1 text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</div>
-              </div>
-            </div>
-          </div>
-
-          {error ? (
-            <div className="mt-4 rounded-2xl border border-red-300/25 bg-red-300/[0.08] p-3 text-sm font-semibold text-red-100">
-              <CircleAlert className="mr-2 inline h-4 w-4" /> {error}
-            </div>
-          ) : null}
-
-          {!connected ? (
-            <div className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-3 text-sm font-semibold text-cyan-50/80">
-              <Wallet className="mr-2 inline h-4 w-4" /> Connect once using the site wallet. The bridge uses the same wallet state as the header.
-            </div>
-          ) : null}
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => void submitSourceTx()}
-              disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-4 text-base font-black text-black shadow-[0_18px_48px_rgba(19,164,255,0.26)] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-            >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
-              {busy ? 'Processing...' : mainButtonText}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => void claimDestination()}
-              disabled={busy || !connected || claim.status !== 'ready'}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-300/[0.10] px-5 py-4 text-base font-black text-emerald-50 transition hover:bg-emerald-300/[0.16] disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
-              {onClaimNetwork ? route.claimAction : `Switch to ${route.toChain} to claim`}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/80">Live process</div>
-              <h3 className="text-xl font-black text-white">Bridge timeline</h3>
-            </div>
-            <button type="button" onClick={() => void checkApi()} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-300/35 hover:text-cyan-100">
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet'} done={connected} />
-            <Step label="Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}`} done={onSourceNetwork} active={connected && !onSourceNetwork} />
-            <Step label={direction === 'buy' ? 'Approve / Deposit' : 'Burn'} value={sourceTx ? short(sourceTx, 10, 8) : direction === 'buy' ? 'Approve only if needed, then deposit' : 'Burn iUSD to request release'} done={Boolean(sourceTx)} active={busy && !sourceTx} />
-            <Step label="Claim" value={claim.message} done={claim.status === 'done'} active={claim.status === 'checking' || claim.status === 'ready'} />
-          </div>
-
-          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-semibold text-white/68">
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Status</div>
-            <div className="mt-2 text-white/82">{status}</div>
-            <div className="mt-1 text-white/55">{claim.message}</div>
-            {claim.id ? <div className="mt-2 break-all text-xs text-cyan-100/70">Bridge ID: {claim.id}</div> : null}
-            {sourceTx ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" className="inline-flex items-center gap-1 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
-                  View source TX <ExternalLink className="h-3.5 w-3.5" />
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Tools</p>
+              <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Safe helpers</h3>
+              <div className="mt-4 grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => void addIusdToken()}
+                  className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]"
+                >
+                  Add iUSD token
+                  <Wallet className="h-4 w-4" />
+                </button>
+                <Link
+                  href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/12 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white"
+                >
+                  Recovery old page
+                  <ExternalLink className="h-4 w-4" />
                 </Link>
-                <button type="button" onClick={() => copyText(sourceTx, 'tx')} className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/70 hover:text-white">
-                  <Copy className="h-3.5 w-3.5" /> {copied === 'tx' ? 'Copied' : 'Copy TX'}
-                </button>
               </div>
-            ) : null}
+              <p className="mt-4 text-xs leading-6 text-white/50">
+                Esta página só controla a experiência do usuário. Não altera contratos, watchers, PM2, claims nem releases.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
-          <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/80">Safety</div>
-          <h3 className="mt-1 text-xl font-black text-white">Clean user flow</h3>
-          <div className="mt-4 space-y-3">
-            {[
-              ['No backend changes', 'This page does not touch contracts, PM2, watchers, claims or releases.'],
-              ['Auto watcher check', 'After deposit or burn, it checks the current bridge APIs automatically.'],
-              ['Safe fallback', 'If raw calldata is not exposed, it opens the existing claim page as recovery.'],
-            ].map(([title, text]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                <div className="font-black text-white">{title}</div>
-                <div className="mt-1 text-sm font-semibold leading-6 text-white/55">{text}</div>
+          <div className="mt-5 rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Recent</p>
+                <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Local bridge history</h3>
               </div>
-            ))}
-          </div>
+              <p className="text-xs font-bold text-white/45">{copied ? 'Copied.' : 'Saved only in this browser.'}</p>
+            </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button type="button" onClick={() => void addIusdToken()} className="rounded-xl border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
-              Add iUSD token
-            </button>
-            <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/70 hover:text-white">
-              Recovery page
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {history.length ? (
-        <div className="mt-5 rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-lg font-black text-white">Recent bridge activity</h3>
-            <div className="text-xs font-black uppercase tracking-[0.18em] text-white/35">Local only</div>
-          </div>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item) => (
-              <div key={`${item.id}-${item.createdAt}`} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}</div>
-                  <div className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">{item.status}</div>
+            <div className="mt-4 grid gap-2">
+              {history.length === 0 ? (
+                <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm text-white/52">
+                  No bridge operations from this page yet.
                 </div>
-                <div className="mt-2 font-semibold text-white/55">{item.amount} → ≈ {item.receive}</div>
-                <div className="mt-1 break-all text-xs text-white/35">{short(item.id, 10, 8)}</div>
-              </div>
-            ))}
+              ) : history.map((item) => (
+                <div key={`${item.id}-${item.tx}`} className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="font-black text-white">
+                        {item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} {item.direction === 'buy' ? 'USDT' : 'iUSD'} → {item.receive} {item.direction === 'buy' ? 'iUSD' : 'USDT'}
+                      </p>
+                      <p className="mt-1 text-xs text-white/45">{new Date(item.createdAt).toLocaleString()} · {item.status}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs font-black">
+                      <Link href={explorerTx(item.direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID, item.tx)} target="_blank" rel="noreferrer" className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
+                        {short(item.tx, 10, 8)}
+                      </Link>
+                      <button type="button" onClick={() => copyText(item.id, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
+                        <Copy className="h-3.5 w-3.5" />
+                        Copy ID
+                      </button>
+                      {item.status !== 'done' ? (
+                        <button type="button" onClick={() => { setDirection(item.direction); setBridgeIds([item.id]); setSourceTx(item.tx); void checkApi([item.id]) }} className="rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-cyan-100">
+                          Check
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      ) : null}
-    </section>
+      </section>
+    </main>
   )
 }
