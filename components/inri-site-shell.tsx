@@ -26,6 +26,7 @@ export type InriNavItem = {
 export const inriNavItems: InriNavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Wallets', href: '/wallets' },
+  { label: 'Bridge', href: '/bridge' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
@@ -38,6 +39,7 @@ const EXPLORER_URL = 'https://explorer.inri.life'
 const utilityNavItems: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
   { label: 'Explorer', href: EXPLORER_URL, external: true },
+  { label: 'Bridge', href: '/bridge' },
   { label: 'Whitepaper', href: '/whitepaper' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'Swap', href: '/swap' },
@@ -52,6 +54,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
     links: [
       { label: 'Home', href: '/' },
       { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
+      { label: 'Bridge', href: '/bridge' },
       { label: 'Explorer', href: EXPLORER_URL, external: true },
       { label: 'Whitepaper', href: '/whitepaper' },
     ],
@@ -62,6 +65,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
       { label: 'Mining', href: '/mining' },
       { label: 'Pool', href: '/pool' },
       { label: 'Staking', href: '/staking' },
+      { label: 'Bridge', href: '/bridge' },
       { label: 'Token Factory', href: '/token-factory' },
       { label: 'Swap', href: '/swap' },
       { label: 'P2P', href: '/p2p' },

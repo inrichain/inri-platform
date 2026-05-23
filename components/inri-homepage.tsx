@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import {
+  ArrowLeftRight,
   ArrowRight,
   Blocks,
   Coins,
@@ -18,6 +19,7 @@ import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
 const primaryRoutes = [
+  { title: 'Bridge', text: 'Move Polygon USDT into iUSD on INRI with a cleaner bridge flow.', href: '/bridge', icon: ArrowLeftRight },
   { title: 'Wallet', text: 'Open the official wallet and connect to INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
   { title: 'Explorer', text: 'Search blocks, transactions, tokens and contracts.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
   { title: 'Mining', text: 'Start mining with Windows, Ubuntu or pool routes.', href: '/mining', icon: Pickaxe },
@@ -66,7 +68,10 @@ export function InriHomepage() {
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
-                <InriLinkButton href="https://wallet.inri.life" external noTranslate>
+                <InriLinkButton href="/bridge" noTranslate>
+                  Open iUSD Bridge
+                </InriLinkButton>
+                <InriLinkButton href="https://wallet.inri.life" external noTranslate variant="secondary">
                   Open INRI Wallet
                 </InriLinkButton>
                 <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
