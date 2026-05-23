@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import {
-  ArrowLeftRight,
   ArrowRight,
+  ArrowLeftRight,
   Blocks,
   Coins,
   Factory,
@@ -19,8 +19,8 @@ import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
 const primaryRoutes = [
-  { title: 'Bridge', text: 'Move Polygon USDT into iUSD on INRI with a cleaner bridge flow.', href: '/bridge', icon: ArrowLeftRight },
   { title: 'Wallet', text: 'Open the official wallet and connect to INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
+  { title: 'Bridge', text: 'Move Polygon USDT into iUSD on INRI.', href: '/bridge/', icon: ArrowLeftRight },
   { title: 'Explorer', text: 'Search blocks, transactions, tokens and contracts.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
   { title: 'Mining', text: 'Start mining with Windows, Ubuntu or pool routes.', href: '/mining', icon: Pickaxe },
   { title: 'Token Factory', text: 'Create tokens directly on INRI Chain 3777.', href: '/token-factory', icon: Factory },
@@ -68,11 +68,11 @@ export function InriHomepage() {
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
-                <InriLinkButton href="/bridge" noTranslate>
-                  Open iUSD Bridge
-                </InriLinkButton>
-                <InriLinkButton href="https://wallet.inri.life" external noTranslate variant="secondary">
+                <InriLinkButton href="https://wallet.inri.life" external noTranslate>
                   Open INRI Wallet
+                </InriLinkButton>
+                <InriLinkButton href="/bridge/" variant="secondary">
+                  Open iUSD Bridge
                 </InriLinkButton>
                 <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
                   Explore Chain
