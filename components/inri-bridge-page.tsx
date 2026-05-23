@@ -18,7 +18,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
-import { InriShell } from '@/components/inri-site-shell'
 
 const BRIDGE_ORIGIN = 'https://iusd-bridge.inri.life'
 const CLAIM_API = `${BRIDGE_ORIGIN}/api/claim`
@@ -669,8 +668,7 @@ export function InriBridgePage() {
         : route.primaryAction
 
   return (
-    <InriShell>
-      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
+    <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
         <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.50),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.23),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
           <div className="absolute -left-28 top-24 h-[32rem] w-[32rem] rounded-full bg-cyan-400/20 blur-3xl" />
@@ -950,7 +948,6 @@ export function InriBridgePage() {
             </div>
           </div>
         </section>
-      </main>
-    </InriShell>
+    </main>
   )
 }

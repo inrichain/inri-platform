@@ -38,3 +38,14 @@ The uploaded site zip does not include the bridge server code or the exact `burn
 - INRI Executor: `0x07DE046e96c33a8E575234282e1CccAC56d3d880`
 - INRI iUSD: `0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC`
 - Bridge origin: `https://iusd-bridge.inri.life`
+
+
+## VISIBLE ROUTE HOTFIX
+
+The `/bridge` route now follows the same pattern as the other site pages:
+
+- `src/app/bridge/page.tsx` is a server page.
+- `InriShell` is rendered at the route level.
+- `components/inri-bridge-page.tsx` is only the client-side bridge body.
+
+This avoids a blank route if the browser delays or blocks the bridge client bundle.
