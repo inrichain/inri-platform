@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import {
   ArrowRight,
-  ArrowLeftRight,
   Blocks,
+  ArrowLeftRight,
   Coins,
   Factory,
   FileText,
@@ -19,8 +19,8 @@ import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { NetworkPulse } from '@/components/network-pulse'
 
 const primaryRoutes = [
+  { title: 'iUSD Bridge', text: 'Bridge Polygon USDT into iUSD on INRI and sell back to USDT from one official screen.', href: '/bridge/', icon: ArrowLeftRight },
   { title: 'Wallet', text: 'Open the official wallet and connect to INRI.', href: 'https://wallet.inri.life', icon: Wallet, external: true },
-  { title: 'Bridge', text: 'Move Polygon USDT into iUSD on INRI.', href: '/bridge/', icon: ArrowLeftRight },
   { title: 'Explorer', text: 'Search blocks, transactions, tokens and contracts.', href: 'https://explorer.inri.life', icon: Blocks, external: true },
   { title: 'Mining', text: 'Start mining with Windows, Ubuntu or pool routes.', href: '/mining', icon: Pickaxe },
   { title: 'Token Factory', text: 'Create tokens directly on INRI Chain 3777.', href: '/token-factory', icon: Factory },
@@ -64,15 +64,15 @@ export function InriHomepage() {
               </h1>
 
               <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72 sm:text-xl">
-                Wallet, explorer, mining, staking, token launch, pool, whitepaper and P2P trading in one stronger network interface.
+                Wallet, iUSD bridge, explorer, mining, staking, token launch, pool, whitepaper and P2P trading in one stronger network interface.
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
-                <InriLinkButton href="https://wallet.inri.life" external noTranslate>
-                  Open INRI Wallet
-                </InriLinkButton>
-                <InriLinkButton href="/bridge/" variant="secondary">
+                <InriLinkButton href="/bridge/" noTranslate>
                   Open iUSD Bridge
+                </InriLinkButton>
+                <InriLinkButton href="https://wallet.inri.life" external variant="secondary" noTranslate>
+                  Open INRI Wallet
                 </InriLinkButton>
                 <InriLinkButton href="https://explorer.inri.life" external variant="secondary" noTranslate>
                   Explore Chain

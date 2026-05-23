@@ -26,6 +26,7 @@ export type InriNavItem = {
 export const inriNavItems: InriNavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Wallets', href: '/wallets' },
+  { label: 'Bridge', href: '/bridge/' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
@@ -37,6 +38,7 @@ const EXPLORER_URL = 'https://explorer.inri.life'
 
 const utilityNavItems: InriNavItem[] = [
   { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
+  { label: 'iUSD Bridge', href: '/bridge/' },
   { label: 'Explorer', href: EXPLORER_URL, external: true },
   { label: 'Whitepaper', href: '/whitepaper' },
   { label: 'Token Factory', href: '/token-factory' },
@@ -52,6 +54,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
     links: [
       { label: 'Home', href: '/' },
       { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
+      { label: 'iUSD Bridge', href: '/bridge/' },
       { label: 'Explorer', href: EXPLORER_URL, external: true },
       { label: 'Whitepaper', href: '/whitepaper' },
     ],
@@ -345,7 +348,10 @@ export function InriHeader() {
             <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
               Explorer
             </InriLinkButton>
-            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
+            <InriLinkButton href="/bridge/" noTranslate>
+              iUSD Bridge
+            </InriLinkButton>
+            <InriLinkButton href={LIVE_WALLET_URL} external variant="secondary" noTranslate>
               INRI Wallet
             </InriLinkButton>
             <ConnectWalletButton compact />
