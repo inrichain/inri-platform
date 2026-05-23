@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowDown,
-  ArrowLeftRight,
   CheckCircle2,
   CircleAlert,
   Clock3,
@@ -13,7 +12,6 @@ import {
   Loader2,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Wallet,
   Zap,
 } from 'lucide-react'
@@ -25,14 +23,14 @@ const RELEASE_API = `${BRIDGE_ORIGIN}/api/release`
 
 const POLYGON_CHAIN_ID = '0x89'
 const INRI_CHAIN_ID = '0xec1'
-const FEE_BPS = 20n
-const BPS_DENOMINATOR = 10_000n
-
 const POLYGON_USDT = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'
 const POLYGON_LOCKBOX = '0x7E2e6d4881e1470D541599397b4876b449296071'
 const INRI_IUSD = '0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC'
 
-const SELECTORS = {
+const FEE_BPS = 20n
+const BPS_DENOMINATOR = 10_000n
+
+const SELECTOR = {
   approve: '0x095ea7b3',
   allowance: '0xdd62ed3e',
   balanceOf: '0x70a08231',
@@ -42,7 +40,7 @@ const SELECTORS = {
 }
 
 type ProviderLike = {
-  request: (args: { method: string; params?: unknown[] | object; chainId?: string }) => Promise<any>
+  request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
 }
 
 type ActiveWalletState = {
@@ -52,72 +50,45 @@ type ActiveWalletState = {
   provider?: ProviderLike
 } | null
 
-type BridgeDirection = 'buy' | 'sell'
-type StepStatus = 'idle' | 'working' | 'done' | 'warning' | 'error'
-type SettlementStatus = 'idle' | 'checking' | 'waiting' | 'ready' | 'claimed' | 'error'
-
-type SettlementTx = {
-  to: string
-  data: string
-  value?: string
-}
-
-type SettlementState = {
-  status: SettlementStatus
+type Direction = 'buy' | 'sell'
+type ApiTx = { to: string; data: string; value?: string }
+type ClaimState = {
+  status: 'idle' | 'checking' | 'waiting' | 'ready' | 'done' | 'error'
   message: string
-  raw?: unknown
-  tx?: SettlementTx | null
   id?: string
-  candidates?: string[]
-  lastCheckedAt?: number
+  tx?: ApiTx | null
+  raw?: unknown
 }
-
-type BridgeOperation = {
+type HistoryItem = {
   id: string
-  candidateIds: string[]
-  direction: BridgeDirection
+  direction: Direction
   amount: string
   receive: string
-  sourceTx: string
-  settlementTx?: string
+  tx: string
+  status: string
   createdAt: number
-  status: 'submitted' | 'ready' | 'done' | 'fallback'
 }
 
-type BridgeStep = {
-  label: string
-  text: string
-  status: StepStatus
-}
-
-function getActiveWalletState(): ActiveWalletState {
+function getWalletState(): ActiveWalletState {
   if (typeof window === 'undefined') return null
   return (window as Window & { __INRI_ACTIVE_WALLET__?: ActiveWalletState }).__INRI_ACTIVE_WALLET__ ?? null
 }
 
-function normalizeChainId(chainId?: string | null) {
-  return (chainId || '').toLowerCase()
+function normalizeChainId(chainId?: string | number | null) {
+  if (chainId === null || chainId === undefined) return ''
+  const value = String(chainId).trim().toLowerCase()
+  if (value.startsWith('0x')) return value
+  const asNumber = Number(value)
+  return Number.isFinite(asNumber) ? `0x${asNumber.toString(16)}` : value
 }
 
 function isAddress(value?: string | null) {
   return /^0x[a-fA-F0-9]{40}$/.test(value || '')
 }
 
-function shortAddress(value?: string | null) {
+function short(value?: string | null, left = 6, right = 4) {
   if (!value) return '-'
-  return `${value.slice(0, 6)}...${value.slice(-4)}`
-}
-
-function shortHash(value?: string | null) {
-  if (!value) return '-'
-  return `${value.slice(0, 10)}...${value.slice(-8)}`
-}
-
-function explorerTx(chainId: string, hash: string) {
-  if (!hash) return '#'
-  return normalizeChainId(chainId) === POLYGON_CHAIN_ID
-    ? `https://polygonscan.com/tx/${hash}`
-    : `https://explorer.inri.life/tx/${hash}`
+  return `${value.slice(0, left)}...${value.slice(-right)}`
 }
 
 function pad64(value: string) {
@@ -133,18 +104,18 @@ function encodeUint256(value: bigint) {
 }
 
 function encodeApprove(spender: string, amount: bigint) {
-  return `${SELECTORS.approve}${encodeAddress(spender)}${encodeUint256(amount)}`
+  return `${SELECTOR.approve}${encodeAddress(spender)}${encodeUint256(amount)}`
 }
 
 function encodeAllowance(owner: string, spender: string) {
-  return `${SELECTORS.allowance}${encodeAddress(owner)}${encodeAddress(spender)}`
+  return `${SELECTOR.allowance}${encodeAddress(owner)}${encodeAddress(spender)}`
 }
 
 function encodeBalanceOf(owner: string) {
-  return `${SELECTORS.balanceOf}${encodeAddress(owner)}`
+  return `${SELECTOR.balanceOf}${encodeAddress(owner)}`
 }
 
-function encodeUintMethod(selector: string, amount: bigint) {
+function encodeAmount(selector: string, amount: bigint) {
   return `${selector}${encodeUint256(amount)}`
 }
 
@@ -166,45 +137,60 @@ function formatUnits(value: bigint, decimals: number, maxFraction = 6) {
   return trimmed ? `${whole}.${trimmed}` : whole.toString()
 }
 
-function safeJsonString(value: unknown) {
+function loadHistory(): HistoryItem[] {
+  if (typeof window === 'undefined') return []
   try {
-    return JSON.stringify(value, null, 2)
+    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v3') || '[]')
+    return Array.isArray(parsed) ? parsed.slice(0, 6) : []
   } catch {
-    return String(value)
+    return []
   }
+}
+
+function saveHistory(items: HistoryItem[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('inri_site_bridge_history_v3', JSON.stringify(items.slice(0, 6)))
+}
+
+function looksLikeBridgeId(value: string) {
+  const v = value.toLowerCase()
+  if (!/^0x[a-f0-9]{64}$/.test(v)) return false
+  if (/^0x0+$/.test(v)) return false
+  if (/^0x0{24,}/.test(v)) return false
+  return true
 }
 
 function unique(values: string[]) {
-  const seen = new Set<string>()
-  return values.filter((item) => {
-    const key = item.toLowerCase()
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+  return [...new Set(values.filter(Boolean).map((value) => value.toLowerCase()))]
 }
 
-function loadHistory() {
-  if (typeof window === 'undefined') return [] as BridgeOperation[]
-  try {
-    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v2') || '[]')
-    return Array.isArray(parsed) ? parsed.slice(0, 8) as BridgeOperation[] : []
-  } catch {
-    return [] as BridgeOperation[]
+function extractBridgeIds(receipt: any, preferredAddress: string, fallbackHash: string) {
+  const logs = Array.isArray(receipt?.logs) ? receipt.logs : []
+  const preferred = preferredAddress.toLowerCase()
+  const first: string[] = []
+  const fallback: string[] = []
+
+  for (const log of logs) {
+    const target = String(log?.address || '').toLowerCase() === preferred ? first : fallback
+    const topics = Array.isArray(log?.topics) ? log.topics.slice(1) : []
+
+    for (const topic of topics) {
+      if (typeof topic === 'string' && looksLikeBridgeId(topic)) target.push(topic)
+    }
+
+    const data = typeof log?.data === 'string' ? log.data.replace(/^0x/, '') : ''
+    for (let offset = 0; offset + 64 <= data.length; offset += 64) {
+      const chunk = `0x${data.slice(offset, offset + 64)}`
+      if (looksLikeBridgeId(chunk)) target.push(chunk)
+    }
   }
+
+  return unique([...first, ...fallback, fallbackHash])
 }
 
-function saveHistory(items: BridgeOperation[]) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem('inri_site_bridge_history_v2', JSON.stringify(items.slice(0, 8)))
-  } catch {}
-}
-
-function findTxPayload(value: any): SettlementTx | null {
+function findApiTx(value: any): ApiTx | null {
   if (!value || typeof value !== 'object') return null
-
-  const directCandidates = [
+  const candidates = [
     value,
     value.tx,
     value.transaction,
@@ -216,82 +202,34 @@ function findTxPayload(value: any): SettlementTx | null {
     value.result,
   ]
 
-  for (const item of directCandidates) {
+  for (const item of candidates) {
     if (!item || typeof item !== 'object') continue
     const to = item.to || item.target || item.contract || item.contractAddress
     const data = item.data || item.calldata || item.input
     if (typeof to === 'string' && typeof data === 'string' && isAddress(to) && data.startsWith('0x')) {
-      return {
-        to,
-        data,
-        value: typeof item.value === 'string' ? item.value : undefined,
-      }
+      return { to, data, value: typeof item.value === 'string' ? item.value : undefined }
     }
   }
 
   for (const item of Object.values(value)) {
-    const nested = findTxPayload(item)
+    const nested = findApiTx(item)
     if (nested) return nested
   }
 
   return null
 }
 
-function settlementLooksReady(value: any) {
+function apiLooksReady(value: any) {
   if (!value || typeof value !== 'object') return false
-  if (findTxPayload(value)) return true
+  if (findApiTx(value)) return true
   const status = String(value.status || value.state || value.phase || '').toLowerCase()
-  if (['ready', 'claimable', 'release_ready', 'claim_ready', 'ok'].includes(status)) return true
+  if (['ready', 'claimable', 'claim_ready', 'release_ready', 'ok'].includes(status)) return true
   if (value.ready === true || value.claimable === true || value.releaseReady === true) return true
   if (Array.isArray(value.signatures) && value.signatures.length >= 2) return true
   return false
 }
 
-function isProbablyBridgeId(value: string) {
-  const normalized = value.toLowerCase()
-  if (!/^0x[a-f0-9]{64}$/.test(normalized)) return false
-  if (/^0x0+$/.test(normalized)) return false
-  // Padded EVM addresses and small uint values start with many zeros. Bridge IDs are normally random bytes32 values.
-  if (/^0x0{24,}/.test(normalized)) return false
-  return true
-}
-
-function extractBridgeIdCandidates(receipt: any, preferredAddress: string, txHash: string) {
-  const logs = Array.isArray(receipt?.logs) ? receipt.logs : []
-  const preferred = preferredAddress.toLowerCase()
-  const firstPass: string[] = []
-  const fallback: string[] = []
-
-  for (const log of logs) {
-    const logAddress = String(log?.address || '').toLowerCase()
-    const target = logAddress === preferred ? firstPass : fallback
-    const topics = Array.isArray(log?.topics) ? log.topics.slice(1) : []
-
-    topics.forEach((topic: unknown) => {
-      if (typeof topic === 'string' && isProbablyBridgeId(topic)) target.push(topic)
-    })
-
-    const data = typeof log?.data === 'string' ? log.data.replace(/^0x/, '') : ''
-    for (let offset = 0; offset + 64 <= data.length; offset += 64) {
-      const chunk = `0x${data.slice(offset, offset + 64)}`
-      if (isProbablyBridgeId(chunk)) target.push(chunk)
-    }
-  }
-
-  return unique([...firstPass, ...fallback, txHash].filter(Boolean))
-}
-
-async function waitForReceipt(provider: ProviderLike, txHash: string, onTick?: () => void) {
-  for (let i = 0; i < 80; i += 1) {
-    const receipt = await provider.request({ method: 'eth_getTransactionReceipt', params: [txHash] })
-    if (receipt) return receipt
-    onTick?.()
-    await new Promise((resolve) => window.setTimeout(resolve, 3000))
-  }
-  return null
-}
-
-async function callContract(provider: ProviderLike, to: string, data: string, from?: string) {
+async function ethCall(provider: ProviderLike, to: string, data: string, from?: string) {
   const result = await provider.request({
     method: 'eth_call',
     params: [{ to, data, ...(from ? { from } : {}) }, 'latest'],
@@ -299,7 +237,7 @@ async function callContract(provider: ProviderLike, to: string, data: string, fr
   return typeof result === 'string' && result.startsWith('0x') ? result : '0x0'
 }
 
-async function sendContractTx(provider: ProviderLike, from: string, to: string, data: string, value?: string) {
+async function sendTx(provider: ProviderLike, from: string, to: string, data: string, value?: string) {
   const tx = { from, to, data, ...(value ? { value } : {}) }
   await provider.request({ method: 'eth_estimateGas', params: [tx] })
   const hash = await provider.request({ method: 'eth_sendTransaction', params: [tx] })
@@ -307,209 +245,174 @@ async function sendContractTx(provider: ProviderLike, from: string, to: string, 
   return hash
 }
 
-function StepPill({ step }: { step: BridgeStep }) {
-  const icon =
-    step.status === 'done' ? <CheckCircle2 className="h-4 w-4" />
-      : step.status === 'working' ? <Loader2 className="h-4 w-4 animate-spin" />
-        : step.status === 'warning' ? <Clock3 className="h-4 w-4" />
-          : step.status === 'error' ? <CircleAlert className="h-4 w-4" />
-            : <span className="h-2 w-2 rounded-full bg-current opacity-70" />
-
-  const color =
-    step.status === 'done' ? 'border-emerald-300/25 bg-emerald-300/[0.08] text-emerald-100'
-      : step.status === 'working' ? 'border-cyan-300/35 bg-cyan-300/[0.10] text-cyan-100'
-        : step.status === 'warning' ? 'border-amber-300/30 bg-amber-300/[0.08] text-amber-100'
-          : step.status === 'error' ? 'border-red-300/30 bg-red-300/[0.08] text-red-100'
-            : 'border-white/12 bg-white/[0.035] text-white/62'
-
-  return (
-    <div className={`rounded-[18px] border p-4 ${color}`}>
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-current/20 bg-black/20">
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm font-black text-white">{step.label}</p>
-          <p className="mt-1 text-xs leading-5 opacity-75">{step.text}</p>
-        </div>
-      </div>
-    </div>
-  )
+async function waitForReceipt(provider: ProviderLike, txHash: string) {
+  for (let i = 0; i < 90; i += 1) {
+    const receipt = await provider.request({ method: 'eth_getTransactionReceipt', params: [txHash] })
+    if (receipt) return receipt
+    await new Promise((resolve) => window.setTimeout(resolve, 2500))
+  }
+  return null
 }
 
-function RouteBox({ label, chain, token, note }: { label: string; chain: string; token: string; note: string }) {
+function explorerTx(chainId: string, tx: string) {
+  return normalizeChainId(chainId) === POLYGON_CHAIN_ID
+    ? `https://polygonscan.com/tx/${tx}`
+    : `https://explorer.inri.life/tx/${tx}`
+}
+
+function Step({ label, value, active, done }: { label: string; value: string; active?: boolean; done?: boolean }) {
   return (
-    <div className="rounded-[22px] border border-white/12 bg-black/24 p-5">
-      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">{label}</p>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-2xl font-black text-white">{token}</p>
-          <p className="mt-1 text-sm font-bold text-cyan-200/70">{chain}</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-cyan-300/25 bg-cyan-300/[0.09] text-cyan-200">
-          <Sparkles className="h-5 w-5" />
-        </div>
+    <div
+      className={`rounded-2xl border px-3 py-3 ${
+        done
+          ? 'border-emerald-300/25 bg-emerald-300/[0.08]'
+          : active
+            ? 'border-cyan-300/35 bg-cyan-300/[0.10]'
+            : 'border-white/10 bg-white/[0.035]'
+      }`}
+    >
+      <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/45">
+        {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-200" /> : active ? <Clock3 className="h-3.5 w-3.5 text-cyan-200" /> : <span className="h-2 w-2 rounded-full bg-white/25" />}
+        {label}
       </div>
-      <p className="mt-4 text-xs leading-5 text-white/48">{note}</p>
+      <div className="mt-1 text-xs font-semibold leading-relaxed text-white/75">{value}</div>
     </div>
   )
 }
 
 export function InriBridgePage() {
   const [wallet, setWallet] = useState<ActiveWalletState>(null)
-  const [direction, setDirection] = useState<BridgeDirection>('buy')
+  const [direction, setDirection] = useState<Direction>('buy')
   const [amount, setAmount] = useState('1')
   const [busy, setBusy] = useState(false)
-  const [status, setStatus] = useState('Connect wallet and choose Buy or Sell. The bridge will guide the next action automatically.')
+  const [status, setStatus] = useState('Ready. Connect wallet and choose an amount.')
   const [error, setError] = useState('')
-  const [allowance, setAllowance] = useState<bigint | null>(null)
   const [balance, setBalance] = useState<bigint | null>(null)
-  const [sourceDecimals, setSourceDecimals] = useState(6)
+  const [allowance, setAllowance] = useState<bigint | null>(null)
+  const [decimals, setDecimals] = useState(6)
   const [sourceTx, setSourceTx] = useState('')
-  const [activeBridgeId, setActiveBridgeId] = useState('')
-  const [candidateIds, setCandidateIds] = useState<string[]>([])
-  const [settlement, setSettlement] = useState<SettlementState>({ status: 'idle', message: 'No active transfer yet.' })
-  const [history, setHistory] = useState<BridgeOperation[]>([])
+  const [bridgeIds, setBridgeIds] = useState<string[]>([])
+  const [claim, setClaim] = useState<ClaimState>({ status: 'idle', message: 'No transfer submitted yet.' })
+  const [history, setHistory] = useState<HistoryItem[]>([])
   const [copied, setCopied] = useState('')
-  const pollingRef = useRef<number | null>(null)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const provider = wallet?.provider || (typeof window !== 'undefined' ? (window as any).ethereum as ProviderLike | undefined : undefined)
+  const injectedProvider = typeof window !== 'undefined' ? ((window as any).ethereum as ProviderLike | undefined) : undefined
+  const provider = wallet?.provider || injectedProvider
   const address = wallet?.address || ''
   const chainId = normalizeChainId(wallet?.chainId)
 
-  const sourceChainId = direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID
-  const destinationChainId = direction === 'buy' ? INRI_CHAIN_ID : POLYGON_CHAIN_ID
-  const amountRaw = useMemo(() => parseUnits(amount, sourceDecimals), [amount, sourceDecimals])
+  const route = direction === 'buy'
+    ? {
+        title: 'Buy iUSD',
+        fromToken: 'USDT',
+        fromChain: 'Polygon',
+        toToken: 'iUSD',
+        toChain: 'INRI Chain',
+        sourceChain: POLYGON_CHAIN_ID,
+        destinationChain: INRI_CHAIN_ID,
+        token: POLYGON_USDT,
+        bridgeContract: POLYGON_LOCKBOX,
+        primaryAction: 'Bridge USDT to iUSD',
+        claimAction: 'Claim iUSD',
+        api: CLAIM_API,
+      }
+    : {
+        title: 'Sell iUSD',
+        fromToken: 'iUSD',
+        fromChain: 'INRI Chain',
+        toToken: 'USDT',
+        toChain: 'Polygon',
+        sourceChain: INRI_CHAIN_ID,
+        destinationChain: POLYGON_CHAIN_ID,
+        token: INRI_IUSD,
+        bridgeContract: INRI_IUSD,
+        primaryAction: 'Bridge iUSD to USDT',
+        claimAction: 'Claim USDT',
+        api: RELEASE_API,
+      }
+
+  const amountRaw = useMemo(() => parseUnits(amount, decimals), [amount, decimals])
   const receiveRaw = useMemo(() => (amountRaw * (BPS_DENOMINATOR - FEE_BPS)) / BPS_DENOMINATOR, [amountRaw])
-  const receiveText = useMemo(() => formatUnits(receiveRaw, sourceDecimals, 6), [receiveRaw, sourceDecimals])
-  const allowanceEnough = direction === 'sell' || (allowance !== null && allowance >= amountRaw && amountRaw > 0n)
+  const receiveText = useMemo(() => formatUnits(receiveRaw, decimals, 6), [receiveRaw, decimals])
+  const connected = Boolean(address && provider)
+  const onSourceNetwork = chainId === route.sourceChain
+  const onClaimNetwork = chainId === route.destinationChain
   const balanceEnough = balance === null || amountRaw <= balance
+  const allowanceEnough = direction === 'sell' || (allowance !== null && allowance >= amountRaw && amountRaw > 0n)
 
   useEffect(() => {
-    setWallet(getActiveWalletState())
+    setWallet(getWalletState())
     setHistory(loadHistory())
-
-    const onWallet = () => setWallet(getActiveWalletState())
+    const onWallet = () => setWallet(getWalletState())
     window.addEventListener('inri:wallet-state', onWallet)
-    return () => window.removeEventListener('inri:wallet-state', onWallet)
-  }, [])
-
-  useEffect(() => {
-    setAllowance(null)
-    setBalance(null)
-    setSourceDecimals(direction === 'buy' ? 6 : 6)
-    setSourceTx('')
-    setActiveBridgeId('')
-    setCandidateIds([])
-    setSettlement({ status: 'idle', message: 'No active transfer yet.' })
-    setError('')
-    setStatus('Route changed. The bridge will read balance and allowance after you switch to the source network.')
-    if (pollingRef.current) window.clearInterval(pollingRef.current)
-  }, [direction])
-
-  useEffect(() => {
-    if (!provider || !address || chainId !== sourceChainId) return
-    void refreshTokenState()
-  }, [provider, address, chainId, sourceChainId, direction])
-
-  useEffect(() => {
+    window.addEventListener('accountsChanged', onWallet)
+    window.addEventListener('chainChanged', onWallet)
     return () => {
-      if (pollingRef.current) window.clearInterval(pollingRef.current)
+      window.removeEventListener('inri:wallet-state', onWallet)
+      window.removeEventListener('accountsChanged', onWallet)
+      window.removeEventListener('chainChanged', onWallet)
     }
   }, [])
 
-  const route = direction === 'buy'
-    ? {
-        fromChain: 'Polygon',
-        toChain: 'INRI Chain',
-        fromToken: 'USDT',
-        toToken: 'iUSD',
-        fromNote: 'Deposit Polygon USDT into the official lockbox.',
-        toNote: 'Claim iUSD on INRI after validator signatures are ready.',
-        primaryAction: 'Bridge USDT to iUSD',
-        claimAction: 'Claim iUSD',
-        sourceContract: POLYGON_LOCKBOX,
-      }
-    : {
-        fromChain: 'INRI Chain',
-        toChain: 'Polygon',
-        fromToken: 'iUSD',
-        toToken: 'USDT',
-        fromNote: 'Burn iUSD on INRI and let the watcher prepare the release.',
-        toNote: 'Claim USDT on Polygon after release signatures are ready.',
-        primaryAction: 'Bridge iUSD to USDT',
-        claimAction: 'Claim USDT',
-        sourceContract: INRI_IUSD,
-      }
+  useEffect(() => {
+    setError('')
+    setSourceTx('')
+    setBridgeIds([])
+    setClaim({ status: 'idle', message: 'No transfer submitted yet.' })
+    setAllowance(null)
+    setBalance(null)
+    setDecimals(6)
+    if (pollingRef.current) clearInterval(pollingRef.current)
+  }, [direction])
 
-  const steps = useMemo<BridgeStep[]>(() => {
-    const connected = Boolean(address && provider)
-    const rightNetwork = chainId === sourceChainId
-    const hasSourceTx = Boolean(sourceTx)
-    const settleReady = settlement.status === 'ready'
-    const done = settlement.status === 'claimed'
+  useEffect(() => {
+    if (!provider || !address || !onSourceNetwork) return
+    void refreshTokenState()
+  }, [provider, address, chainId, direction])
 
-    return [
-      {
-        label: 'Wallet',
-        text: connected ? `${shortAddress(address)} connected` : 'Connect with the site wallet button.',
-        status: connected ? 'done' : 'idle',
-      },
-      {
-        label: 'Network',
-        text: rightNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}`,
-        status: rightNetwork ? 'done' : connected ? 'warning' : 'idle',
-      },
-      {
-        label: direction === 'buy' ? 'Approve / deposit' : 'Burn iUSD',
-        text: hasSourceTx ? `Source transaction submitted: ${shortHash(sourceTx)}` : direction === 'buy' ? 'Approve only if needed, then deposit into the lockbox.' : 'Burn iUSD on INRI to create a Polygon release.',
-        status: hasSourceTx ? 'done' : busy ? 'working' : 'idle',
-      },
-      {
-        label: direction === 'buy' ? 'Claim iUSD' : 'Claim USDT',
-        text: done ? 'Transfer completed.' : settleReady ? `Ready: ${shortHash(settlement.id || activeBridgeId)}` : settlement.message,
-        status: done ? 'done' : settleReady ? 'warning' : settlement.status === 'checking' ? 'working' : settlement.status === 'error' ? 'error' : 'idle',
-      },
-    ]
-  }, [address, provider, chainId, sourceChainId, sourceTx, settlement, route, direction, busy, activeBridgeId])
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
+  }, [])
 
   async function refreshTokenState() {
     if (!provider || !address) return
     try {
-      const token = direction === 'buy' ? POLYGON_USDT : INRI_IUSD
-      const calls: Promise<string>[] = [
-        callContract(provider, token, encodeBalanceOf(address), address),
-        callContract(provider, token, SELECTORS.decimals, address),
-      ]
-      if (direction === 'buy') calls.push(callContract(provider, POLYGON_USDT, encodeAllowance(address, POLYGON_LOCKBOX), address))
-
-      const [balanceHex, decimalsHex, allowanceHex] = await Promise.all(calls)
+      const balanceHex = await ethCall(provider, route.token, encodeBalanceOf(address), address)
+      const decimalsHex = await ethCall(provider, route.token, SELECTOR.decimals, address)
       const nextDecimals = Number.parseInt(decimalsHex || '0x6', 16)
-      setSourceDecimals(Number.isFinite(nextDecimals) && nextDecimals > 0 && nextDecimals <= 36 ? nextDecimals : 6)
+      setDecimals(Number.isFinite(nextDecimals) && nextDecimals > 0 && nextDecimals <= 36 ? nextDecimals : 6)
       setBalance(BigInt(balanceHex || '0x0'))
-      setAllowance(direction === 'buy' ? BigInt(allowanceHex || '0x0') : null)
-    } catch (e: any) {
-      setError(e?.message || 'Unable to read token balance or allowance.')
+
+      if (direction === 'buy') {
+        const allowanceHex = await ethCall(provider, POLYGON_USDT, encodeAllowance(address, POLYGON_LOCKBOX), address)
+        setAllowance(BigInt(allowanceHex || '0x0'))
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Could not read balance/allowance.')
     }
   }
 
-  async function switchNetwork(target = sourceChainId) {
+  async function switchNetwork(targetChain = route.sourceChain) {
     if (!provider) {
-      setError('Connect a wallet first.')
+      setError('Connect wallet first.')
       return false
     }
 
-    const isPolygon = target === POLYGON_CHAIN_ID
+    const polygon = targetChain === POLYGON_CHAIN_ID
+    setBusy(true)
+    setError('')
+
     try {
-      setBusy(true)
-      setError('')
       try {
-        await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: target }] })
+        await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetChain }] })
       } catch {
         await provider.request({
           method: 'wallet_addEthereumChain',
           params: [
-            isPolygon
+            polygon
               ? {
                   chainId: POLYGON_CHAIN_ID,
                   chainName: 'Polygon PoS',
@@ -527,242 +430,163 @@ export function InriBridgePage() {
           ],
         })
       }
-      setStatus(`Network switched to ${isPolygon ? 'Polygon' : 'INRI Chain'}.`)
+      setStatus(`Network switched to ${polygon ? 'Polygon' : 'INRI Chain'}.`)
       return true
-    } catch (e: any) {
-      setError(e?.message || 'Unable to switch network.')
+    } catch (err: any) {
+      setError(err?.message || 'Could not switch network.')
       return false
     } finally {
       setBusy(false)
     }
   }
 
-  function upsertOperation(operation: BridgeOperation) {
-    const next = [operation, ...history.filter((item) => item.id !== operation.id)].slice(0, 8)
+  function addHistory(item: HistoryItem) {
+    const next = [item, ...history.filter((old) => old.id !== item.id)].slice(0, 6)
     setHistory(next)
     saveHistory(next)
   }
 
-  function markOperation(id: string, patch: Partial<BridgeOperation>) {
-    const next = history.map((item) => item.id === id || item.candidateIds.includes(id) ? { ...item, ...patch } : item)
+  function updateHistory(id: string, statusText: string) {
+    const next = history.map((item) => (item.id === id ? { ...item, status: statusText } : item))
     setHistory(next)
     saveHistory(next)
   }
 
-  async function approveToken() {
+  async function approveUsdt() {
     if (!provider || !address || amountRaw <= 0n) return
-
-    if (allowance && allowance > 0n && allowance < amountRaw) {
-      const zeroHash = await sendContractTx(provider, address, POLYGON_USDT, encodeApprove(POLYGON_LOCKBOX, 0n))
-      setStatus(`Resetting old USDT approval: ${shortHash(zeroHash)}.`)
-      await waitForReceipt(provider, zeroHash)
-    }
-
-    const hash = await sendContractTx(provider, address, POLYGON_USDT, encodeApprove(POLYGON_LOCKBOX, amountRaw))
-    setStatus(`USDT approval submitted: ${shortHash(hash)}. Waiting confirmation...`)
+    setStatus('Approving USDT for the official lockbox...')
+    const hash = await sendTx(provider, address, POLYGON_USDT, encodeApprove(POLYGON_LOCKBOX, amountRaw))
+    setStatus(`Approval sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
     await waitForReceipt(provider, hash)
     await refreshTokenState()
     setStatus('USDT approval confirmed. Continue with deposit.')
   }
 
-  async function runBuyFlow() {
-    if (!provider || !address || amountRaw <= 0n) return
-    if (chainId !== POLYGON_CHAIN_ID) {
-      await switchNetwork(POLYGON_CHAIN_ID)
-      return
-    }
-    if (!balanceEnough) {
-      setError(`Insufficient ${route.fromToken} balance.`)
-      return
-    }
-
-    try {
-      setBusy(true)
-      setError('')
-
-      if (!allowanceEnough) {
-        setStatus('Requesting USDT approval on Polygon...')
-        await approveToken()
-        return
-      }
-
-      setStatus('Depositing USDT into the Polygon lockbox...')
-      const txHash = await sendContractTx(provider, address, POLYGON_LOCKBOX, encodeUintMethod(SELECTORS.deposit, amountRaw))
-      setSourceTx(txHash)
-      setStatus(`Deposit submitted: ${shortHash(txHash)}. Waiting confirmation...`)
-      const receipt = await waitForReceipt(provider, txHash)
-      const ids = extractBridgeIdCandidates(receipt, POLYGON_LOCKBOX, txHash)
-      setCandidateIds(ids)
-      setActiveBridgeId(ids[0] || txHash)
-
-      const operation: BridgeOperation = {
-        id: ids[0] || txHash,
-        candidateIds: ids,
-        direction: 'buy',
-        amount,
-        receive: receiveText,
-        sourceTx: txHash,
-        createdAt: Date.now(),
-        status: 'submitted',
-      }
-      upsertOperation(operation)
-      setStatus('Deposit confirmed. Watcher is preparing the iUSD claim automatically.')
-      startSettlementPolling('buy', ids)
-    } catch (e: any) {
-      setError(e?.message || 'Bridge deposit failed.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function runSellFlow() {
-    if (!provider || !address || amountRaw <= 0n) return
-    if (chainId !== INRI_CHAIN_ID) {
-      await switchNetwork(INRI_CHAIN_ID)
-      return
-    }
-    if (!balanceEnough) {
-      setError(`Insufficient ${route.fromToken} balance.`)
-      return
-    }
-
-    try {
-      setBusy(true)
-      setError('')
-      setStatus('Burning iUSD on INRI to request Polygon USDT release...')
-      const txHash = await sendContractTx(provider, address, INRI_IUSD, encodeUintMethod(SELECTORS.burn, amountRaw))
-      setSourceTx(txHash)
-      setStatus(`Burn submitted: ${shortHash(txHash)}. Waiting confirmation...`)
-      const receipt = await waitForReceipt(provider, txHash)
-      const ids = extractBridgeIdCandidates(receipt, INRI_IUSD, txHash)
-      setCandidateIds(ids)
-      setActiveBridgeId(ids[0] || txHash)
-
-      const operation: BridgeOperation = {
-        id: ids[0] || txHash,
-        candidateIds: ids,
-        direction: 'sell',
-        amount,
-        receive: receiveText,
-        sourceTx: txHash,
-        createdAt: Date.now(),
-        status: 'submitted',
-      }
-      upsertOperation(operation)
-      setStatus('Burn confirmed. Watcher is preparing the Polygon USDT release automatically.')
-      startSettlementPolling('sell', ids)
-    } catch (e: any) {
-      setError(e?.message || 'Burn transaction failed. If the token uses a different burn ABI, use the recovery link below while we wire that exact method.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function handlePrimaryAction() {
-    if (!address || !provider) return
+  async function submitSourceTx() {
+    if (!provider || !address) return
     if (amountRaw <= 0n) {
-      setError('Enter a valid amount first.')
+      setError('Enter a valid amount.')
       return
     }
-    if (direction === 'buy') {
-      await runBuyFlow()
-    } else {
-      await runSellFlow()
+    if (!onSourceNetwork) {
+      await switchNetwork(route.sourceChain)
+      return
+    }
+    if (!balanceEnough) {
+      setError(`Insufficient ${route.fromToken} balance.`)
+      return
+    }
+
+    setBusy(true)
+    setError('')
+
+    try {
+      if (direction === 'buy' && !allowanceEnough) {
+        await approveUsdt()
+        return
+      }
+
+      const to = direction === 'buy' ? POLYGON_LOCKBOX : INRI_IUSD
+      const data = direction === 'buy'
+        ? encodeAmount(SELECTOR.deposit, amountRaw)
+        : encodeAmount(SELECTOR.burn, amountRaw)
+
+      setStatus(direction === 'buy' ? 'Depositing USDT into the Polygon lockbox...' : 'Burning iUSD on INRI...')
+      const txHash = await sendTx(provider, address, to, data)
+      setSourceTx(txHash)
+      setStatus(`Transaction sent: ${short(txHash, 10, 8)}. Waiting confirmation...`)
+
+      const receipt = await waitForReceipt(provider, txHash)
+      const ids = extractBridgeIds(receipt, to, txHash)
+      setBridgeIds(ids)
+      setClaim({ status: 'checking', message: 'Transaction confirmed. Checking watcher signatures...', id: ids[0] })
+
+      addHistory({
+        id: ids[0] || txHash,
+        direction,
+        amount,
+        receive: receiveText,
+        tx: txHash,
+        status: 'submitted',
+        createdAt: Date.now(),
+      })
+
+      startPolling(ids)
+    } catch (err: any) {
+      setError(err?.message || 'Bridge transaction failed.')
+    } finally {
+      setBusy(false)
     }
   }
 
-  async function fetchSettlement(directionToCheck: BridgeDirection, idsToCheck: string[], silent = false) {
-    const ids = unique(idsToCheck.filter(Boolean))
-    const base = directionToCheck === 'buy' ? CLAIM_API : RELEASE_API
-    if (ids.length === 0) return
-    if (!silent) {
-      setSettlement((prev) => ({ ...prev, status: 'checking', message: 'Checking bridge watcher and validator signatures...' }))
-    }
+  async function checkApi(ids = bridgeIds, silent = false) {
+    const nextIds = unique(ids)
+    if (!nextIds.length) return
 
-    let foundPending = false
-    let lastError = ''
+    if (!silent) setClaim({ status: 'checking', message: 'Checking watcher signatures...', id: nextIds[0] })
 
-    for (const id of ids) {
+    for (const id of nextIds) {
       try {
-        const response = await fetch(`${base}/${encodeURIComponent(id)}`, { cache: 'no-store' })
+        const response = await fetch(`${route.api}/${encodeURIComponent(id)}`, { cache: 'no-store' })
         if (!response.ok) continue
-
-        const data = await response.json()
-        const tx = findTxPayload(data)
-        const ready = settlementLooksReady(data)
-        setActiveBridgeId(id)
-        setSettlement({
-          id,
-          candidates: ids,
+        const json = await response.json()
+        const ready = apiLooksReady(json)
+        const tx = findApiTx(json)
+        setClaim({
           status: ready ? 'ready' : 'waiting',
-          message: ready ? 'Signatures are ready. You can claim now.' : 'Watcher found the operation but it is still preparing signatures.',
-          raw: data,
+          message: ready ? 'Ready to claim. Confirm the final wallet transaction.' : 'Watcher found the transfer and is preparing signatures.',
+          id,
           tx,
-          lastCheckedAt: Date.now(),
+          raw: json,
         })
-        if (ready) markOperation(id, { status: 'ready', id })
+        if (ready) updateHistory(id, 'ready')
         return
-      } catch (e: any) {
-        foundPending = true
-        lastError = e?.message || 'Unable to reach the bridge API.'
+      } catch (err: any) {
+        setClaim({ status: 'error', message: err?.message || 'Could not reach bridge API.', id })
       }
     }
 
-    setSettlement({
-      id: ids[0],
-      candidates: ids,
-      status: foundPending ? 'error' : 'waiting',
-      message: foundPending
-        ? lastError
-        : `Watcher has not published this ${directionToCheck === 'buy' ? 'claim' : 'release'} yet. It will keep checking automatically.`,
-      lastCheckedAt: Date.now(),
+    setClaim({
+      status: 'waiting',
+      message: 'Watcher has not published this claim/release yet. The page keeps checking automatically.',
+      id: nextIds[0],
     })
   }
 
-  function startSettlementPolling(nextDirection: BridgeDirection, ids: string[]) {
-    const nextIds = unique(ids.filter(Boolean))
-    if (pollingRef.current) window.clearInterval(pollingRef.current)
-    void fetchSettlement(nextDirection, nextIds)
-    pollingRef.current = window.setInterval(() => {
-      void fetchSettlement(nextDirection, nextIds, true)
-    }, 5000)
+  function startPolling(ids: string[]) {
+    const nextIds = unique(ids)
+    if (pollingRef.current) clearInterval(pollingRef.current)
+    void checkApi(nextIds)
+    pollingRef.current = setInterval(() => void checkApi(nextIds, true), 5000)
   }
 
-  async function claimSettlement() {
+  async function claimDestination() {
     if (!provider || !address) return
-    const id = settlement.id || activeBridgeId || candidateIds[0] || history.find((item) => item.direction === direction && item.status !== 'done')?.id
+    const id = claim.id || bridgeIds[0]
     if (!id) return
 
-    const targetChain = destinationChainId
-    if (chainId !== targetChain) {
-      await switchNetwork(targetChain)
+    if (!onClaimNetwork) {
+      await switchNetwork(route.destinationChain)
       return
     }
 
-    try {
-      setBusy(true)
-      setError('')
+    setBusy(true)
+    setError('')
 
-      const tx = settlement.tx
-      if (!tx) {
-        const fallback = `${BRIDGE_ORIGIN}/claim.html?id=${encodeURIComponent(id)}`
-        window.open(fallback, '_blank', 'noopener,noreferrer')
-        markOperation(id, { status: 'fallback' })
-        setSettlement((prev) => ({
-          ...prev,
-          status: 'waiting',
-          message: 'The watcher says this operation is ready, but the API did not expose raw calldata to this site. Opened the existing claim page as a safe fallback.',
-        }))
+    try {
+      if (!claim.tx) {
+        window.open(`${BRIDGE_ORIGIN}/claim.html?id=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
+        setStatus('Opened the safe recovery claim page because this API response did not expose raw calldata.')
         return
       }
 
-      const hash = await sendContractTx(provider, address, tx.to, tx.data, tx.value)
-      setStatus(`${route.claimAction} submitted: ${shortHash(hash)}.`)
+      const hash = await sendTx(provider, address, claim.tx.to, claim.tx.data, claim.tx.value)
+      setStatus(`Claim sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
       await waitForReceipt(provider, hash)
-      setSettlement((prev) => ({ ...prev, status: 'claimed', message: 'Bridge completed successfully.' }))
-      markOperation(id, { status: 'done', settlementTx: hash })
-    } catch (e: any) {
-      setError(e?.message || 'Claim transaction failed.')
+      setClaim((old) => ({ ...old, status: 'done', message: 'Bridge completed successfully.' }))
+      updateHistory(id, 'done')
+    } catch (err: any) {
+      setError(err?.message || 'Claim transaction failed.')
     } finally {
       setBusy(false)
     }
@@ -778,329 +602,279 @@ export function InriBridgePage() {
           options: {
             address: INRI_IUSD,
             symbol: 'iUSD',
-            decimals: sourceDecimals || 6,
+            decimals,
             image: 'https://platform.inri.life/inri-logo.png',
           },
         },
       })
-    } catch {
-      // Wallets may not support wallet_watchAsset. Ignore silently.
-    }
+    } catch {}
   }
 
-  function copy(value: string, label: string) {
+  function copyText(value: string, label: string) {
     if (!value || typeof navigator === 'undefined') return
     void navigator.clipboard.writeText(value)
     setCopied(label)
     window.setTimeout(() => setCopied(''), 1200)
   }
 
-  function setMaxAmount() {
+  function setMax() {
     if (balance === null) return
-    setAmount(formatUnits(balance, sourceDecimals, Math.min(sourceDecimals, 6)))
+    setAmount(formatUnits(balance, decimals, Math.min(decimals, 6)))
   }
 
-  const buttonLabel = !address
+  const mainButtonText = !connected
     ? 'Connect wallet first'
-    : chainId !== sourceChainId
-      ? `Switch to ${direction === 'buy' ? 'Polygon' : 'INRI Chain'}`
+    : !onSourceNetwork
+      ? `Switch to ${route.fromChain}`
       : !balanceEnough
         ? `Insufficient ${route.fromToken}`
-        : direction === 'buy' && allowance !== null && !allowanceEnough
+        : direction === 'buy' && !allowanceEnough
           ? 'Approve USDT'
           : route.primaryAction
 
-  const claimButtonLabel = chainId === destinationChainId
-    ? route.claimAction
-    : `Switch to ${direction === 'buy' ? 'INRI Chain' : 'Polygon'} to claim`
-
   return (
-    <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
-      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.50),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.23),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
-        <div className="absolute -left-28 top-24 h-[32rem] w-[32rem] rounded-full bg-cyan-400/20 blur-3xl" />
-        <div className="absolute -right-20 bottom-10 h-[30rem] w-[30rem] rounded-full bg-blue-500/20 blur-3xl" />
-
-        <div className="relative mx-auto grid max-w-[1560px] gap-9 px-4 py-12 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:py-16 xl:px-12">
-          <div className="flex flex-col justify-center">
-            <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
-              <ShieldCheck className="h-4 w-4" />
-              Official iUSD Bridge
-            </div>
-
-            <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.3rem]">
-              Bridge USDT and iUSD inside INRI.
-            </h1>
-
-            <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
-              One professional screen for the working bridge infrastructure: connect, approve when needed, deposit or burn, auto-detect watcher signatures and claim.
-            </p>
-
-            <div className="mt-9 grid gap-3 sm:grid-cols-3">
-              {[
-                ['0.2%', 'Bridge fee'],
-                ['2 / 4', 'Signatures'],
-                ['3777', 'INRI Chain ID'],
-              ].map(([value, label]) => (
-                <div key={label} className="border-l-2 border-cyan-300/70 bg-white/[0.045] px-4 py-3 backdrop-blur-xl">
-                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
-                  <div className="mt-2 text-xl font-black text-white">{value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-9 flex flex-wrap gap-3 text-sm font-bold text-white/52">
-              <span className="rounded-full border border-white/12 bg-white/[0.035] px-4 py-2">Polygon USDT</span>
-              <span className="rounded-full border border-white/12 bg-white/[0.035] px-4 py-2">INRI iUSD</span>
-              <span className="rounded-full border border-white/12 bg-white/[0.035] px-4 py-2">Auto watcher</span>
-            </div>
+    <section className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-6 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="rounded-[28px] border border-white/10 bg-black/25 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:p-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100">
+            <ShieldCheck className="h-3.5 w-3.5" /> Official iUSD Bridge
           </div>
-
-          <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.06] p-3 shadow-[0_44px_140px_rgba(0,0,0,0.50),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-5">
-            <div className="rounded-[25px] border border-white/12 bg-[#030910]/95 p-4 sm:p-6">
-              <div className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Bridge</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD Transfer</h2>
-                </div>
-                <div className="w-full sm:w-auto">
-                  <ConnectWalletButton compact />
-                </div>
+          <h1 className="mt-4 max-w-[560px] text-4xl font-black leading-[0.95] tracking-[-0.07em] text-white sm:text-5xl lg:text-6xl">
+            Bridge USDT and iUSD inside INRI.
+          </h1>
+          <p className="mt-4 max-w-xl text-sm font-semibold leading-7 text-white/64 sm:text-base">
+            One clean screen for the working bridge: connect, approve when needed, deposit or burn, auto-detect watcher signatures and claim.
+          </p>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {[
+              ['0.2%', 'Fee'],
+              ['2 / 4', 'Signatures'],
+              ['3777', 'Chain ID'],
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <div className="text-lg font-black text-white">{value}</div>
+                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">{label}</div>
               </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-2 rounded-[18px] border border-white/10 bg-black/26 p-1.5">
-                {(['buy', 'sell'] as BridgeDirection[]).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setDirection(item)}
-                    className={`rounded-[14px] px-4 py-3 text-sm font-black transition ${direction === item ? 'bg-cyan-300 text-black shadow-[0_12px_35px_rgba(19,164,255,0.26)]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`}
-                  >
-                    {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-5 grid gap-3">
-                <RouteBox label="From" chain={route.fromChain} token={route.fromToken} note={route.fromNote} />
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
-                    className="-my-1 flex h-11 w-11 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_18px_45px_rgba(19,164,255,0.25)] transition hover:scale-105"
-                    aria-label="Reverse bridge route"
-                  >
-                    <ArrowDown className="h-5 w-5" />
-                  </button>
-                </div>
-                <RouteBox label="To" chain={route.toChain} token={route.toToken} note={route.toNote} />
-              </div>
-
-              <div className="mt-5 rounded-[22px] border border-white/12 bg-black/24 p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
-                  <button type="button" onClick={setMaxAmount} className="text-xs font-black uppercase tracking-[0.14em] text-cyan-200/80 hover:text-cyan-100">
-                    Max
-                  </button>
-                </div>
-                <div className="mt-3 flex items-end gap-3">
-                  <input
-                    value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
-                    inputMode="decimal"
-                    className="min-w-0 flex-1 bg-transparent text-4xl font-black tracking-[-0.05em] text-white outline-none placeholder:text-white/20"
-                    placeholder="0.00"
-                  />
-                  <span className="mb-1 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-sm font-black text-cyan-100">{route.fromToken}</span>
-                </div>
-
-                <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-                  <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                    <p className="text-white/42">You receive</p>
-                    <p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p>
-                  </div>
-                  <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                    <p className="text-white/42">Fee</p>
-                    <p className="mt-1 font-black text-white">0.2%</p>
-                  </div>
-                  <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                    <p className="text-white/42">Balance</p>
-                    <p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, sourceDecimals, 4)} ${route.fromToken}`}</p>
-                  </div>
-                </div>
-              </div>
-
-              {error ? (
-                <div className="mt-4 rounded-[18px] border border-red-300/25 bg-red-300/[0.08] p-4 text-sm leading-6 text-red-100">
-                  {error}
-                </div>
-              ) : null}
-
-              <div className="mt-5 grid gap-3">
-                {!address || !provider ? (
-                  <div className="rounded-[20px] border border-cyan-300/20 bg-cyan-300/[0.08] p-4">
-                    <div className="flex items-start gap-3">
-                      <Wallet className="mt-1 h-5 w-5 shrink-0 text-cyan-200" />
-                      <div>
-                        <p className="font-black text-white">Connect once, bridge from here</p>
-                        <p className="mt-1 text-sm leading-6 text-white/60">The card uses the same wallet state as the site header connect button.</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <button
-                  type="button"
-                  onClick={() => void handlePrimaryAction()}
-                  disabled={busy || !address || !provider || amountRaw <= 0n || !balanceEnough}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] bg-cyan-300 px-5 py-4 text-base font-black text-black shadow-[0_18px_48px_rgba(19,164,255,0.30)] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-                >
-                  {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
-                  {busy ? 'Processing...' : buttonLabel}
-                </button>
-
-                {settlement.status === 'ready' ? (
-                  <button
-                    type="button"
-                    onClick={() => void claimSettlement()}
-                    disabled={busy || !address || !provider}
-                    className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[18px] border border-emerald-300/30 bg-emerald-300/[0.12] px-5 py-4 text-base font-black text-emerald-50 transition hover:bg-emerald-300/[0.18] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
-                    {claimButtonLabel}
-                  </button>
-                ) : null}
-              </div>
-
-              <div className="mt-5 rounded-[18px] border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/58">
-                <p className="font-bold text-white/78">Status</p>
-                <p className="mt-1">{status}</p>
-                <p className="mt-1">{settlement.message}</p>
-                {activeBridgeId ? <p className="mt-1 break-all text-cyan-200/70">Bridge ID: {activeBridgeId}</p> : null}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
 
-      <section className="border-t border-white/10 bg-[#02040a] py-12">
-        <div className="mx-auto grid max-w-[1560px] gap-5 px-4 sm:px-8 lg:grid-cols-[1fr_0.86fr] xl:px-12">
-          <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.045] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.36)] sm:p-7">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Live process</p>
-                <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Bridge timeline</h2>
+        <div className="rounded-[30px] border border-cyan-300/20 bg-[#071322]/88 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/85">Bridge</div>
+              <h2 className="text-2xl font-black tracking-[-0.05em] text-white">iUSD Transfer</h2>
+            </div>
+            <div className="w-full sm:w-auto">
+              <ConnectWalletButton />
+            </div>
+          </div>
+
+          <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/24 p-1.5">
+            {(['buy', 'sell'] as Direction[]).map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setDirection(item)}
+                className={`rounded-xl px-4 py-3 text-sm font-black transition ${
+                  direction === item
+                    ? 'bg-cyan-300 text-black shadow-[0_12px_35px_rgba(19,164,255,0.22)]'
+                    : 'text-white/55 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-cyan-300/15 bg-white/[0.035] p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">From</div>
+              <div className="mt-2 flex items-end justify-between gap-4">
+                <div>
+                  <div className="text-2xl font-black text-white">{route.fromToken}</div>
+                  <div className="text-sm font-black text-cyan-100/70">{route.fromChain}</div>
+                </div>
+                <button type="button" onClick={() => void switchNetwork(route.sourceChain)} className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
+                  {onSourceNetwork ? 'Selected' : 'Switch'}
+                </button>
               </div>
+            </div>
+
+            <div className="flex justify-center">
               <button
                 type="button"
-                onClick={() => candidateIds.length ? startSettlementPolling(direction, candidateIds) : undefined}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                aria-label="Refresh bridge status"
+                onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
+                className="-my-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300 text-black shadow-[0_14px_35px_rgba(19,164,255,0.22)] transition hover:scale-105"
+                aria-label="Reverse route"
               >
-                <RefreshCw className="h-4 w-4" />
+                <ArrowDown className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-              {steps.map((step) => <StepPill key={step.label} step={step} />)}
-            </div>
-
-            <div className="mt-6 grid gap-3 text-sm md:grid-cols-2">
-              <div className="rounded-[18px] border border-white/10 bg-black/24 p-4">
-                <p className="text-white/42">Source transaction</p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <Link href={sourceTx ? explorerTx(sourceChainId, sourceTx) : '#'} target="_blank" className="font-black text-white hover:text-cyan-200">
-                    {shortHash(sourceTx)}
-                  </Link>
-                  {sourceTx ? <button type="button" onClick={() => copy(sourceTx, 'source')} className="text-cyan-200"><Copy className="h-4 w-4" /></button> : null}
+            <div className="rounded-2xl border border-cyan-300/15 bg-white/[0.035] p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">To</div>
+              <div className="mt-2 flex items-end justify-between gap-4">
+                <div>
+                  <div className="text-2xl font-black text-white">{route.toToken}</div>
+                  <div className="text-sm font-black text-cyan-100/70">{route.toChain}</div>
                 </div>
-              </div>
-              <div className="rounded-[18px] border border-white/10 bg-black/24 p-4">
-                <p className="text-white/42">Watcher API</p>
-                <p className="mt-2 break-all font-black text-white">{direction === 'buy' ? '/api/claim/:id' : '/api/release/:id'}</p>
+                <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-black text-white/48">Auto claim</div>
               </div>
             </div>
+          </div>
 
-            {settlement.raw ? (
-              <details className="mt-5 rounded-[18px] border border-white/10 bg-black/24 p-4">
-                <summary className="cursor-pointer text-sm font-black text-white/80">Show watcher response</summary>
-                <pre className="mt-4 max-h-64 overflow-auto whitespace-pre-wrap rounded-[14px] bg-black/40 p-4 text-xs leading-5 text-white/55">{safeJsonString(settlement.raw)}</pre>
-              </details>
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Amount</span>
+              <button type="button" onClick={setMax} className="text-xs font-black text-cyan-100 hover:text-white">MAX</button>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                inputMode="decimal"
+                className="min-w-0 flex-1 bg-transparent text-4xl font-black tracking-[-0.06em] text-white outline-none placeholder:text-white/20"
+                placeholder="0.00"
+              />
+              <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-sm font-black text-cyan-100">{route.fromToken}</div>
+            </div>
+            <div className="mt-4 grid gap-2 text-xs font-bold text-white/55 sm:grid-cols-3">
+              <div className="rounded-xl bg-white/[0.035] p-3">
+                <div className="text-white/35">You receive</div>
+                <div className="mt-1 text-white">≈ {receiveText} {route.toToken}</div>
+              </div>
+              <div className="rounded-xl bg-white/[0.035] p-3">
+                <div className="text-white/35">Fee</div>
+                <div className="mt-1 text-white">0.2%</div>
+              </div>
+              <div className="rounded-xl bg-white/[0.035] p-3">
+                <div className="text-white/35">Balance</div>
+                <div className="mt-1 text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</div>
+              </div>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="mt-4 rounded-2xl border border-red-300/25 bg-red-300/[0.08] p-3 text-sm font-semibold text-red-100">
+              <CircleAlert className="mr-2 inline h-4 w-4" /> {error}
+            </div>
+          ) : null}
+
+          {!connected ? (
+            <div className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-3 text-sm font-semibold text-cyan-50/80">
+              <Wallet className="mr-2 inline h-4 w-4" /> Connect once using the site wallet. The bridge uses the same wallet state as the header.
+            </div>
+          ) : null}
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => void submitSourceTx()}
+              disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-cyan-300 px-5 py-4 text-base font-black text-black shadow-[0_18px_48px_rgba(19,164,255,0.26)] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            >
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
+              {busy ? 'Processing...' : mainButtonText}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void claimDestination()}
+              disabled={busy || !connected || claim.status !== 'ready'}
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-300/[0.10] px-5 py-4 text-base font-black text-emerald-50 transition hover:bg-emerald-300/[0.16] disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
+              {onClaimNetwork ? route.claimAction : `Switch to ${route.toChain} to claim`}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/80">Live process</div>
+              <h3 className="text-xl font-black text-white">Bridge timeline</h3>
+            </div>
+            <button type="button" onClick={() => void checkApi()} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-300/35 hover:text-cyan-100">
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet'} done={connected} />
+            <Step label="Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}`} done={onSourceNetwork} active={connected && !onSourceNetwork} />
+            <Step label={direction === 'buy' ? 'Approve / Deposit' : 'Burn'} value={sourceTx ? short(sourceTx, 10, 8) : direction === 'buy' ? 'Approve only if needed, then deposit' : 'Burn iUSD to request release'} done={Boolean(sourceTx)} active={busy && !sourceTx} />
+            <Step label="Claim" value={claim.message} done={claim.status === 'done'} active={claim.status === 'checking' || claim.status === 'ready'} />
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-semibold text-white/68">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Status</div>
+            <div className="mt-2 text-white/82">{status}</div>
+            <div className="mt-1 text-white/55">{claim.message}</div>
+            {claim.id ? <div className="mt-2 break-all text-xs text-cyan-100/70">Bridge ID: {claim.id}</div> : null}
+            {sourceTx ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" className="inline-flex items-center gap-1 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
+                  View source TX <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+                <button type="button" onClick={() => copyText(sourceTx, 'tx')} className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/70 hover:text-white">
+                  <Copy className="h-3.5 w-3.5" /> {copied === 'tx' ? 'Copied' : 'Copy TX'}
+                </button>
+              </div>
             ) : null}
           </div>
-
-          <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.045] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.36)] sm:p-7">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Safety</p>
-            <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Clean user flow</h2>
-            <div className="mt-6 grid gap-3">
-              {[
-                ['No bridge reset', 'This page does not touch contracts, PM2, watchers, claims or releases on the bridge server.'],
-                ['Auto ID detection', 'After deposit or burn, the page reads the receipt logs and checks all likely bridge IDs automatically.'],
-                ['Fallback only if needed', 'The old bridge pages remain only as recovery links if a wallet or API does not expose the required calldata.'],
-                ['Same visual system', 'The layout follows the official INRI site: dark glass panels, cyan action color and large route cards.'],
-              ].map(([title, text]) => (
-                <div key={title} className="rounded-[18px] border border-white/10 bg-black/24 p-4">
-                  <p className="font-black text-white">{title}</p>
-                  <p className="mt-1 text-sm leading-6 text-white/56">{text}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button type="button" onClick={() => void addIusdToken()} className="inline-flex items-center gap-2 rounded-[14px] border border-cyan-300/25 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]">
-                Add iUSD Token <Sparkles className="h-4 w-4" />
-              </button>
-              <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white">
-                Recovery page <ExternalLink className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
         </div>
-      </section>
 
-      <section className="border-t border-white/10 bg-[linear-gradient(180deg,#02040a,#04101e)] py-12">
-        <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
-          <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.045] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.36)] sm:p-7">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Recent activity</p>
-                <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Local bridge history</h2>
+        <div className="rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
+          <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/80">Safety</div>
+          <h3 className="mt-1 text-xl font-black text-white">Clean user flow</h3>
+          <div className="mt-4 space-y-3">
+            {[
+              ['No backend changes', 'This page does not touch contracts, PM2, watchers, claims or releases.'],
+              ['Auto watcher check', 'After deposit or burn, it checks the current bridge APIs automatically.'],
+              ['Safe fallback', 'If raw calldata is not exposed, it opens the existing claim page as recovery.'],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                <div className="font-black text-white">{title}</div>
+                <div className="mt-1 text-sm font-semibold leading-6 text-white/55">{text}</div>
               </div>
-              <p className="text-sm font-bold text-white/45">{copied ? 'Copied.' : 'Stored only in this browser.'}</p>
-            </div>
+            ))}
+          </div>
 
-            <div className="mt-6 grid gap-3">
-              {history.length === 0 ? (
-                <div className="rounded-[18px] border border-white/10 bg-black/24 p-5 text-sm leading-6 text-white/52">
-                  No bridge operations from this page yet.
-                </div>
-              ) : history.map((item) => (
-                <div key={`${item.id}-${item.sourceTx}`} className="rounded-[18px] border border-white/10 bg-black/24 p-4">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} {item.direction === 'buy' ? 'USDT' : 'iUSD'} → {item.receive} {item.direction === 'buy' ? 'iUSD' : 'USDT'}</p>
-                      <p className="mt-1 text-sm text-white/45">{new Date(item.createdAt).toLocaleString()} · {item.status}</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-sm font-black">
-                      <Link href={explorerTx(item.direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID, item.sourceTx)} target="_blank" className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
-                        {shortHash(item.sourceTx)}
-                      </Link>
-                      <button type="button" onClick={() => copy(item.id, 'id')} className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
-                        Copy ID
-                      </button>
-                      {item.status !== 'done' ? (
-                        <button type="button" onClick={() => { setDirection(item.direction); setSourceTx(item.sourceTx); setCandidateIds(item.candidateIds); setActiveBridgeId(item.id); startSettlementPolling(item.direction, item.candidateIds) }} className="rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-cyan-100">
-                          Check
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={() => void addIusdToken()} className="rounded-xl border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-300/[0.14]">
+              Add iUSD token
+            </button>
+            <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/70 hover:text-white">
+              Recovery page
+            </Link>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+
+      {history.length ? (
+        <div className="mt-5 rounded-[26px] border border-white/10 bg-black/25 p-4 backdrop-blur-xl sm:p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-lg font-black text-white">Recent bridge activity</h3>
+            <div className="text-xs font-black uppercase tracking-[0.18em] text-white/35">Local only</div>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {history.map((item) => (
+              <div key={`${item.id}-${item.createdAt}`} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}</div>
+                  <div className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">{item.status}</div>
+                </div>
+                <div className="mt-2 font-semibold text-white/55">{item.amount} → ≈ {item.receive}</div>
+                <div className="mt-1 break-all text-xs text-white/35">{short(item.id, 10, 8)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
   )
 }
