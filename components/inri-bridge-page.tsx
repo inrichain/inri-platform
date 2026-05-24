@@ -742,22 +742,22 @@ export function InriBridgePage() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
-      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.28),transparent_22rem),radial-gradient(circle_at_88%_10%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
+      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
-        <div className="relative mx-auto max-w-[1080px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto max-w-[860px]">
-            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/28 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
+        <div className="relative mx-auto max-w-[1040px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mx-auto max-w-[880px]">
+            <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
                   <ShieldCheck className="h-3.5 w-3.5" /> Official iUSD Bridge
                 </div>
-                <h1 className="mt-3 text-[34px] font-black tracking-[-0.055em] text-white sm:text-[42px]">Bridge iUSD</h1>
-                <p className="mt-2 max-w-[680px] text-sm font-semibold leading-6 text-cyan-50/62">
-                  One clean bridge screen: choose Buy or Sell, confirm in MetaMask, then claim from the same page. Wallet connection stays only in the top bar.
+                <h1 className="mt-3 text-[32px] font-black tracking-[-0.055em] text-white sm:text-[38px]">Bridge iUSD</h1>
+                <p className="mt-2 max-w-[640px] text-sm font-semibold leading-6 text-cyan-50/62">
+                  Simple bridge flow: choose Buy or Sell, confirm in MetaMask, then claim from the same page. Wallet connection stays only in the top navigation.
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs sm:min-w-[280px]">
+              <div className="grid grid-cols-3 gap-2 text-xs md:min-w-[280px]">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Fee</p>
                   <p className="mt-1 font-black text-white">0.2%</p>
@@ -781,12 +781,12 @@ export function InriBridgePage() {
 
             <div className="rounded-[28px] border border-cyan-300/18 bg-white/[0.07] p-3 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
               <div className="rounded-[24px] border border-white/12 bg-[#071827]/90 p-4 sm:p-5 lg:p-6">
-                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
                     <h2 className="mt-1 text-2xl font-black tracking-[-0.045em] text-white">{route.title}</h2>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 sm:min-w-[170px]">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/38">Wallet</p>
                     <p className="mt-1 text-sm font-black text-white">{connected ? short(address, 8, 4) : 'Not connected'}</p>
                     <p className="text-[11px] font-bold text-cyan-100/70">{normalizeChainId(chainId) === POLYGON_CHAIN_ID ? 'Polygon' : normalizeChainId(chainId) === INRI_CHAIN_ID ? 'INRI Chain' : 'Select network'}</p>
@@ -806,71 +806,55 @@ export function InriBridgePage() {
                   ))}
                 </div>
 
-                <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-                  <div className="rounded-[18px] border border-cyan-300/14 bg-white/[0.045] p-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">From</p>
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-2xl font-black text-white">{route.fromToken}</p>
-                        <p className="text-xs font-bold text-cyan-200/70">{route.fromChain}</p>
+                <div className="mt-4 rounded-[20px] border border-white/10 bg-black/18 p-3 sm:p-4">
+                  <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                    <div className="rounded-[16px] border border-cyan-300/14 bg-white/[0.045] p-3">
+                      <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">From</p>
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <div><p className="text-xl font-black text-white">{route.fromToken}</p><p className="text-xs font-bold text-cyan-200/70">{route.fromChain}</p></div>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black text-white/55">Source</span>
                       </div>
-                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black text-white/55">Source</span>
                     </div>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_12px_28px_rgba(19,164,255,0.22)] transition hover:scale-105"
-                      aria-label="Reverse bridge route"
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="rounded-[18px] border border-cyan-300/14 bg-white/[0.045] p-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">To</p>
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-2xl font-black text-white">{route.toToken}</p>
-                        <p className="text-xs font-bold text-cyan-200/70">{route.toChain}</p>
+                    <div className="flex justify-center py-1">
+                      <button
+                        type="button"
+                        onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_12px_28px_rgba(19,164,255,0.22)] transition hover:scale-105"
+                        aria-label="Reverse bridge route"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="rounded-[16px] border border-cyan-300/14 bg-white/[0.045] p-3">
+                      <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">To</p>
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <div><p className="text-xl font-black text-white">{route.toToken}</p><p className="text-xs font-bold text-cyan-200/70">{route.toChain}</p></div>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black text-white/55">Claim</span>
                       </div>
-                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black text-white/55">Claim</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[20px] border border-white/10 bg-black/18 p-4">
+                <div className="mt-3 rounded-[20px] border border-white/12 bg-white/[0.045] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/38">Amount</p>
-                    <button type="button" onClick={setMax} className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200 hover:text-cyan-100">Max</button>
+                    <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
+                    <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
                   </div>
-
-                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-cyan-300/14 bg-white/[0.045] px-4 py-3">
+                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-white/10 bg-black/18 px-4 py-3">
                     <input
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      placeholder="0.0"
-                      className="min-w-0 flex-1 bg-transparent text-3xl font-black tracking-[-0.04em] text-white outline-none placeholder:text-white/22"
+                      className="min-w-0 flex-1 bg-transparent text-[2rem] font-black tracking-[-0.04em] text-white outline-none placeholder:text-white/20"
+                      placeholder="0.00"
                     />
-                    <div className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-white/72">{route.fromToken}</div>
+                    <span className="rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
                   </div>
 
-                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">You receive</p>
-                      <p className="mt-1 text-base font-black text-white">≈ {receiveText} {route.toToken}</p>
-                    </div>
-                    <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">Fee</p>
-                      <p className="mt-1 text-base font-black text-white">0.2%</p>
-                    </div>
-                    <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">Balance</p>
-                      <p className="mt-1 text-base font-black text-white">{balance === null ? '-' : formatUnits(balance, decimals, 4)} {route.fromToken}</p>
-                    </div>
+                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 font-black text-white">0.2%</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
                   </div>
                 </div>
 
@@ -902,19 +886,19 @@ export function InriBridgePage() {
                   </div>
                 ) : null}
 
-                <div className="mt-3 rounded-[18px] border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white/62">
+                <div className="mt-3 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/62">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-black text-white/84">{claim.status === 'ready' ? `${route.toToken} ready to claim` : claim.status === 'done' ? 'Bridge completed' : 'Status'}</p>
                       <p className="mt-1">{claim.status === 'idle' ? status : claim.message}</p>
                       {sourceTx ? (
                         <p className="mt-1 text-xs">TX: <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">{short(sourceTx, 10, 8)}</Link></p>
                       ) : null}
                     </div>
-                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">{claimBadge}</span>
+                    <span className="shrink-0 rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">{claimBadge}</span>
                   </div>
 
-                  <details className="mt-4 rounded-[14px] border border-white/10 bg-white/[0.03] p-3">
+                  <details className="mt-3 rounded-[12px] border border-white/10 bg-white/[0.035] p-3">
                     <summary className="cursor-pointer text-xs font-black text-white/58">Advanced recovery</summary>
                     <p className="mt-2 text-xs leading-5 text-white/42">Only use this if you are recovering an old transfer. Most users never need to copy any ID.</p>
                     <input
@@ -925,43 +909,43 @@ export function InriBridgePage() {
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button type="button" onClick={() => activeClaimId ? void checkApi([activeClaimId]) : undefined} className="inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100"><RefreshCw className="h-3.5 w-3.5" />Check</button>
-                      <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/68">Recovery page <ExternalLink className="h-3.5 w-3.5" /></Link>
                       {activeClaimId ? <button type="button" onClick={() => copyText(activeClaimId, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/68"><Copy className="h-3.5 w-3.5" />Copy ID</button> : null}
+                      <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/68">Recovery page <ExternalLink className="h-3.5 w-3.5" /></Link>
                     </div>
                   </details>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="rounded-[22px] border border-cyan-300/14 bg-white/[0.05] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl">
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Progress</p>
-                    <h3 className="mt-1 text-xl font-black tracking-[-0.04em] text-white">Transfer steps</h3>
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Progress</p>
+                    <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Transfer steps</h3>
                   </div>
                   <button type="button" onClick={() => activeClaimId ? void checkApi([activeClaimId]) : undefined} className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100" aria-label="Refresh status">
                     <RefreshCw className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Use top bar connect.'} done={connected} />
+                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                  <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet from the top bar.'} done={connected} />
                   <Step label="Source" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}.`} active={connected && !onSourceNetwork} done={onSourceNetwork} />
                   <Step label={route.sourceAction} value={sourceTx ? `Submitted: ${short(sourceTx, 10, 8)}` : direction === 'buy' ? 'Approve / deposit.' : 'Burn iUSD.'} active={busy} done={Boolean(sourceTx)} />
                   <Step label={route.claimTitle} value={claim.status === 'ready' ? 'Ready.' : claim.status === 'done' ? 'Completed.' : claim.message} active={claim.status === 'checking'} done={claim.status === 'done'} />
                 </div>
               </div>
 
-              <div className="rounded-[22px] border border-cyan-300/14 bg-white/[0.05] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.30)] backdrop-blur-2xl">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Helpers</p>
-                <h3 className="mt-1 text-xl font-black tracking-[-0.04em] text-white">Quick tools</h3>
+              <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Tools</p>
+                <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Helpers</h3>
                 <div className="mt-4 grid gap-2">
                   <button type="button" onClick={() => void addIusdToken()} className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]">
                     Add iUSD token <Wallet className="h-4 w-4" />
                   </button>
                   {sourceTx ? <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/68 transition hover:text-cyan-100">Open latest TX <ExternalLink className="h-4 w-4" /></Link> : null}
                 </div>
-                <p className="mt-4 text-xs leading-6 text-white/48">Default flow is simple: top wallet connect, one main action, then one claim action.</p>
+                <p className="mt-4 text-xs leading-6 text-white/50">Normal users only need the two main action buttons. Advanced recovery stays hidden below.</p>
               </div>
             </div>
 
