@@ -315,6 +315,432 @@ function explorerTx(chainId: string, tx: string) {
 
 function Step({ label, value, active, done }: { label: string; value: string; active?: boolean; done?: boolean }) {
   return (
+    <div
+      className={`rounded-2xl border px-3 py-3 ${
+        done
+          ? 'border-emerald-300/25 bg-emerald-300/[0.08]'
+          : active
+            ? 'border-cyan-300/35 bg-cyan-300/[0.10]'
+            : 'border-white/10 bg-white/[0.035]'
+      }`}
+    >
+      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
+        {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-200" /> : active ? <Clock3 className="h-3.5 w-3.5 text-cyan-200" /> : <span className="h-2 w-2 rounded-full bg-white/25" />}
+        {label}
+      </div>
+      <div className="mt-1 text-xs font-semibold leading-relaxed text-white/75">{value}</div>
+    </div>
+  )
+}
+
+export function InriBridgePage() {
+  const [wallet, setWallet] = useState<ActiveWalletState>(null)
+  const [direction, setDirection] = useState<Direction>('buy')
+  const [amount, setAmount] = useState('1')
+  const [busy, setBusy] = useState(false)
+  const [status, setStatus] = useState('Ready. Connect wallet and choose an amount.')
+  const [error, setError] = useState('')
+  const [balance, setBalance] = useState<bigint | null>(null)
+  const [allowance, setAllowance] = useState<bigint | null>(null)
+  const [decimals, setDecimals] = useState(6)
+  const [sourceTx, setSourceTx] = useState('')
+  const [bridgeIds, setBridgeIds] = useState<string[]>([])
+  const [manualClaimId, setManualClaimId] = useState('')
+  const [claim, setClaim] = useState<ClaimState>({ status: 'idle', message: 'No transfer submitted yet.' })
+  const [history, setHistory] = useState<HistoryItem[]>([])
+  const [copied, setCopied] = useState('')
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const injectedProvider = typeof window !== 'undefined' ? ((window as any).ethereum as ProviderLike | undefined) : undefined
+  const provider = wallet?.provider || injectedProvider
+  const address = wallet?.address || ''
+  const chainId = normalizeChainId(wallet?.chainId)
+
+  const route = direction === 'buy'
+    ? {
+        title: 'Buy iUSD',
+        fromToken: 'USDT',
+        fromChain: 'Polygon',
+        toToken: 'iUSD',
+        toChain: 'INRI Chain',
+        sourceChain: POLYGON_CHAIN_ID,
+        destinationChain: INRI_CHAIN_ID,
+        token: POLYGON_USDT,
+        bridgeContract: POLYGON_LOCKBOX,
+        sourceAction: 'Deposit USDT',
+        primaryAction: 'Bridge USDT to iUSD',
+        claimTitle: 'Claim iUSD',
+        claimAction: 'Claim iUSD on INRI',
+        checkAction: 'Check iUSD Claim',
+        claimHint: 'Depois do depósito, o site encontra o claim iUSD automaticamente e mostra o botão final.',
+        api: CLAIM_API,
+      }
+    : {
+        title: 'Sell iUSD',
+        fromToken: 'iUSD',
+        fromChain: 'INRI Chain',
+        toToken: 'USDT',
+        toChain: 'Polygon',
+        sourceChain: INRI_CHAIN_ID,
+        destinationChain: POLYGON_CHAIN_ID,
+        token: INRI_IUSD,
+        bridgeContract: INRI_IUSD,
+        sourceAction: 'Burn iUSD',
+        primaryAction: 'Bridge iUSD to USDT',
+        claimTitle: 'Claim USDT',
+        claimAction: 'Claim USDT on Polygon',
+        checkAction: 'Check USDT Claim',
+        claimHint: 'Depois do burn, o site usa o hash da transação para encontrar o release USDT automaticamente.',
+        api: RELEASE_API,
+      }
+
+  const amountRaw = useMemo(() => parseUnits(amount, decimals), [amount, decimals])
+  const receiveRaw = useMemo(() => (amountRaw * (BPS_DENOMINATOR - FEE_BPS)) / BPS_DENOMINATOR, [amountRaw])
+  const receiveText = useMemo(() => formatUnits(receiveRaw, decimals, 6), [receiveRaw, decimals])
+  const connected = Boolean(address && provider)
+  const onSourceNetwork = chainId === route.sourceChain
+  const onClaimNetwork = chainId === route.destinationChain
+  const balanceEnough = balance === null || amountRaw <= balance
+  const allowanceEnough = direction === 'sell' || (allowance !== null && allowance >= amountRaw && amountRaw > 0n)
+  const activeClaimId = (manualClaimId || claim.id || bridgeIds[0] || '').trim()
+
+  useEffect(() => {
+    setWallet(getWalletState())
+    setHistory(loadHistory())
+    const onWallet = () => setWallet(getWalletState())
+    window.addEventListener('inri:wallet-state', onWallet)
+    return () => window.removeEventListener('inri:wallet-state', onWallet)
+  }, [])
+
+  useEffect(() => {
+    setError('')
+    setSourceTx('')
+    setBridgeIds([])
+    setManualClaimId('')
+    setClaim({ status: 'idle', message: 'No transfer submitted yet.' })
+    setAllowance(null)
+    setBalance(null)
+    setDecimals(6)
+    if (pollingRef.current) clearInterval(pollingRef.current)
+  }, [direction])
+
+  useEffect(() => {
+    if (!provider || !address || !onSourceNetwork) return
+    void refreshTokenState()
+  }, [provider, address, chainId, direction])
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
+  }, [])
+
+  async function refreshTokenState() {
+    if (!provider || !address) return
+    try {
+      const balanceHex = await ethCall(provider, route.token, encodeBalanceOf(address), address)
+      const decimalsHex = await ethCall(provider, route.token, SELECTOR.decimals, address)
+      const nextDecimals = Number.parseInt(decimalsHex || '0x6', 16)
+      setDecimals(Number.isFinite(nextDecimals) && nextDecimals > 0 && nextDecimals <= 36 ? nextDecimals : 6)
+      setBalance(BigInt(balanceHex || '0x0'))
+
+      if (direction === 'buy') {
+        const allowanceHex = await ethCall(provider, POLYGON_USDT, encodeAllowance(address, POLYGON_LOCKBOX), address)
+        setAllowance(BigInt(allowanceHex || '0x0'))
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Could not read balance/allowance.')
+    }
+  }
+
+  async function switchNetwork(targetChain = route.sourceChain) {
+    if (!provider) {
+      setError('Connect wallet first.')
+      return false
+    }
+
+    const polygon = targetChain === POLYGON_CHAIN_ID
+    setBusy(true)
+    setError('')
+
+    try {
+      try {
+        await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetChain }] })
+      } catch {
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            polygon
+              ? {
+                  chainId: POLYGON_CHAIN_ID,
+                  chainName: 'Polygon PoS',
+                  nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+                  rpcUrls: ['https://polygon-rpc.com'],
+                  blockExplorerUrls: ['https://polygonscan.com'],
+                }
+              : {
+                  chainId: INRI_CHAIN_ID,
+                  chainName: 'INRI CHAIN',
+                  nativeCurrency: { name: 'INRI', symbol: 'INRI', decimals: 18 },
+                  rpcUrls: ['https://rpc.inri.life'],
+                  blockExplorerUrls: ['https://explorer.inri.life'],
+                },
+          ],
+        })
+      }
+      setStatus(`Network switched to ${polygon ? 'Polygon' : 'INRI Chain'}.`)
+      return true
+    } catch (err: any) {
+      setError(err?.message || 'Could not switch network.')
+      return false
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function addHistory(item: HistoryItem) {
+    const next = [item, ...history.filter((old) => old.id !== item.id)].slice(0, 6)
+    setHistory(next)
+    saveHistory(next)
+  }
+
+  function updateHistory(id: string, statusText: string) {
+    const next = history.map((item) => (item.id === id ? { ...item, status: statusText } : item))
+    setHistory(next)
+    saveHistory(next)
+  }
+
+  async function approveUsdt() {
+    if (!provider || !address || amountRaw <= 0n) return
+    setStatus('Approving USDT for the official lockbox...')
+    const hash = await sendTx(provider, address, POLYGON_USDT, encodeApprove(POLYGON_LOCKBOX, amountRaw))
+    setStatus(`Approval sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
+    await waitForReceipt(provider, hash)
+    await refreshTokenState()
+    setStatus('USDT approval confirmed. Continue with deposit.')
+  }
+
+  async function submitSourceTx() {
+    if (!provider || !address) return
+    if (amountRaw <= 0n) {
+      setError('Enter a valid amount.')
+      return
+    }
+    if (!onSourceNetwork) {
+      await switchNetwork(route.sourceChain)
+      return
+    }
+    if (!balanceEnough) {
+      setError(`Insufficient ${route.fromToken} balance.`)
+      return
+    }
+
+    setBusy(true)
+    setError('')
+
+    try {
+      if (direction === 'buy' && !allowanceEnough) {
+        await approveUsdt()
+        return
+      }
+
+      const to = direction === 'buy' ? POLYGON_LOCKBOX : INRI_IUSD
+      const data = direction === 'buy'
+        ? encodeAmount(SELECTOR.deposit, amountRaw)
+        : encodeAmount(SELECTOR.burn, amountRaw)
+
+      setStatus(direction === 'buy' ? 'Depositing USDT into the Polygon lockbox...' : 'Burning iUSD on INRI...')
+      const txHash = await sendTx(provider, address, to, data)
+      setSourceTx(txHash)
+      setStatus(`Transaction sent: ${short(txHash, 10, 8)}. Waiting confirmation...`)
+
+      const receipt = await waitForReceipt(provider, txHash)
+      const detectedIds = extractBridgeIds(receipt, to, txHash)
+
+      // SELL IMPORTANT:
+      // For iUSD -> USDT the burn transaction hash is NOT the final releaseId,
+      // but the bridge API now resolves /api/release/:burnTxHash to the correct release.
+      // Keep the burnTxHash first so normal users never need to copy/paste a release ID.
+      const ids = direction === 'sell' ? unique([txHash, ...detectedIds]) : detectedIds
+      const firstId = direction === 'sell' ? txHash : ids[0] || txHash
+
+      setBridgeIds(ids)
+      setManualClaimId(firstId)
+      setClaim({
+        status: 'checking',
+        message: direction === 'sell'
+          ? 'Burn confirmed. Preparing your USDT release automatically...'
+          : 'Deposit confirmed. Preparing your iUSD claim automatically...',
+        id: firstId,
+      })
+
+      addHistory({
+        id: firstId,
+        direction,
+        amount,
+        receive: receiveText,
+        tx: txHash,
+        status: 'submitted',
+        createdAt: Date.now(),
+      })
+
+      startPolling(ids.length ? ids : [firstId])
+    } catch (err: any) {
+      setError(err?.message || 'Bridge transaction failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function checkApi(ids = bridgeIds, silent = false) {
+    const nextIds = unique(ids.map((id) => id.trim()).filter(Boolean))
+    if (!nextIds.length) {
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
+      return
+    }
+
+    if (!silent) setClaim({ status: 'checking', message: 'Checking watcher signatures...', id: nextIds[0] })
+
+    for (const id of nextIds) {
+      try {
+        const response = await fetch(`${route.api}/${encodeURIComponent(id)}`, { cache: 'no-store' })
+        if (!response.ok) continue
+        const json = await response.json()
+        const ready = apiLooksReady(json)
+        const tx = findApiTx(json)
+        const resolvedId = typeof json.resolvedId === 'string' && json.resolvedId.startsWith('0x') ? json.resolvedId : id
+
+        setManualClaimId(resolvedId)
+        setClaim({
+          status: ready ? 'ready' : 'waiting',
+          message: ready
+            ? `${route.claimTitle} is ready. Confirm in your wallet.`
+            : direction === 'sell'
+              ? 'Burn detected. Preparing your USDT release automatically...'
+              : 'Deposit detected. Preparing your iUSD claim automatically...',
+          id: resolvedId,
+          tx,
+          raw: json,
+        })
+        if (ready) updateHistory(id, 'ready')
+        return
+      } catch (err: any) {
+        setClaim({ status: 'error', message: err?.message || 'Could not reach bridge API.', id })
+      }
+    }
+
+    setClaim({
+      status: 'waiting',
+      message: `${route.claimTitle} is not published yet. Keep this page open or press Check again.`,
+      id: nextIds[0],
+    })
+  }
+
+  function startPolling(ids: string[]) {
+    const nextIds = unique(ids)
+    if (pollingRef.current) clearInterval(pollingRef.current)
+    void checkApi(nextIds)
+    pollingRef.current = setInterval(() => void checkApi(nextIds, true), 5000)
+  }
+
+  async function claimDestination() {
+    if (!provider || !address) return
+    const id = activeClaimId
+    if (!id) {
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
+      return
+    }
+
+    if (claim.status !== 'ready' && !claim.tx) {
+      await checkApi([id])
+      setStatus('Checked watcher. If signatures are ready, press the claim button again.')
+      return
+    }
+
+    if (!onClaimNetwork) {
+      await switchNetwork(route.destinationChain)
+      return
+    }
+
+    setBusy(true)
+    setError('')
+
+    try {
+      if (!claim.tx) {
+        window.open(`${BRIDGE_ORIGIN}/claim.html?id=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
+        setStatus('Opened the safe recovery claim page because this API response did not expose raw calldata.')
+        return
+      }
+
+      const hash = await sendTx(provider, address, claim.tx.to, claim.tx.data, claim.tx.value)
+      setStatus(`${route.claimTitle} sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
+      await waitForReceipt(provider, hash)
+      setClaim((old) => ({ ...old, status: 'done', message: 'Bridge completed successfully.' }))
+      updateHistory(id, 'done')
+    } catch (err: any) {
+      setError(err?.message || 'Claim transaction failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function addIusdToken() {
+    if (!provider) return
+    try {
+      await provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: INRI_IUSD,
+            symbol: 'iUSD',
+            decimals,
+            image: 'https://platform.inri.life/inri-logo.png',
+          },
+        },
+      })
+    } catch {}
+  }
+
+  function copyText(value: string, label: string) {
+    if (!value || typeof navigator === 'undefined') return
+    void navigator.clipboard.writeText(value)
+    setCopied(label)
+    window.setTimeout(() => setCopied(''), 1200)
+  }
+
+  function setMax() {
+    if (balance === null) return
+    setAmount(formatUnits(balance, decimals, Math.min(decimals, 6)))
+  }
+
+  const mainButtonText = !connected
+    ? 'Connect wallet first'
+    : !onSourceNetwork
+      ? `Switch to ${route.fromChain}`
+      : !balanceEnough
+        ? `Insufficient ${route.fromToken}`
+        : direction === 'buy' && !allowanceEnough
+          ? 'Approve USDT'
+          : route.primaryAction
+
+  const claimBadge = claim.status === 'ready'
+    ? 'Ready'
+    : claim.status === 'done'
+      ? 'Done'
+      : claim.status === 'checking'
+        ? 'Checking'
+        : 'Waiting'
+
+  const claimButtonText = !activeClaimId
+    ? direction === 'buy' ? 'Waiting for iUSD claim' : 'Waiting for USDT release'
+    : claim.status !== 'ready' || !claim.tx
+      ? direction === 'buy' ? 'Check iUSD claim' : 'Check USDT release'
+      : !onClaimNetwork
+        ? `Switch to ${route.toChain}`
+        : route.claimAction
+
+  return (
     <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
       <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.28),transparent_22rem),radial-gradient(circle_at_88%_10%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
