@@ -861,7 +861,7 @@ export function InriBridgePage() {
                   <div className="mt-3 grid gap-2 sm:grid-cols-3">
                     <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">You receive</p>
-                      <p className="mt-1 text-base font-black text-white">≈ {formattedReceive} {route.toToken}</p>
+                      <p className="mt-1 text-base font-black text-white">≈ {receiveText} {route.toToken}</p>
                     </div>
                     <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">Fee</p>
@@ -869,7 +869,7 @@ export function InriBridgePage() {
                     </div>
                     <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-3">
                       <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/36">Balance</p>
-                      <p className="mt-1 text-base font-black text-white">{formattedBalance} {route.fromToken}</p>
+                      <p className="mt-1 text-base font-black text-white">{balance === null ? '-' : formatUnits(balance, decimals, 4)} {route.fromToken}</p>
                     </div>
                   </div>
                 </div>
