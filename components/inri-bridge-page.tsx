@@ -16,6 +16,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
+import { Interface } from 'ethers'
 
 const BRIDGE_ORIGIN = 'https://iusd-bridge.inri.life'
 const CLAIM_API = `${BRIDGE_ORIGIN}/api/claim`
@@ -26,6 +27,7 @@ const INRI_CHAIN_ID = '0xec1'
 const POLYGON_USDT = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'
 const POLYGON_LOCKBOX = '0x7E2e6d4881e1470D541599397b4876b449296071'
 const INRI_IUSD = '0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC'
+const INRI_EXECUTOR = '0x07DE046e96c33a8E575234282e1CccAC56d3d880'
 
 const FEE_BPS = 20n
 const BPS_DENOMINATOR = 10_000n
@@ -188,8 +190,60 @@ function extractBridgeIds(receipt: any, preferredAddress: string, fallbackHash: 
   return unique([...first, ...fallback, fallbackHash])
 }
 
+const MINT_CLAIM_IFACE = new Interface([
+  'function mintFromPolygonDeposit(address recipient,uint256 amount,bytes32 depositId,uint256 deadline,bytes[] signatures)',
+])
+
+const RELEASE_CLAIM_IFACE = new Interface([
+  'function release(address recipient,uint256 amount,uint256 nonce,uint256 deadline,bytes[] signatures)',
+])
+
+function hasTwoSignatures(value: any) {
+  return Array.isArray(value?.signatures) && value.signatures.length >= 2
+}
+
+function buildTxFromRawBridgeApi(value: any): ApiTx | null {
+  if (!value || typeof value !== 'object') return null
+
+  const claim = value.claim && typeof value.claim === 'object' ? value.claim : value.type === 'mint' ? value : null
+  if (claim && claim.recipient && claim.amount && claim.depositId && claim.deadline && hasTwoSignatures(claim)) {
+    return {
+      to: typeof value.executor === 'string' && isAddress(value.executor) ? value.executor : INRI_EXECUTOR,
+      data: MINT_CLAIM_IFACE.encodeFunctionData('mintFromPolygonDeposit', [
+        claim.recipient,
+        claim.amount,
+        claim.depositId,
+        claim.deadline,
+        claim.signatures,
+      ]),
+      value: '0x0',
+    }
+  }
+
+  const release = value.release && typeof value.release === 'object' ? value.release : value.type === 'release' ? value : null
+  if (release && release.recipient && release.amount && release.nonce && release.deadline && hasTwoSignatures(release)) {
+    return {
+      to: typeof value.lockbox === 'string' && isAddress(value.lockbox) ? value.lockbox : POLYGON_LOCKBOX,
+      data: RELEASE_CLAIM_IFACE.encodeFunctionData('release', [
+        release.recipient,
+        release.amount,
+        release.nonce,
+        release.deadline,
+        release.signatures,
+      ]),
+      value: '0x0',
+    }
+  }
+
+  return null
+}
+
 function findApiTx(value: any): ApiTx | null {
   if (!value || typeof value !== 'object') return null
+
+  const built = buildTxFromRawBridgeApi(value)
+  if (built) return built
+
   const candidates = [
     value,
     value.tx,
