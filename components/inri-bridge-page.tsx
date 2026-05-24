@@ -15,13 +15,12 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
-import { Interface } from 'ethers'
 import { ConnectWalletButton } from '@/components/connect-wallet-button'
+import { Interface } from 'ethers'
 
 const BRIDGE_ORIGIN = 'https://iusd-bridge.inri.life'
 const CLAIM_API = `${BRIDGE_ORIGIN}/api/claim`
 const RELEASE_API = `${BRIDGE_ORIGIN}/api/release`
-const PENDING_API = `${BRIDGE_ORIGIN}/api/pending`
 
 const POLYGON_CHAIN_ID = '0x89'
 const INRI_CHAIN_ID = '0xec1'
@@ -62,19 +61,6 @@ type ClaimState = {
   tx?: ApiTx | null
   raw?: unknown
 }
-
-type PendingItem = {
-  id: string
-  kind: 'claim' | 'release'
-  direction: Direction
-  status?: string
-  recipient?: string
-  amount?: string
-  grossAmount?: string
-  fee?: string
-  createdAt?: string
-}
-
 type HistoryItem = {
   id: string
   direction: Direction
@@ -84,14 +70,6 @@ type HistoryItem = {
   status: string
   createdAt: number
 }
-
-const MINT_IFACE = new Interface([
-  'function mintFromPolygonDeposit(address recipient,uint256 amount,bytes32 depositId,uint256 deadline,bytes[] signatures)',
-])
-
-const RELEASE_IFACE = new Interface([
-  'function release(address recipient,uint256 amount,uint256 nonce,uint256 deadline,bytes[] signatures)',
-])
 
 function getWalletState(): ActiveWalletState {
   if (typeof window === 'undefined') return null
@@ -161,13 +139,19 @@ function formatUnits(value: bigint, decimals: number, maxFraction = 6) {
   return trimmed ? `${whole}.${trimmed}` : whole.toString()
 }
 
-function formatTokenAmount(value?: string, decimals = 6) {
+function loadHistory(): HistoryItem[] {
+  if (typeof window === 'undefined') return []
   try {
-    if (!value) return '-'
-    return formatUnits(BigInt(value), decimals, 6)
+    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v4') || '[]')
+    return Array.isArray(parsed) ? parsed.slice(0, 6) : []
   } catch {
-    return value || '-'
+    return []
   }
+}
+
+function saveHistory(items: HistoryItem[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('inri_site_bridge_history_v4', JSON.stringify(items.slice(0, 6)))
 }
 
 function looksLikeBridgeId(value: string) {
@@ -206,33 +190,26 @@ function extractBridgeIds(receipt: any, preferredAddress: string, fallbackHash: 
   return unique([...first, ...fallback, fallbackHash])
 }
 
-function loadHistory(): HistoryItem[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v5') || '[]')
-    return Array.isArray(parsed) ? parsed.slice(0, 6) : []
-  } catch {
-    return []
-  }
-}
+const MINT_CLAIM_IFACE = new Interface([
+  'function mintFromPolygonDeposit(address recipient,uint256 amount,bytes32 depositId,uint256 deadline,bytes[] signatures)',
+])
 
-function saveHistory(items: HistoryItem[]) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem('inri_site_bridge_history_v5', JSON.stringify(items.slice(0, 6)))
-}
+const RELEASE_CLAIM_IFACE = new Interface([
+  'function release(address recipient,uint256 amount,uint256 nonce,uint256 deadline,bytes[] signatures)',
+])
 
 function hasTwoSignatures(value: any) {
   return Array.isArray(value?.signatures) && value.signatures.length >= 2
 }
 
-function buildTxFromBridgeApi(value: any): ApiTx | null {
+function buildTxFromRawBridgeApi(value: any): ApiTx | null {
   if (!value || typeof value !== 'object') return null
 
   const claim = value.claim && typeof value.claim === 'object' ? value.claim : value.type === 'mint' ? value : null
   if (claim && claim.recipient && claim.amount && claim.depositId && claim.deadline && hasTwoSignatures(claim)) {
     return {
       to: typeof value.executor === 'string' && isAddress(value.executor) ? value.executor : INRI_EXECUTOR,
-      data: MINT_IFACE.encodeFunctionData('mintFromPolygonDeposit', [
+      data: MINT_CLAIM_IFACE.encodeFunctionData('mintFromPolygonDeposit', [
         claim.recipient,
         claim.amount,
         claim.depositId,
@@ -247,7 +224,7 @@ function buildTxFromBridgeApi(value: any): ApiTx | null {
   if (release && release.recipient && release.amount && release.nonce && release.deadline && hasTwoSignatures(release)) {
     return {
       to: typeof value.lockbox === 'string' && isAddress(value.lockbox) ? value.lockbox : POLYGON_LOCKBOX,
-      data: RELEASE_IFACE.encodeFunctionData('release', [
+      data: RELEASE_CLAIM_IFACE.encodeFunctionData('release', [
         release.recipient,
         release.amount,
         release.nonce,
@@ -261,12 +238,24 @@ function buildTxFromBridgeApi(value: any): ApiTx | null {
   return null
 }
 
-function findReadyTx(value: any): ApiTx | null {
+function findApiTx(value: any): ApiTx | null {
   if (!value || typeof value !== 'object') return null
-  const built = buildTxFromBridgeApi(value)
+
+  const built = buildTxFromRawBridgeApi(value)
   if (built) return built
 
-  const candidates = [value, value.tx, value.transaction, value.request, value.claimTx, value.releaseTx, value.payload, value.result]
+  const candidates = [
+    value,
+    value.tx,
+    value.transaction,
+    value.request,
+    value.claimTx,
+    value.releaseTx,
+    value.call,
+    value.payload,
+    value.result,
+  ]
+
   for (const item of candidates) {
     if (!item || typeof item !== 'object') continue
     const to = item.to || item.target || item.contract || item.contractAddress
@@ -277,15 +266,28 @@ function findReadyTx(value: any): ApiTx | null {
   }
 
   for (const item of Object.values(value)) {
-    const nested = findReadyTx(item)
+    const nested = findApiTx(item)
     if (nested) return nested
   }
 
   return null
 }
 
+function apiLooksReady(value: any) {
+  if (!value || typeof value !== 'object') return false
+  if (findApiTx(value)) return true
+  const status = String(value.status || value.state || value.phase || '').toLowerCase()
+  if (['ready', 'claimable', 'claim_ready', 'release_ready', 'ok'].includes(status)) return true
+  if (value.ready === true || value.claimable === true || value.releaseReady === true) return true
+  if (Array.isArray(value.signatures) && value.signatures.length >= 2) return true
+  return false
+}
+
 async function ethCall(provider: ProviderLike, to: string, data: string, from?: string) {
-  const result = await provider.request({ method: 'eth_call', params: [{ to, data, ...(from ? { from } : {}) }, 'latest'] })
+  const result = await provider.request({
+    method: 'eth_call',
+    params: [{ to, data, ...(from ? { from } : {}) }, 'latest'],
+  })
   return typeof result === 'string' && result.startsWith('0x') ? result : '0x0'
 }
 
@@ -307,17 +309,27 @@ async function waitForReceipt(provider: ProviderLike, txHash: string) {
 }
 
 function explorerTx(chainId: string, tx: string) {
-  return normalizeChainId(chainId) === POLYGON_CHAIN_ID ? `https://polygonscan.com/tx/${tx}` : `https://explorer.inri.life/tx/${tx}`
+  return normalizeChainId(chainId) === POLYGON_CHAIN_ID
+    ? `https://polygonscan.com/tx/${tx}`
+    : `https://explorer.inri.life/tx/${tx}`
 }
 
-function StepBox({ label, text, done, active }: { label: string; text: string; done?: boolean; active?: boolean }) {
+function Step({ label, value, active, done }: { label: string; value: string; active?: boolean; done?: boolean }) {
   return (
-    <div className={`rounded-2xl border px-3 py-3 ${done ? 'border-emerald-300/25 bg-emerald-300/[0.08]' : active ? 'border-cyan-300/35 bg-cyan-300/[0.10]' : 'border-white/10 bg-white/[0.04]'}`}>
+    <div
+      className={`rounded-2xl border px-3 py-3 ${
+        done
+          ? 'border-emerald-300/25 bg-emerald-300/[0.08]'
+          : active
+            ? 'border-cyan-300/35 bg-cyan-300/[0.10]'
+            : 'border-white/10 bg-white/[0.035]'
+      }`}
+    >
       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
         {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-200" /> : active ? <Clock3 className="h-3.5 w-3.5 text-cyan-200" /> : <span className="h-2 w-2 rounded-full bg-white/25" />}
         {label}
       </div>
-      <p className="mt-1 text-xs font-semibold leading-relaxed text-white/72">{text}</p>
+      <div className="mt-1 text-xs font-semibold leading-relaxed text-white/75">{value}</div>
     </div>
   )
 }
@@ -327,7 +339,7 @@ export function InriBridgePage() {
   const [direction, setDirection] = useState<Direction>('buy')
   const [amount, setAmount] = useState('1')
   const [busy, setBusy] = useState(false)
-  const [status, setStatus] = useState('Ready. Connect wallet and choose Buy or Sell.')
+  const [status, setStatus] = useState('Ready. Connect wallet and choose an amount.')
   const [error, setError] = useState('')
   const [balance, setBalance] = useState<bigint | null>(null)
   const [allowance, setAllowance] = useState<bigint | null>(null)
@@ -335,9 +347,7 @@ export function InriBridgePage() {
   const [sourceTx, setSourceTx] = useState('')
   const [bridgeIds, setBridgeIds] = useState<string[]>([])
   const [manualClaimId, setManualClaimId] = useState('')
-  const [claim, setClaim] = useState<ClaimState>({ status: 'idle', message: 'No active transfer yet.' })
-  const [pending, setPending] = useState<PendingItem[]>([])
-  const [pendingStatus, setPendingStatus] = useState('Connect wallet to search pending claims.')
+  const [claim, setClaim] = useState<ClaimState>({ status: 'idle', message: 'No transfer submitted yet.' })
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [copied, setCopied] = useState('')
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -357,14 +367,14 @@ export function InriBridgePage() {
         sourceChain: POLYGON_CHAIN_ID,
         destinationChain: INRI_CHAIN_ID,
         token: POLYGON_USDT,
-        sourceContract: POLYGON_LOCKBOX,
+        bridgeContract: POLYGON_LOCKBOX,
         sourceAction: 'Deposit USDT',
-        mainAction: 'Bridge USDT to iUSD',
+        primaryAction: 'Bridge USDT to iUSD',
         claimTitle: 'Claim iUSD',
         claimAction: 'Claim iUSD on INRI',
-        checkAction: 'Check iUSD claim',
+        checkAction: 'Check iUSD Claim',
+        claimHint: 'Depois do depósito, o bridge detecta o claim automaticamente. O usuário só confirma na carteira quando ficar pronto.',
         api: CLAIM_API,
-        recoveryUrl: (id: string) => `${BRIDGE_ORIGIN}/claim.html?id=${encodeURIComponent(id)}`,
       }
     : {
         title: 'Sell iUSD',
@@ -375,14 +385,14 @@ export function InriBridgePage() {
         sourceChain: INRI_CHAIN_ID,
         destinationChain: POLYGON_CHAIN_ID,
         token: INRI_IUSD,
-        sourceContract: INRI_IUSD,
+        bridgeContract: INRI_IUSD,
         sourceAction: 'Burn iUSD',
-        mainAction: 'Bridge iUSD to USDT',
+        primaryAction: 'Bridge iUSD to USDT',
         claimTitle: 'Claim USDT',
         claimAction: 'Claim USDT on Polygon',
-        checkAction: 'Check USDT release',
+        checkAction: 'Check USDT Claim',
+        claimHint: 'Depois do burn, o bridge encontra o release automaticamente. O usuário só confirma o Claim USDT quando ficar pronto.',
         api: RELEASE_API,
-        recoveryUrl: () => `${BRIDGE_ORIGIN}/sell.html`,
       }
 
   const amountRaw = useMemo(() => parseUnits(amount, decimals), [amount, decimals])
@@ -408,7 +418,7 @@ export function InriBridgePage() {
     setSourceTx('')
     setBridgeIds([])
     setManualClaimId('')
-    setClaim({ status: 'idle', message: 'No active transfer yet.' })
+    setClaim({ status: 'idle', message: 'No transfer submitted yet.' })
     setAllowance(null)
     setBalance(null)
     setDecimals(6)
@@ -419,11 +429,6 @@ export function InriBridgePage() {
     if (!provider || !address || !onSourceNetwork) return
     void refreshTokenState()
   }, [provider, address, chainId, direction])
-
-  useEffect(() => {
-    if (!address) return
-    void loadPendingForWallet()
-  }, [address])
 
   useEffect(() => {
     return () => {
@@ -508,7 +513,7 @@ export function InriBridgePage() {
 
   async function approveUsdt() {
     if (!provider || !address || amountRaw <= 0n) return
-    setStatus('Approving USDT for the official Polygon lockbox...')
+    setStatus('Approving USDT for the official lockbox...')
     const hash = await sendTx(provider, address, POLYGON_USDT, encodeApprove(POLYGON_LOCKBOX, amountRaw))
     setStatus(`Approval sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
     await waitForReceipt(provider, hash)
@@ -541,7 +546,9 @@ export function InriBridgePage() {
       }
 
       const to = direction === 'buy' ? POLYGON_LOCKBOX : INRI_IUSD
-      const data = direction === 'buy' ? encodeAmount(SELECTOR.deposit, amountRaw) : encodeAmount(SELECTOR.burn, amountRaw)
+      const data = direction === 'buy'
+        ? encodeAmount(SELECTOR.deposit, amountRaw)
+        : encodeAmount(SELECTOR.burn, amountRaw)
 
       setStatus(direction === 'buy' ? 'Depositing USDT into the Polygon lockbox...' : 'Burning iUSD on INRI...')
       const txHash = await sendTx(provider, address, to, data)
@@ -555,9 +562,17 @@ export function InriBridgePage() {
       setManualClaimId(firstId)
       setClaim({ status: 'checking', message: 'Transaction confirmed. Checking watcher signatures...', id: firstId })
 
-      addHistory({ id: firstId, direction, amount, receive: receiveText, tx: txHash, status: 'submitted', createdAt: Date.now() })
+      addHistory({
+        id: firstId,
+        direction,
+        amount,
+        receive: receiveText,
+        tx: txHash,
+        status: 'submitted',
+        createdAt: Date.now(),
+      })
+
       startPolling(ids.length ? ids : [firstId])
-      window.setTimeout(() => void loadPendingForWallet(), 5000)
     } catch (err: any) {
       setError(err?.message || 'Bridge transaction failed.')
     } finally {
@@ -568,7 +583,7 @@ export function InriBridgePage() {
   async function checkApi(ids = bridgeIds, silent = false) {
     const nextIds = unique(ids.map((id) => id.trim()).filter(Boolean))
     if (!nextIds.length) {
-      setError('Paste the claim/release ID first, select a pending item, or submit a bridge transaction.')
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
       return
     }
 
@@ -579,12 +594,12 @@ export function InriBridgePage() {
         const response = await fetch(`${route.api}/${encodeURIComponent(id)}`, { cache: 'no-store' })
         if (!response.ok) continue
         const json = await response.json()
-        const tx = findReadyTx(json)
-        const ready = Boolean(tx)
+        const ready = apiLooksReady(json)
+        const tx = findApiTx(json)
         setManualClaimId(id)
         setClaim({
           status: ready ? 'ready' : 'waiting',
-          message: ready ? `${route.claimTitle} is ready. Confirm the final wallet transaction.` : 'Watcher found the transfer and is still preparing signatures.',
+          message: ready ? `${route.claimTitle} is ready. Confirm the final wallet transaction.` : 'Watcher found the transfer and is preparing signatures.',
           id,
           tx,
           raw: json,
@@ -596,7 +611,11 @@ export function InriBridgePage() {
       }
     }
 
-    setClaim({ status: 'waiting', message: `${route.claimTitle} is not published yet. Keep this page open or press Check again.`, id: nextIds[0] })
+    setClaim({
+      status: 'waiting',
+      message: `${route.claimTitle} is not published yet. Keep this page open or press Check again.`,
+      id: nextIds[0],
+    })
   }
 
   function startPolling(ids: string[]) {
@@ -610,12 +629,13 @@ export function InriBridgePage() {
     if (!provider || !address) return
     const id = activeClaimId
     if (!id) {
-      setError('No claim/release ID selected.')
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
       return
     }
 
-    if (!claim.tx || claim.id !== id) {
+    if (claim.status !== 'ready' && !claim.tx) {
       await checkApi([id])
+      setStatus('Checked watcher. If signatures are ready, press the claim button again.')
       return
     }
 
@@ -628,61 +648,40 @@ export function InriBridgePage() {
     setError('')
 
     try {
-      setStatus(`${route.claimTitle}: sending final transaction...`)
+      if (!claim.tx) {
+        window.open(`${BRIDGE_ORIGIN}/claim.html?id=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
+        setStatus('Opened the safe recovery claim page because this API response did not expose raw calldata.')
+        return
+      }
+
       const hash = await sendTx(provider, address, claim.tx.to, claim.tx.data, claim.tx.value)
       setStatus(`${route.claimTitle} sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
       await waitForReceipt(provider, hash)
-      setClaim((prev) => ({ ...prev, status: 'done', message: 'Bridge completed successfully.' }))
+      setClaim((old) => ({ ...old, status: 'done', message: 'Bridge completed successfully.' }))
       updateHistory(id, 'done')
-      await loadPendingForWallet()
     } catch (err: any) {
-      setError(err?.message || 'Final claim transaction failed. Use the recovery link below if needed.')
+      setError(err?.message || 'Claim transaction failed.')
     } finally {
       setBusy(false)
     }
   }
 
-  async function loadPendingForWallet() {
-    if (!address) {
-      setPending([])
-      setPendingStatus('Connect wallet to search pending claims.')
-      return
-    }
-
+  async function addIusdToken() {
+    if (!provider) return
     try {
-      setPendingStatus('Searching pending claims for this wallet...')
-      const response = await fetch(`${PENDING_API}/${encodeURIComponent(address)}`, { cache: 'no-store' })
-      if (!response.ok) {
-        setPending([])
-        setPendingStatus('Pending auto-search is not enabled on the bridge server yet. Paste the claim ID manually.')
-        return
-      }
-      const json = await response.json()
-      const claims: PendingItem[] = Array.isArray(json.claims)
-        ? json.claims.map((item: any) => ({ ...item, kind: 'claim', direction: 'buy' as Direction }))
-        : []
-      const releases: PendingItem[] = Array.isArray(json.releases)
-        ? json.releases.map((item: any) => ({ ...item, kind: 'release', direction: 'sell' as Direction }))
-        : []
-      const next = [...claims, ...releases].slice(0, 12)
-      setPending(next)
-      setPendingStatus(next.length ? `${next.length} pending operation(s) found.` : 'No pending claims found for this wallet.')
-    } catch {
-      setPending([])
-      setPendingStatus('Could not search pending claims. Paste the claim ID manually.')
-    }
-  }
-
-  function selectPending(item: PendingItem) {
-    setDirection(item.direction)
-    setManualClaimId(item.id)
-    setClaim({ status: 'checking', message: 'Selected pending operation. Press Check or Claim.', id: item.id })
-    window.setTimeout(() => void checkApi([item.id]), 120)
-  }
-
-  function setMax() {
-    if (balance === null) return
-    setAmount(formatUnits(balance, decimals, Math.min(decimals, 6)))
+      await provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: INRI_IUSD,
+            symbol: 'iUSD',
+            decimals,
+            image: 'https://platform.inri.life/inri-logo.png',
+          },
+        },
+      })
+    } catch {}
   }
 
   function copyText(value: string, label: string) {
@@ -692,161 +691,301 @@ export function InriBridgePage() {
     window.setTimeout(() => setCopied(''), 1200)
   }
 
+  function setMax() {
+    if (balance === null) return
+    setAmount(formatUnits(balance, decimals, Math.min(decimals, 6)))
+  }
+
   const mainButtonText = !connected
     ? 'Connect wallet first'
     : !onSourceNetwork
       ? `Switch to ${route.fromChain}`
       : !balanceEnough
         ? `Insufficient ${route.fromToken}`
-        : direction === 'buy' && allowance !== null && !allowanceEnough
+        : direction === 'buy' && !allowanceEnough
           ? 'Approve USDT'
-          : route.mainAction
+          : route.primaryAction
 
-  const claimBadge = claim.status === 'ready' ? 'Ready' : claim.status === 'done' ? 'Done' : claim.status === 'checking' ? 'Checking' : 'Waiting'
-  const recoveryLink = activeClaimId ? route.recoveryUrl(activeClaimId) : route.recoveryUrl('')
+  const claimBadge = claim.status === 'ready'
+    ? 'Ready'
+    : claim.status === 'done'
+      ? 'Done'
+      : claim.status === 'checking'
+        ? 'Checking'
+        : 'Waiting'
+
+  const claimButtonText = !activeClaimId
+    ? direction === 'buy' ? 'Waiting for iUSD claim' : 'Waiting for USDT release'
+    : claim.status !== 'ready' || !claim.tx
+      ? direction === 'buy' ? 'Check iUSD claim' : 'Check USDT release'
+      : !onClaimNetwork
+        ? `Switch to ${route.toChain}`
+        : route.claimAction
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030711] text-white">
-      <section className="relative border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(19,164,255,0.34),transparent_30rem),radial-gradient(circle_at_82%_10%,rgba(103,212,255,0.16),transparent_32rem),linear-gradient(135deg,#061221_0%,#030711_52%,#000_100%)]">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:72px_72px] opacity-50" />
-        <div className="relative mx-auto grid max-w-[1500px] gap-6 px-4 py-8 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:py-12 xl:px-12">
-          <div className="flex flex-col justify-center">
-            <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-primary/35 bg-primary/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
-              <ShieldCheck className="h-4 w-4" /> Official iUSD Bridge
-            </div>
-            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl lg:text-6xl">
-              Bridge simples para USDT e iUSD.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base font-medium leading-8 text-cyan-50/68">
-              Uma tela única para comprar iUSD, vender iUSD, detectar assinaturas do watcher e fazer o claim final sem console e sem links escondidos.
-            </p>
-            <div className="mt-6 grid max-w-2xl gap-3 sm:grid-cols-3">
-              <StepBox label="Step 1" text={direction === 'buy' ? 'Approve/deposit USDT on Polygon.' : 'Burn iUSD on INRI.'} done={Boolean(sourceTx)} active={!sourceTx} />
-              <StepBox label="Step 2" text="Watcher prepares 2 validator signatures." done={claim.status === 'ready' || claim.status === 'done'} active={claim.status === 'checking' || claim.status === 'waiting'} />
-              <StepBox label="Step 3" text={direction === 'buy' ? 'Claim iUSD on INRI.' : 'Claim USDT on Polygon.'} done={claim.status === 'done'} active={claim.status === 'ready'} />
-            </div>
-          </div>
+    <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
+      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_10%,rgba(19,164,255,0.44),transparent_26rem),radial-gradient(circle_at_82%_8%,rgba(103,212,255,0.22),transparent_30rem),linear-gradient(135deg,#081c31_0%,#06111f_42%,#02050a_100%)]">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.05)_1px,transparent_1px)] bg-[size:70px_70px]" />
 
-          <div className="rounded-[28px] border border-primary/20 bg-white/[0.07] p-3 shadow-[0_30px_110px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-4">
-            <div className="rounded-[24px] border border-white/12 bg-[#06101d]/92 p-4 sm:p-5">
-              <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-primary">Bridge</p>
-                  <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white sm:text-3xl">{route.title}</h2>
-                </div>
-                <div className="w-full sm:w-auto"><ConnectWalletButton compact /></div>
+        <div className="relative mx-auto max-w-[1420px] px-4 py-7 sm:px-8 lg:py-9 xl:px-12">
+          <div className="grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-start">
+            <aside className="rounded-[24px] border border-cyan-300/18 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-6 lg:sticky lg:top-28">
+              <div className="inline-flex items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Official iUSD Bridge
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.04] p-1">
-                {(['buy', 'sell'] as Direction[]).map((item) => (
-                  <button key={item} type="button" onClick={() => setDirection(item)} className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${direction === item ? 'bg-primary text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`}>
-                    {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
-                  </button>
+              <h1 className="mt-5 max-w-xl text-[2.35rem] font-black leading-[0.92] tracking-[-0.065em] text-white sm:text-[3rem] xl:text-[3.65rem]">
+                Bridge USDT and iUSD inside INRI.
+              </h1>
+
+              <p className="mt-5 max-w-xl text-sm font-semibold leading-7 text-cyan-50/72">
+                Tela única para Buy, Sell e Claim. O usuário só conecta, confirma na carteira e acompanha o status.
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                {[
+                  ['0.2%', 'Fee'],
+                  ['2 / 4', 'Signatures'],
+                  ['3777', 'Chain ID'],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-[16px] border border-white/10 bg-white/[0.055] px-4 py-3">
+                    <div className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
+                    <div className="mt-2 text-lg font-black text-white">{value}</div>
+                  </div>
                 ))}
               </div>
 
-              <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
-                <div className="rounded-[18px] border border-primary/16 bg-white/[0.055] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">From</p>
-                  <p className="mt-2 text-2xl font-black text-white">{route.fromToken}</p>
-                  <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.fromChain}</p>
-                </div>
-                <div className="flex items-center justify-center"><button type="button" onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')} className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/25 bg-primary text-black shadow-[0_14px_32px_rgba(19,164,255,0.24)] transition hover:scale-105"><ArrowDown className="h-5 w-5" /></button></div>
-                <div className="rounded-[18px] border border-primary/16 bg-white/[0.055] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">To</p>
-                  <p className="mt-2 text-2xl font-black text-white">{route.toToken}</p>
-                  <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.toChain}</p>
-                </div>
+              <div className="mt-6 grid gap-2 text-xs font-bold text-white/58">
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Buy: USDT Polygon → Claim iUSD INRI</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Sell: Burn iUSD INRI → Claim USDT Polygon</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Claim automático; ID manual fica só em Advanced</div>
               </div>
+            </aside>
 
-              <div className="mt-4 rounded-[18px] border border-white/12 bg-white/[0.045] p-4">
-                <div className="flex items-center justify-between gap-3"><label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label><button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button></div>
-                <div className="mt-2 flex items-center gap-3 rounded-[15px] border border-white/10 bg-black/18 px-4 py-3">
-                  <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-[-0.035em] text-white outline-none placeholder:text-white/20 sm:text-3xl" placeholder="0.00" />
-                  <span className="rounded-[12px] border border-primary/25 bg-primary/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
-                </div>
-                <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-                  <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p></div>
-                  <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 font-black text-white">0.2%</p></div>
-                  <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                <div className="rounded-[18px] border border-primary/18 bg-primary/[0.06] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Step 1</p>
-                  <h3 className="mt-1 text-xl font-black text-white">{route.sourceAction}</h3>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-white/56">{direction === 'buy' ? 'Approves USDT if needed and deposits into the official Polygon lockbox.' : 'Burns iUSD on INRI and prepares a Polygon USDT release.'}</p>
-                  <button type="button" onClick={() => void submitSourceTx()} disabled={busy || !connected || amountRaw <= 0n || !balanceEnough} className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-primary px-4 py-3 text-sm font-black text-black shadow-[0_16px_36px_rgba(19,164,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45">
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}{busy ? 'Processing...' : mainButtonText}
-                  </button>
-                </div>
-
-                <div className="rounded-[18px] border border-emerald-300/18 bg-emerald-300/[0.055] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div><p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-200/75">Step 2</p><h3 className="mt-1 text-xl font-black text-white">{route.claimTitle}</h3></div>
-                    <span className="rounded-full border border-emerald-300/25 bg-emerald-300/[0.10] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100">{claimBadge}</span>
+            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.075] p-3 shadow-[0_30px_92px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-4">
+              <div className="rounded-[20px] border border-white/12 bg-[#071827]/88 p-4 sm:p-5">
+                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Bridge</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-[-0.045em] text-white sm:text-3xl">iUSD Transfer</h2>
                   </div>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-white/56">After the watcher prepares signatures, this button sends the final claim transaction directly from this site.</p>
-                  <div className="mt-3 rounded-[14px] border border-white/10 bg-black/16 p-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Claim / Release ID</label>
-                    <input value={manualClaimId} onChange={(event) => setManualClaimId(event.target.value.trim())} className="mt-2 w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/25" placeholder="0x... deposit/burn/claim/release id" />
-                  </div>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <button type="button" onClick={() => void checkApi(activeClaimId ? [activeClaimId] : bridgeIds)} disabled={busy || (!activeClaimId && bridgeIds.length === 0)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.055] px-4 py-3 text-xs font-black text-white/78 transition hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-45">
-                      {claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}{route.checkAction}
+                  <div className="w-full sm:w-auto"><ConnectWalletButton compact /></div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1">
+                  {(['buy', 'sell'] as Direction[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setDirection(item)}
+                      className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${direction === item ? 'bg-cyan-300 text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`}
+                    >
+                      {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
                     </button>
-                    <button type="button" onClick={() => void claimDestination()} disabled={busy || !connected || !activeClaimId} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-300 px-4 py-3 text-xs font-black text-black shadow-[0_16px_36px_rgba(16,185,129,0.20)] transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-45">
-                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}{onClaimNetwork ? route.claimAction : `Switch to ${route.toChain}`}
+                  ))}
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.05] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">From</p>
+                    <p className="mt-2 text-2xl font-black text-white">{route.fromToken}</p>
+                    <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.fromChain}</p>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_14px_32px_rgba(19,164,255,0.24)] transition hover:scale-105"
+                      aria-label="Reverse bridge route"
+                    >
+                      <ArrowDown className="h-5 w-5" />
                     </button>
                   </div>
-                  {activeClaimId ? <Link href={recoveryLink} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-xs font-black text-emerald-100/80 hover:text-white">Recovery old claim page <ExternalLink className="h-3.5 w-3.5" /></Link> : null}
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.05] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">To</p>
+                    <p className="mt-2 text-2xl font-black text-white">{route.toToken}</p>
+                    <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.toChain}</p>
+                  </div>
                 </div>
-              </div>
 
-              {error ? <div className="mt-4 rounded-[16px] border border-red-300/25 bg-red-300/[0.08] p-3 text-sm leading-6 text-red-100"><div className="flex gap-2"><CircleAlert className="mt-1 h-4 w-4 shrink-0" /> <span>{error}</span></div></div> : null}
-              <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/60">
-                <p className="font-black text-white/82">Status</p>
-                <p className="mt-1">{status}</p>
-                <p className="mt-1">{claim.message}</p>
-                {activeClaimId ? <p className="mt-1 break-all text-cyan-200/72">ID: {activeClaimId}</p> : null}
-                {sourceTx ? <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" className="mt-1 inline-flex items-center gap-2 text-cyan-100 hover:text-white">Source tx {short(sourceTx, 10, 8)} <ExternalLink className="h-3.5 w-3.5" /></Link> : null}
+                <div className="mt-4 rounded-[18px] border border-white/12 bg-white/[0.045] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
+                    <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
+                  </div>
+                  <div className="mt-2 flex items-center gap-3 rounded-[15px] border border-white/10 bg-black/18 px-4 py-3">
+                    <input
+                      value={amount}
+                      onChange={(event) => setAmount(event.target.value)}
+                      inputMode="decimal"
+                      className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-[-0.035em] text-white outline-none placeholder:text-white/20 sm:text-3xl"
+                      placeholder="0.00"
+                    />
+                    <span className="rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 font-black text-white">0.2%</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[18px] border border-cyan-300/18 bg-cyan-300/[0.06] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Step 1</p>
+                        <h3 className="mt-1 text-xl font-black text-white">{route.sourceAction}</h3>
+                        <p className="mt-2 text-xs font-semibold leading-5 text-white/56">{direction === 'buy' ? 'Aprova USDT se precisar e deposita no lockbox Polygon.' : 'Queima iUSD na INRI para gerar release de USDT Polygon.'}</p>
+                      </div>
+                      <Zap className="h-5 w-5 text-cyan-200" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void submitSourceTx()}
+                      disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
+                      className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-cyan-300 px-4 py-3 text-sm font-black text-black shadow-[0_16px_36px_rgba(19,164,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                      {busy ? 'Processing...' : mainButtonText}
+                    </button>
+                  </div>
+
+                  <div className="rounded-[18px] border border-emerald-300/18 bg-emerald-300/[0.055] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-200/75">Step 2</p>
+                        <h3 className="mt-1 text-xl font-black text-white">{route.claimTitle}</h3>
+                        <p className="mt-2 text-xs font-semibold leading-5 text-white/56">{route.claimHint}</p>
+                      </div>
+                      <span className="rounded-full border border-emerald-300/25 bg-emerald-300/[0.10] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100">{claimBadge}</span>
+                    </div>
+
+                    <div className="mt-4 rounded-[14px] border border-white/10 bg-black/16 p-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Automatic claim status</p>
+                      <p className="mt-2 text-sm font-bold leading-6 text-white/72">
+                        {activeClaimId
+                          ? claim.status === 'ready'
+                            ? `${route.toToken} is ready. Press the button below and confirm in your wallet.`
+                            : `Transfer detected. The bridge is checking the watcher automatically.`
+                          : `After Step 1, the bridge will detect the ID and prepare the final claim automatically.`}
+                      </p>
+                      {activeClaimId ? <p className="mt-2 break-all text-[11px] font-bold text-cyan-200/65">ID: {activeClaimId}</p> : null}
+
+                      <details className="mt-3 rounded-[12px] border border-white/10 bg-white/[0.035] p-3">
+                        <summary className="cursor-pointer text-xs font-black text-white/58">Advanced: paste claim/release ID manually</summary>
+                        <input
+                          value={manualClaimId}
+                          onChange={(event) => setManualClaimId(event.target.value.trim())}
+                          className="mt-3 w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/25"
+                          placeholder="0x... claim/release id or burn/deposit tx"
+                        />
+                      </details>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => void claimDestination()}
+                      disabled={busy || !connected || (!activeClaimId && bridgeIds.length === 0)}
+                      className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-emerald-300 px-4 py-3 text-sm font-black text-black shadow-[0_16px_36px_rgba(16,185,129,0.20)] transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy || claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {claimButtonText}
+                    </button>
+                  </div>
+                </div>
+
+                {error ? (
+                  <div className="mt-4 rounded-[16px] border border-red-300/25 bg-red-300/[0.08] p-3 text-sm leading-6 text-red-100">
+                    <div className="flex gap-2"><CircleAlert className="mt-1 h-4 w-4 shrink-0" /> <span>{error}</span></div>
+                  </div>
+                ) : null}
+
+                <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/60">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-black text-white/82">Status</p>
+                      <p className="mt-1">{status}</p>
+                      <p className="mt-1">{claim.message}</p>
+                    </div>
+                    {activeClaimId ? (
+                      <button type="button" onClick={() => copyText(activeClaimId, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/68 hover:text-cyan-100">
+                        <Copy className="h-3.5 w-3.5" /> Copy ID
+                      </button>
+                    ) : null}
+                  </div>
+                  {activeClaimId ? <p className="mt-2 break-all text-xs font-bold text-cyan-200/70">ID: {activeClaimId}</p> : null}
+                  {sourceTx ? (
+                    <p className="mt-2 text-xs">TX: <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">{short(sourceTx, 10, 8)}</Link></p>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="border-t border-white/10 bg-[linear-gradient(180deg,#030711,#071323)] py-8">
-        <div className="mx-auto grid max-w-[1500px] gap-5 px-4 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] xl:px-12">
-          <div className="rounded-[24px] border border-primary/18 bg-white/[0.055] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div><p className="text-[10px] font-black uppercase tracking-[0.24em] text-primary">Auto recovery</p><h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Pending claims for wallet</h2></div>
-              <button type="button" onClick={() => void loadPendingForWallet()} className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.055] px-4 py-3 text-xs font-black text-white/76 hover:border-primary/35 hover:text-white"><RefreshCw className="h-4 w-4" /> Refresh</button>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-white/58">{pendingStatus}</p>
-            <div className="mt-4 grid gap-2">
-              {pending.length === 0 ? <div className="rounded-[16px] border border-white/10 bg-black/18 p-4 text-sm text-white/48">No pending item loaded. After the server read-only endpoint is enabled, connected users will see Claim iUSD and Claim USDT here automatically.</div> : pending.map((item) => (
-                <button key={`${item.kind}-${item.id}`} type="button" onClick={() => selectPending(item)} className="rounded-[16px] border border-white/10 bg-black/18 p-4 text-left transition hover:border-primary/35 hover:bg-primary/[0.07]">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div><p className="font-black text-white">{item.kind === 'claim' ? 'Claim iUSD' : 'Claim USDT'} · {formatTokenAmount(item.amount)} {item.kind === 'claim' ? 'iUSD' : 'USDT'}</p><p className="mt-1 break-all text-xs text-white/46">{item.id}</p></div>
-                    <span className="rounded-full border border-primary/25 bg-primary/[0.09] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">{item.status || 'ready'}</span>
-                  </div>
+          <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Process</p>
+                  <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Live bridge steps</h3>
+                </div>
+                <button type="button" onClick={() => activeClaimId ? void checkApi([activeClaimId]) : undefined} className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100" aria-label="Refresh status">
+                  <RefreshCw className="h-4 w-4" />
                 </button>
-              ))}
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet in the header or bridge card.'} done={connected} />
+                <Step label="Source Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}.`} active={connected && !onSourceNetwork} done={onSourceNetwork} />
+                <Step label={route.sourceAction} value={sourceTx ? `Submitted: ${short(sourceTx, 10, 8)}` : direction === 'buy' ? 'Approve USDT only if needed, then deposit.' : 'Burn iUSD to request Polygon release.'} active={busy} done={Boolean(sourceTx)} />
+                <Step label={route.claimTitle} value={claim.status === 'ready' ? 'Ready to claim.' : claim.status === 'done' ? 'Completed.' : claim.message} active={claim.status === 'checking'} done={claim.status === 'done'} />
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Tools</p>
+              <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Safe helpers</h3>
+              <div className="mt-4 grid gap-2">
+                <button type="button" onClick={() => void addIusdToken()} className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]">
+                  Add iUSD token <Wallet className="h-4 w-4" />
+                </button>
+                <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/12 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white">
+                  Recovery old page <ExternalLink className="h-4 w-4" />
+                </Link>
+              </div>
+              <p className="mt-4 text-xs leading-6 text-white/50">Esta página só controla a experiência do usuário. Não altera contratos, watchers, PM2, claims nem releases.</p>
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-primary/18 bg-white/[0.055] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-primary">Local history</p>
-            <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">This browser</h2>
-            <p className="mt-3 text-sm leading-6 text-white/58">{copied ? 'Copied.' : 'Operations started from this page are stored only in this browser.'}</p>
+          <div className="mt-5 rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Recent</p>
+                <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Local bridge history</h3>
+              </div>
+              <p className="text-xs font-bold text-white/45">{copied ? 'Copied.' : 'Saved only in this browser.'}</p>
+            </div>
+
             <div className="mt-4 grid gap-2">
-              {history.length === 0 ? <div className="rounded-[16px] border border-white/10 bg-black/18 p-4 text-sm text-white/48">No bridge operations from this page yet.</div> : history.map((item) => (
-                <div key={`${item.id}-${item.tx}`} className="rounded-[16px] border border-white/10 bg-black/18 p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div><p className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} → {item.receive}</p><p className="mt-1 text-xs text-white/46">{new Date(item.createdAt).toLocaleString()} · {item.status}</p></div>
-                    <div className="flex flex-wrap gap-2 text-xs font-black"><button type="button" onClick={() => copyText(item.id, 'id')} className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100"><Copy className="inline h-3.5 w-3.5" /> ID</button><button type="button" onClick={() => { setDirection(item.direction); setManualClaimId(item.id); void checkApi([item.id]) }} className="rounded-[12px] border border-primary/20 bg-primary/[0.08] px-3 py-2 text-cyan-100">Check</button></div>
+              {history.length === 0 ? (
+                <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm text-white/52">No bridge operations from this page yet.</div>
+              ) : history.map((item) => (
+                <div key={`${item.id}-${item.tx}`} className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} {item.direction === 'buy' ? 'USDT' : 'iUSD'} → {item.receive} {item.direction === 'buy' ? 'iUSD' : 'USDT'}</p>
+                      <p className="mt-1 text-xs text-white/45">{new Date(item.createdAt).toLocaleString()} · {item.status}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs font-black">
+                      <Link href={explorerTx(item.direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID, item.tx)} target="_blank" rel="noreferrer" className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">{short(item.tx, 10, 8)}</Link>
+                      <button type="button" onClick={() => copyText(item.id, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100"><Copy className="h-3.5 w-3.5" />Copy ID</button>
+                      {item.status !== 'done' ? (
+                        <button type="button" onClick={() => { setDirection(item.direction); setBridgeIds([item.id]); setManualClaimId(item.id); setSourceTx(item.tx); void checkApi([item.id]) }} className="rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-cyan-100">Check / Claim</button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ))}
