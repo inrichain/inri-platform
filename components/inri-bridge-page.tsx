@@ -386,13 +386,25 @@ export function InriBridgePage() {
         token: INRI_IUSD,
         bridgeContract: INRI_IUSD,
         sourceAction: 'Burn iUSD',
-        primaryAction: 'Bridge iUSD to USDT',
+        primaryAction: 'Burn iUSD',
         claimTitle: 'Claim USDT',
         claimAction: 'Claim USDT on Polygon',
-        checkAction: 'Check USDT Claim',
+        checkAction: 'Check release status',
         claimHint: 'Depois do burn, o site usa o hash da transação para encontrar o release USDT automaticamente.',
         api: RELEASE_API,
       }
+
+  const flowSteps = direction === 'buy'
+    ? [
+        { title: 'Approve & deposit', text: 'Send USDT from Polygon.' },
+        { title: 'Wait for iUSD claim', text: 'The bridge prepares your claim automatically.' },
+        { title: 'Claim on INRI', text: 'Confirm the final iUSD claim in MetaMask.' },
+      ]
+    : [
+        { title: 'Burn iUSD', text: 'Burn your iUSD on INRI.' },
+        { title: 'Wait for release', text: 'The bridge prepares your USDT release.' },
+        { title: 'Claim on Polygon', text: 'Confirm the final USDT claim in MetaMask.' },
+      ]
 
   const amountRaw = useMemo(() => parseUnits(amount, decimals), [amount, decimals])
   const receiveRaw = useMemo(() => (amountRaw * (BPS_DENOMINATOR - FEE_BPS)) / BPS_DENOMINATOR, [amountRaw])
@@ -403,6 +415,8 @@ export function InriBridgePage() {
   const balanceEnough = balance === null || amountRaw <= balance
   const allowanceEnough = direction === 'sell' || (allowance !== null && allowance >= amountRaw && amountRaw > 0n)
   const activeClaimId = (manualClaimId || claim.id || bridgeIds[0] || '').trim()
+  const flowStepIndex = !sourceTx ? 0 : claim.status === 'ready' || claim.status === 'done' ? 2 : 1
+
 
   useEffect(() => {
     setWallet(getWalletState())
@@ -722,7 +736,9 @@ export function InriBridgePage() {
         ? `Insufficient ${route.fromToken}`
         : direction === 'buy' && !allowanceEnough
           ? 'Approve USDT'
-          : route.primaryAction
+          : direction === 'sell'
+            ? 'Burn iUSD'
+            : route.primaryAction
 
   const claimBadge = claim.status === 'ready'
     ? 'Ready'
@@ -735,22 +751,30 @@ export function InriBridgePage() {
   const claimButtonText = claim.status === 'done'
     ? `${route.toToken} claimed`
     : !activeClaimId
-      ? direction === 'buy' ? 'Waiting for iUSD claim' : 'Waiting for USDT release'
+      ? direction === 'buy'
+        ? 'Waiting for iUSD claim'
+        : 'Waiting for USDT release'
       : claim.status !== 'ready' || !claim.tx
-        ? direction === 'buy' ? 'Check iUSD claim' : 'Check USDT release'
+        ? direction === 'buy'
+          ? 'Check iUSD claim'
+          : 'Check release status'
         : !onClaimNetwork
-          ? `Switch to ${route.toChain} to start claim`
-          : `Start claim`
+          ? `Switch to ${route.toChain}`
+          : `Start ${route.toToken} claim`
 
   const claimHelperText = claim.status === 'done'
     ? `${route.toToken} arrived successfully.`
     : !activeClaimId
-      ? 'After step 1, this claim step unlocks automatically here.'
+      ? direction === 'buy'
+        ? 'After your deposit, the bridge unlocks the iUSD claim automatically here.'
+        : 'After your burn, the bridge unlocks the USDT release automatically here.'
       : claim.status !== 'ready' || !claim.tx
-        ? `We are preparing your ${route.claimTitle.toLowerCase()}. Keep this page open or press Check.`
+        ? direction === 'buy'
+          ? 'We are preparing your iUSD claim. Keep this page open or press Check.'
+          : 'We are preparing your USDT release. Keep this page open or press Check.'
         : !onClaimNetwork
-          ? `Switch to ${route.toChain} to start your claim.`
-          : `Your ${route.toToken} is ready. Press Start claim and confirm in MetaMask.`
+          ? `Switch to ${route.toChain} to continue.`
+          : `Your ${route.toToken} is ready. Press Start ${route.toToken} claim and confirm in MetaMask.`
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
@@ -816,6 +840,29 @@ export function InriBridgePage() {
                       {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
                     </button>
                   ))}
+                </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  {flowSteps.map((step, index) => {
+                    const done = claim.status === 'done' ? index <= 2 : index < flowStepIndex
+                    const active = claim.status !== 'done' && index === flowStepIndex
+                    return (
+                      <div
+                        key={step.title}
+                        className={`rounded-[16px] border px-3 py-3 transition ${done ? 'border-emerald-300/28 bg-emerald-300/[0.08]' : active ? 'border-cyan-300/28 bg-cyan-300/[0.08]' : 'border-white/10 bg-white/[0.03]'}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${done ? 'bg-emerald-300 text-black' : active ? 'bg-cyan-300 text-black' : 'bg-white/10 text-white/70'}`}>
+                            {done ? '✓' : index + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-white">{step.title}</p>
+                            <p className="mt-1 text-[11px] leading-5 text-white/55">{step.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 <div className="mt-5 rounded-[20px] border border-white/10 bg-black/18 p-4 sm:p-[18px]">
@@ -891,7 +938,7 @@ export function InriBridgePage() {
                       {busy || claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                       {claimButtonText}
                     </button>
-                    <p className="px-1 text-center text-[11px] font-semibold leading-5 text-emerald-50/68">{claimHelperText}</p>
+                    <p className="px-2 text-center text-[11px] font-semibold leading-5 text-emerald-50/72">{claimHelperText}</p>
                   </div>
                 </div>
 
