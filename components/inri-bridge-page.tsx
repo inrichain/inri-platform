@@ -337,7 +337,7 @@ function TokenLogo({ token, size = 'md' }: { token: 'USDT' | 'iUSD'; size?: 'sm'
   const src = token === 'USDT' ? '/usdt-logo.svg' : '/inri-logo.png'
   const sizeClass = size === 'lg' ? 'h-12 w-12' : size === 'sm' ? 'h-7 w-7' : 'h-10 w-10'
   return (
-    <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-cyan-300/20 bg-white/[0.08] p-1.5 shadow-[0_10px_28px_rgba(0,0,0,0.28)]`}>
+    <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent`}>
       <img src={src} alt={`${token} logo`} className="h-full w-full object-contain" />
     </span>
   )
@@ -346,7 +346,7 @@ function TokenLogo({ token, size = 'md' }: { token: 'USDT' | 'iUSD'; size?: 'sm'
 function ChainMark({ chain }: { chain: 'Polygon' | 'INRI Chain' }) {
   const src = chain === 'Polygon' ? '/polygon-logo.svg' : '/inri-logo.png'
   return (
-    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/[0.08] p-0.5">
+    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full">
       <img src={src} alt={`${chain} logo`} className="h-full w-full object-contain" />
     </span>
   )
@@ -842,15 +842,9 @@ export function InriBridgePage() {
               <div className="rounded-[22px] border border-cyan-300/16 bg-[#071827]/92 p-3.5 sm:p-4.5 md:p-4.5">
                 <div className="border-b border-white/10 px-3 sm:px-4 pb-4 pt-1">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex items-center -space-x-2">
-                        <TokenLogo token={route.fromToken as 'USDT' | 'iUSD'} size="sm" />
-                        <TokenLogo token={route.toToken as 'USDT' | 'iUSD'} size="sm" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
-                        <h2 className="mt-1 text-[22px] font-black tracking-[-0.045em] text-white sm:text-2xl">{route.title}</h2>
-                      </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
+                      <h2 className="mt-1 text-[20px] font-black tracking-[-0.045em] text-white sm:text-[22px]">{route.title}</h2>
                     </div>
                     <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-3.5 py-2 text-[11px] font-black text-cyan-100">
                       {connected ? short(address, 8, 4) : 'Connect wallet from top'}
@@ -866,9 +860,7 @@ export function InriBridgePage() {
                       onClick={() => setDirection(item)}
                       className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${direction === item ? 'bg-cyan-300 text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`}
                     >
-                      <span className="inline-flex items-center justify-center gap-2">
-                        {item === 'buy' ? <><TokenLogo token="iUSD" size="sm" /> Buy iUSD</> : <><TokenLogo token="iUSD" size="sm" /> Sell iUSD</>}
-                      </span>
+                      <span className="inline-flex items-center justify-center gap-2">{item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}</span>
                     </button>
                   ))}
                 </div>
@@ -936,15 +928,15 @@ export function InriBridgePage() {
                     <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
                     <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
                   </div>
-                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-white/10 bg-black/18 px-4 py-3">
+                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-white/10 bg-black/18 px-4 py-2.5">
                     <input
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      className="min-w-0 flex-1 bg-transparent text-[1.2rem] font-black tracking-[-0.04em] sm:text-[1.35rem] text-white outline-none placeholder:text-white/20"
+                      className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-black tracking-[-0.03em] sm:text-[1.15rem] text-white outline-none placeholder:text-white/20"
                       placeholder="0.00"
                     />
-                    <span className="inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100"><TokenLogo token={route.fromToken as 'USDT' | 'iUSD'} size="sm" />{route.fromToken}</span>
+                    <span className="inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-2.5 py-1.5 text-xs font-black text-cyan-100"><TokenLogo token={route.fromToken as 'USDT' | 'iUSD'} size="sm" />{route.fromToken}</span>
                   </div>
 
                   <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
@@ -954,12 +946,12 @@ export function InriBridgePage() {
                   </div>
                 </div>
 
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 sm:items-start">
                   <button
                     type="button"
                     onClick={() => void submitSourceTx()}
                     disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-cyan-300 px-4 py-3.5 text-sm font-black text-black shadow-[0_16px_36px_rgba(19,164,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[16px] bg-cyan-300 px-4 py-2.5 text-sm font-black text-black shadow-[0_16px_36px_rgba(19,164,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                     {busy ? 'Processing...' : mainButtonText}
@@ -970,12 +962,12 @@ export function InriBridgePage() {
                       type="button"
                       onClick={() => void claimDestination()}
                       disabled={busy || claim.status === 'done' || claim.status === 'waiting' || claim.status === 'checking' || !connected || (!activeClaimId && bridgeIds.length === 0)}
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-3 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-2.5 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       {busy || claim.status === 'checking' || claim.status === 'waiting' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                       {claimButtonText}
                     </button>
-                    <p className="px-2 text-center text-[11px] font-semibold leading-5 text-emerald-50/72">{claimHelperText}</p>
+                    <p className="px-2 text-center text-[10px] font-semibold leading-4 text-emerald-50/68">{claimHelperText}</p>
                   </div>
                 </div>
 

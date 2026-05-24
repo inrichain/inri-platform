@@ -345,21 +345,10 @@ export function InriHeader() {
           </div>
 
           <div className="hidden items-center justify-self-end gap-2 md:flex">
-            <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-              Explorer
-            </InriLinkButton>
-            <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-              INRI Wallet
-            </InriLinkButton>
             <ConnectWalletButton compact />
           </div>
 
           <div className="flex items-center justify-self-end gap-2 md:hidden">
-            <div className="hidden min-[430px]:block">
-              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate variant="secondary">
-                Wallet
-              </InriLinkButton>
-            </div>
             <MobileMenu />
           </div>
         </div>
