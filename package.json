@@ -56,7 +56,8 @@
     "vaul": "^1.1.2",
     "zod": "^4.3.2",
     "zustand": "^5.0.9",
-    "@walletconnect/ethereum-provider": "^2.23.9"
+    "@walletconnect/ethereum-provider": "^2.23.9",
+    "ethers": "^6.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
