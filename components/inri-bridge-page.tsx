@@ -816,18 +816,18 @@ export function InriBridgePage() {
                   Fast iUSD transfers between Polygon and INRI. Choose a direction, confirm in your wallet, then finish the claim on the same screen.
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-[11px] md:min-w-[180px]">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Fee</p>
-                  <p className="mt-1 font-black text-white">0.2%</p>
+              <div className="grid grid-cols-3 gap-2 text-[11px] md:min-w-[228px]">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                  <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Fee</p>
+                  <p className="mt-1 text-[13px] font-black text-white">0.2%</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Security</p>
-                  <p className="mt-1 font-black text-white">2/4</p>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                  <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Security</p>
+                  <p className="mt-1 text-[13px] font-black text-white">2/4</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Chain</p>
-                  <p className="mt-1 font-black text-white">3777</p>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                  <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Chain</p>
+                  <p className="mt-1 text-[13px] font-black text-white">3777</p>
                 </div>
               </div>
             </div>
@@ -940,9 +940,9 @@ export function InriBridgePage() {
                   </div>
 
                   <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p></div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 font-black text-white">0.2%</p></div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 text-[13px] font-black text-white">≈ {receiveText} {route.toToken}</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 text-[13px] font-black text-white">0.2%</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 text-[13px] font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
                   </div>
                 </div>
 
