@@ -373,7 +373,7 @@ export function InriBridgePage() {
         claimTitle: 'Claim iUSD',
         claimAction: 'Claim iUSD on INRI',
         checkAction: 'Check iUSD Claim',
-        claimHint: 'Depois do depósito, o bridge detecta o claim automaticamente. O usuário só confirma na carteira quando ficar pronto.',
+        claimHint: 'Depois do depósito, o site encontra o claim iUSD automaticamente e mostra o botão final.',
         api: CLAIM_API,
       }
     : {
@@ -391,7 +391,7 @@ export function InriBridgePage() {
         claimTitle: 'Claim USDT',
         claimAction: 'Claim USDT on Polygon',
         checkAction: 'Check USDT Claim',
-        claimHint: 'Depois do burn, o bridge encontra o release automaticamente. O usuário só confirma o Claim USDT quando ficar pronto.',
+        claimHint: 'Depois do burn, o site usa o hash da transação para encontrar o release USDT automaticamente.',
         api: RELEASE_API,
       }
 
@@ -556,11 +556,24 @@ export function InriBridgePage() {
       setStatus(`Transaction sent: ${short(txHash, 10, 8)}. Waiting confirmation...`)
 
       const receipt = await waitForReceipt(provider, txHash)
-      const ids = extractBridgeIds(receipt, to, txHash)
-      const firstId = ids[0] || txHash
+      const detectedIds = extractBridgeIds(receipt, to, txHash)
+
+      // SELL IMPORTANT:
+      // For iUSD -> USDT the burn transaction hash is NOT the final releaseId,
+      // but the bridge API now resolves /api/release/:burnTxHash to the correct release.
+      // Keep the burnTxHash first so normal users never need to copy/paste a release ID.
+      const ids = direction === 'sell' ? unique([txHash, ...detectedIds]) : detectedIds
+      const firstId = direction === 'sell' ? txHash : ids[0] || txHash
+
       setBridgeIds(ids)
       setManualClaimId(firstId)
-      setClaim({ status: 'checking', message: 'Transaction confirmed. Checking watcher signatures...', id: firstId })
+      setClaim({
+        status: 'checking',
+        message: direction === 'sell'
+          ? 'Burn confirmed. Preparing your USDT release automatically...'
+          : 'Deposit confirmed. Preparing your iUSD claim automatically...',
+        id: firstId,
+      })
 
       addHistory({
         id: firstId,
@@ -596,11 +609,17 @@ export function InriBridgePage() {
         const json = await response.json()
         const ready = apiLooksReady(json)
         const tx = findApiTx(json)
-        setManualClaimId(id)
+        const resolvedId = typeof json.resolvedId === 'string' && json.resolvedId.startsWith('0x') ? json.resolvedId : id
+
+        setManualClaimId(resolvedId)
         setClaim({
           status: ready ? 'ready' : 'waiting',
-          message: ready ? `${route.claimTitle} is ready. Confirm the final wallet transaction.` : 'Watcher found the transfer and is preparing signatures.',
-          id,
+          message: ready
+            ? `${route.claimTitle} is ready. Confirm in your wallet.`
+            : direction === 'sell'
+              ? 'Burn detected. Preparing your USDT release automatically...'
+              : 'Deposit detected. Preparing your iUSD claim automatically...',
+          id: resolvedId,
           tx,
           raw: json,
         })
@@ -740,7 +759,7 @@ export function InriBridgePage() {
               </h1>
 
               <p className="mt-5 max-w-xl text-sm font-semibold leading-7 text-cyan-50/72">
-                Tela única para Buy, Sell e Claim. O usuário só conecta, confirma na carteira e acompanha o status.
+                Fluxo simples para usuários: conecta, escolhe Buy ou Sell, confirma na carteira e o site encontra o claim automaticamente.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
@@ -759,7 +778,7 @@ export function InriBridgePage() {
               <div className="mt-6 grid gap-2 text-xs font-bold text-white/58">
                 <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Buy: USDT Polygon → Claim iUSD INRI</div>
                 <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Sell: Burn iUSD INRI → Claim USDT Polygon</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Claim automático; ID manual fica só em Advanced</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Claim automático; usuário não precisa copiar ID</div>
               </div>
             </aside>
 
@@ -875,7 +894,7 @@ export function InriBridgePage() {
                       {activeClaimId ? <p className="mt-2 break-all text-[11px] font-bold text-cyan-200/65">ID: {activeClaimId}</p> : null}
 
                       <details className="mt-3 rounded-[12px] border border-white/10 bg-white/[0.035] p-3">
-                        <summary className="cursor-pointer text-xs font-black text-white/58">Advanced: paste claim/release ID manually</summary>
+                        <summary className="cursor-pointer text-xs font-black text-white/58">Advanced recovery only</summary>
                         <input
                           value={manualClaimId}
                           onChange={(event) => setManualClaimId(event.target.value.trim())}
