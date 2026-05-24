@@ -732,13 +732,25 @@ export function InriBridgePage() {
         ? 'Checking'
         : 'Waiting'
 
-  const claimButtonText = !activeClaimId
-    ? direction === 'buy' ? 'Waiting for iUSD claim' : 'Waiting for USDT release'
-    : claim.status !== 'ready' || !claim.tx
-      ? direction === 'buy' ? 'Check iUSD claim' : 'Check USDT release'
-      : !onClaimNetwork
-        ? `Switch to ${route.toChain}`
-        : route.claimAction
+  const claimButtonText = claim.status === 'done'
+    ? `${route.toToken} claimed`
+    : !activeClaimId
+      ? direction === 'buy' ? 'Waiting for iUSD claim' : 'Waiting for USDT release'
+      : claim.status !== 'ready' || !claim.tx
+        ? direction === 'buy' ? 'Check iUSD claim' : 'Check USDT release'
+        : !onClaimNetwork
+          ? `Switch to ${route.toChain} to start claim`
+          : `Start claim`
+
+  const claimHelperText = claim.status === 'done'
+    ? `${route.toToken} arrived successfully.`
+    : !activeClaimId
+      ? 'After step 1, this claim step unlocks automatically here.'
+      : claim.status !== 'ready' || !claim.tx
+        ? `We are preparing your ${route.claimTitle.toLowerCase()}. Keep this page open or press Check.`
+        : !onClaimNetwork
+          ? `Switch to ${route.toChain} to start your claim.`
+          : `Your ${route.toToken} is ready. Press Start claim and confirm in MetaMask.`
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
@@ -869,15 +881,18 @@ export function InriBridgePage() {
                     {busy ? 'Processing...' : mainButtonText}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => void claimDestination()}
-                    disabled={busy || !connected || (!activeClaimId && bridgeIds.length === 0)}
-                    className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-3.5 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    {busy || claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    {claimButtonText}
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => void claimDestination()}
+                      disabled={busy || claim.status === 'done' || !connected || (!activeClaimId && bridgeIds.length === 0)}
+                      className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-3.5 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy || claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {claimButtonText}
+                    </button>
+                    <p className="px-1 text-center text-[11px] font-semibold leading-5 text-emerald-50/68">{claimHelperText}</p>
+                  </div>
                 </div>
 
                 {error ? (
@@ -889,7 +904,7 @@ export function InriBridgePage() {
                 <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white/62">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="font-black text-white/84">{claim.status === 'ready' ? `${route.toToken} ready to claim` : claim.status === 'done' ? 'Bridge completed' : 'Status'}</p>
+                      <p className="font-black text-white/84">{claim.status === 'ready' ? `${route.toToken} ready to claim` : claim.status === 'done' ? 'Bridge completed' : 'Claim status'}</p>
                       <p className="mt-1">{claim.status === 'idle' ? status : claim.message}</p>
                       {sourceTx ? (
                         <p className="mt-1 text-xs">TX: <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">{short(sourceTx, 10, 8)}</Link></p>
