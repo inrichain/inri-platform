@@ -928,12 +928,12 @@ export function InriBridgePage() {
                     <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
                     <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
                   </div>
-                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-white/10 bg-black/18 px-4 py-2.5">
+                  <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-white/10 bg-black/18 px-5 py-2.5">
                     <input
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      className="min-w-0 flex-1 bg-transparent text-[1.05rem] font-black tracking-[-0.03em] sm:text-[1.15rem] text-white outline-none placeholder:text-white/20"
+                      className="min-w-0 flex-1 bg-transparent pl-1 text-[1.05rem] font-black tracking-[-0.03em] sm:text-[1.15rem] text-white outline-none placeholder:text-white/20"
                       placeholder="0.00"
                     />
                     <span className="inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-2.5 py-1.5 text-xs font-black text-cyan-100"><TokenLogo token={route.fromToken as 'USDT' | 'iUSD'} size="sm" />{route.fromToken}</span>
