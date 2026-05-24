@@ -398,12 +398,12 @@ export function InriBridgePage() {
     ? [
         { title: 'Approve & deposit', text: 'Send USDT from Polygon.' },
         { title: 'Wait for iUSD claim', text: 'The bridge prepares your claim automatically.' },
-        { title: 'Claim on INRI', text: 'Confirm the final iUSD claim in MetaMask.' },
+        { title: 'Claim on INRI', text: 'Confirm the final iUSD claim in your wallet.' },
       ]
     : [
         { title: 'Burn iUSD', text: 'Burn your iUSD on INRI.' },
         { title: 'Wait for release', text: 'The bridge prepares your USDT release.' },
-        { title: 'Claim on Polygon', text: 'Confirm the final USDT claim in MetaMask.' },
+        { title: 'Claim on Polygon', text: 'Confirm the final USDT claim in your wallet.' },
       ]
 
   const amountRaw = useMemo(() => parseUnits(amount, decimals), [amount, decimals])
@@ -636,7 +636,10 @@ export function InriBridgePage() {
           tx,
           raw: json,
         })
-        if (ready) updateHistory(id, 'ready')
+        if (ready) {
+          updateHistory(id, 'ready')
+          if (pollingRef.current) clearInterval(pollingRef.current)
+        }
         return
       } catch (err: any) {
         setClaim({ status: 'error', message: err?.message || 'Could not reach bridge API.', id })
@@ -645,7 +648,7 @@ export function InriBridgePage() {
 
     setClaim({
       status: 'waiting',
-      message: `${route.claimTitle} is not published yet. Keep this page open or press Check again.`,
+      message: `${route.claimTitle} is not published yet. Keep this page open while we keep checking automatically.`,
       id: nextIds[0],
     })
   }
@@ -689,6 +692,7 @@ export function InriBridgePage() {
       const hash = await sendTx(provider, address, claim.tx.to, claim.tx.data, claim.tx.value)
       setStatus(`${route.claimTitle} sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
       await waitForReceipt(provider, hash)
+      if (pollingRef.current) clearInterval(pollingRef.current)
       setClaim((old) => ({ ...old, status: 'done', message: 'Bridge completed successfully.' }))
       updateHistory(id, 'done')
     } catch (err: any) {
@@ -756,8 +760,8 @@ export function InriBridgePage() {
         : 'Waiting for USDT release'
       : claim.status !== 'ready' || !claim.tx
         ? direction === 'buy'
-          ? 'Check iUSD claim'
-          : 'Check release status'
+          ? 'Preparing iUSD claim...'
+          : 'Preparing USDT release...'
         : !onClaimNetwork
           ? `Switch to ${route.toChain}`
           : `Start ${route.toToken} claim`
@@ -770,30 +774,30 @@ export function InriBridgePage() {
         : 'After your burn, the bridge unlocks the USDT release automatically here.'
       : claim.status !== 'ready' || !claim.tx
         ? direction === 'buy'
-          ? 'We are preparing your iUSD claim. Keep this page open or press Check.'
-          : 'We are preparing your USDT release. Keep this page open or press Check.'
+          ? 'We are preparing your iUSD claim automatically. Keep this page open.'
+          : 'We are preparing your USDT release automatically. Keep this page open.'
         : !onClaimNetwork
           ? `Switch to ${route.toChain} to continue.`
-          : `Your ${route.toToken} is ready. Press Start ${route.toToken} claim and confirm in MetaMask.`
+          : `Your ${route.toToken} is ready. Press Start ${route.toToken} claim and confirm in your wallet.`
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
       <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
-        <div className="relative mx-auto max-w-[920px] px-4 py-5 sm:px-6 lg:px-7 lg:py-7">
-          <div className="mx-auto max-w-[760px]">
+        <div className="relative mx-auto max-w-[860px] px-4 py-4 sm:px-5 lg:px-6 lg:py-6">
+          <div className="mx-auto max-w-[700px]">
             <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
                   <ShieldCheck className="h-3.5 w-3.5" /> Official iUSD Bridge
                 </div>
-                <h1 className="mt-3 text-[30px] font-black tracking-[-0.055em] text-white sm:text-[34px]">Bridge iUSD</h1>
+                <h1 className="mt-3 text-[28px] font-black tracking-[-0.055em] text-white sm:text-[32px]">Bridge iUSD</h1>
                 <p className="mt-2 max-w-[580px] text-sm font-semibold leading-6 text-cyan-50/62">
-                  Simple bridge flow: choose Buy or Sell, confirm in MetaMask, then claim from the same page. Wallet connection stays only in the top navigation.
+                  Simple bridge flow for EVM wallets: choose Buy or Sell, confirm in your wallet, then claim from the same page. Wallet connection stays only in the top navigation.
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs md:min-w-[220px]">
+              <div className="grid grid-cols-3 gap-2 text-xs md:min-w-[190px]">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Fee</p>
                   <p className="mt-1 font-black text-white">0.2%</p>
@@ -816,7 +820,7 @@ export function InriBridgePage() {
             ) : null}
 
             <div className="shadow-[0_28px_84px_rgba(0,0,0,0.30)]">
-              <div className="rounded-[26px] border border-cyan-300/16 bg-[#071827]/92 p-5 sm:p-6 md:p-6">
+              <div className="rounded-[24px] border border-cyan-300/16 bg-[#071827]/92 p-4 sm:p-5 md:p-5">
                 <div className="border-b border-white/10 px-3 sm:px-4 pb-5 pt-1">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
@@ -904,7 +908,7 @@ export function InriBridgePage() {
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      className="min-w-0 flex-1 bg-transparent text-[1.55rem] font-black tracking-[-0.04em] sm:text-[1.7rem] text-white outline-none placeholder:text-white/20"
+                      className="min-w-0 flex-1 bg-transparent text-[1.35rem] font-black tracking-[-0.04em] sm:text-[1.5rem] text-white outline-none placeholder:text-white/20"
                       placeholder="0.00"
                     />
                     <span className="rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
@@ -932,10 +936,10 @@ export function InriBridgePage() {
                     <button
                       type="button"
                       onClick={() => void claimDestination()}
-                      disabled={busy || claim.status === 'done' || !connected || (!activeClaimId && bridgeIds.length === 0)}
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-3.5 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
+                      disabled={busy || claim.status === 'done' || claim.status === 'waiting' || claim.status === 'checking' || !connected || (!activeClaimId && bridgeIds.length === 0)}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/30 bg-emerald-300/[0.14] px-4 py-3 text-sm font-black text-emerald-50 transition hover:bg-emerald-300/[0.20] disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      {busy || claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {busy || claim.status === 'checking' || claim.status === 'waiting' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                       {claimButtonText}
                     </button>
                     <p className="px-2 text-center text-[11px] font-semibold leading-5 text-emerald-50/72">{claimHelperText}</p>
@@ -979,12 +983,12 @@ export function InriBridgePage() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="rounded-[22px] border border-cyan-300/18 bg-white/[0.065] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[20px] border border-cyan-300/18 bg-white/[0.065] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Progress</p>
-                    <h3 className="mt-1 text-[22px] font-black tracking-[-0.04em] text-white">Transfer steps</h3>
+                    <h3 className="mt-1 text-[18px] font-black tracking-[-0.04em] text-white">Transfer steps</h3>
                   </div>
                   <button type="button" onClick={() => activeClaimId ? void checkApi([activeClaimId]) : undefined} className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100" aria-label="Refresh status">
                     <RefreshCw className="h-4 w-4" />
@@ -998,16 +1002,16 @@ export function InriBridgePage() {
                 </div>
               </div>
 
-              <div className="rounded-[22px] border border-cyan-300/18 bg-white/[0.065] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+              <div className="rounded-[20px] border border-cyan-300/18 bg-white/[0.065] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
                 <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Tools</p>
-                <h3 className="mt-1 text-[22px] font-black tracking-[-0.04em] text-white">Helpers</h3>
+                <h3 className="mt-1 text-[18px] font-black tracking-[-0.04em] text-white">Helpers</h3>
                 <div className="mt-4 grid gap-2">
                   <button type="button" onClick={() => void addIusdToken()} className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]">
                     Add iUSD token <Wallet className="h-4 w-4" />
                   </button>
                   {sourceTx ? <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/68 transition hover:text-cyan-100">Open latest TX <ExternalLink className="h-4 w-4" /></Link> : null}
                 </div>
-                <p className="mt-4 text-xs leading-6 text-white/50">Normal users only need the two main action buttons. Advanced recovery stays hidden below.</p>
+                <p className="mt-4 text-xs leading-6 text-white/50">For normal users, the two main buttons are enough. Recovery stays hidden below.</p>
               </div>
             </div>
 
