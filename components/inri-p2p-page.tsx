@@ -1,4 +1,4 @@
-import { Coins, ShieldCheck, Store, Wallet } from 'lucide-react'
+import { ShieldCheck, Store, Wallet } from 'lucide-react'
 import { InriLinkButton, InriShell } from '@/components/inri-site-shell'
 import { InriP2PClient } from '@/components/inri-p2p-client'
 
@@ -17,11 +17,11 @@ export function InriP2PPage() {
               </div>
 
               <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.5rem]">
-                Trade INRI through a cleaner P2P market.
+                Trade INRI with iUSD in a complete P2P market.
               </h1>
 
               <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
-                Use the same wallet from the top header, sync the market and manage offers from the same INRI control-room interface.
+                Create buy or sell orders, fill partially, edit, resize and cancel directly from the same wallet connected in the top header.
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
@@ -36,21 +36,21 @@ export function InriP2PPage() {
                     <Store className="h-5 w-5" />
                   </div>
                   <h3 className="mt-6 text-2xl font-black text-white">Escrow market</h3>
-                  <p className="mt-3 text-sm leading-7 text-white/62">Create offers, accept, mark paid and release.</p>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Create BUY and SELL orders with partial fills, on-chain escrow and automatic fee handling.</p>
                 </div>
                 <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
                     <Wallet className="h-5 w-5" />
                   </div>
                   <h3 className="mt-6 text-2xl font-black text-white">Header wallet</h3>
-                  <p className="mt-3 text-sm leading-7 text-white/62">No second wallet style inside the page.</p>
+                  <p className="mt-3 text-sm leading-7 text-white/62">The page uses the wallet connected in the site header for every transaction.</p>
                 </div>
                 <div className="rounded-[22px] border border-cyan-300/16 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-cyan-300/30 bg-cyan-300/10 text-cyan-300">
                     <ShieldCheck className="h-5 w-5" />
                   </div>
                   <h3 className="mt-6 text-2xl font-black text-white">Protected flow</h3>
-                  <p className="mt-3 text-sm leading-7 text-white/62">Disputes and release actions remain inside the route.</p>
+                  <p className="mt-3 text-sm leading-7 text-white/62">Slippage protection, iUSD approval, cancel, edit price, edit deadline and resize orders are available.</p>
                 </div>
             </div>
           </div>
