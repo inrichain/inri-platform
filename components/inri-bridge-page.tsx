@@ -140,7 +140,7 @@ function formatUnits(value: bigint, decimals: number, maxFraction = 6) {
 function loadHistory(): HistoryItem[] {
   if (typeof window === 'undefined') return []
   try {
-    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v3') || '[]')
+    const parsed = JSON.parse(localStorage.getItem('inri_site_bridge_history_v4') || '[]')
     return Array.isArray(parsed) ? parsed.slice(0, 6) : []
   } catch {
     return []
@@ -149,7 +149,7 @@ function loadHistory(): HistoryItem[] {
 
 function saveHistory(items: HistoryItem[]) {
   if (typeof window === 'undefined') return
-  localStorage.setItem('inri_site_bridge_history_v3', JSON.stringify(items.slice(0, 6)))
+  localStorage.setItem('inri_site_bridge_history_v4', JSON.stringify(items.slice(0, 6)))
 }
 
 function looksLikeBridgeId(value: string) {
@@ -271,7 +271,7 @@ function Step({ label, value, active, done }: { label: string; value: string; ac
             : 'border-white/10 bg-white/[0.035]'
       }`}
     >
-      <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/45">
+      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
         {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-200" /> : active ? <Clock3 className="h-3.5 w-3.5 text-cyan-200" /> : <span className="h-2 w-2 rounded-full bg-white/25" />}
         {label}
       </div>
@@ -292,6 +292,7 @@ export function InriBridgePage() {
   const [decimals, setDecimals] = useState(6)
   const [sourceTx, setSourceTx] = useState('')
   const [bridgeIds, setBridgeIds] = useState<string[]>([])
+  const [manualClaimId, setManualClaimId] = useState('')
   const [claim, setClaim] = useState<ClaimState>({ status: 'idle', message: 'No transfer submitted yet.' })
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [copied, setCopied] = useState('')
@@ -313,8 +314,12 @@ export function InriBridgePage() {
         destinationChain: INRI_CHAIN_ID,
         token: POLYGON_USDT,
         bridgeContract: POLYGON_LOCKBOX,
+        sourceAction: 'Deposit USDT',
         primaryAction: 'Bridge USDT to iUSD',
-        claimAction: 'Claim iUSD',
+        claimTitle: 'Claim iUSD',
+        claimAction: 'Claim iUSD on INRI',
+        checkAction: 'Check iUSD Claim',
+        claimHint: 'Depois do depósito em USDT, cole o Deposit ID/Claim ID aqui ou use o ID detectado automaticamente.',
         api: CLAIM_API,
       }
     : {
@@ -327,8 +332,12 @@ export function InriBridgePage() {
         destinationChain: POLYGON_CHAIN_ID,
         token: INRI_IUSD,
         bridgeContract: INRI_IUSD,
+        sourceAction: 'Burn iUSD',
         primaryAction: 'Bridge iUSD to USDT',
-        claimAction: 'Claim USDT',
+        claimTitle: 'Claim USDT',
+        claimAction: 'Claim USDT on Polygon',
+        checkAction: 'Check USDT Claim',
+        claimHint: 'Depois do burn de iUSD, cole o Burn ID/Release ID aqui ou use o ID detectado automaticamente.',
         api: RELEASE_API,
       }
 
@@ -340,25 +349,21 @@ export function InriBridgePage() {
   const onClaimNetwork = chainId === route.destinationChain
   const balanceEnough = balance === null || amountRaw <= balance
   const allowanceEnough = direction === 'sell' || (allowance !== null && allowance >= amountRaw && amountRaw > 0n)
+  const activeClaimId = (manualClaimId || claim.id || bridgeIds[0] || '').trim()
 
   useEffect(() => {
     setWallet(getWalletState())
     setHistory(loadHistory())
     const onWallet = () => setWallet(getWalletState())
     window.addEventListener('inri:wallet-state', onWallet)
-    window.addEventListener('accountsChanged', onWallet)
-    window.addEventListener('chainChanged', onWallet)
-    return () => {
-      window.removeEventListener('inri:wallet-state', onWallet)
-      window.removeEventListener('accountsChanged', onWallet)
-      window.removeEventListener('chainChanged', onWallet)
-    }
+    return () => window.removeEventListener('inri:wallet-state', onWallet)
   }, [])
 
   useEffect(() => {
     setError('')
     setSourceTx('')
     setBridgeIds([])
+    setManualClaimId('')
     setClaim({ status: 'idle', message: 'No transfer submitted yet.' })
     setAllowance(null)
     setBalance(null)
@@ -498,11 +503,13 @@ export function InriBridgePage() {
 
       const receipt = await waitForReceipt(provider, txHash)
       const ids = extractBridgeIds(receipt, to, txHash)
+      const firstId = ids[0] || txHash
       setBridgeIds(ids)
-      setClaim({ status: 'checking', message: 'Transaction confirmed. Checking watcher signatures...', id: ids[0] })
+      setManualClaimId(firstId)
+      setClaim({ status: 'checking', message: 'Transaction confirmed. Checking watcher signatures...', id: firstId })
 
       addHistory({
-        id: ids[0] || txHash,
+        id: firstId,
         direction,
         amount,
         receive: receiveText,
@@ -511,7 +518,7 @@ export function InriBridgePage() {
         createdAt: Date.now(),
       })
 
-      startPolling(ids)
+      startPolling(ids.length ? ids : [firstId])
     } catch (err: any) {
       setError(err?.message || 'Bridge transaction failed.')
     } finally {
@@ -520,8 +527,11 @@ export function InriBridgePage() {
   }
 
   async function checkApi(ids = bridgeIds, silent = false) {
-    const nextIds = unique(ids)
-    if (!nextIds.length) return
+    const nextIds = unique(ids.map((id) => id.trim()).filter(Boolean))
+    if (!nextIds.length) {
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
+      return
+    }
 
     if (!silent) setClaim({ status: 'checking', message: 'Checking watcher signatures...', id: nextIds[0] })
 
@@ -532,9 +542,10 @@ export function InriBridgePage() {
         const json = await response.json()
         const ready = apiLooksReady(json)
         const tx = findApiTx(json)
+        setManualClaimId(id)
         setClaim({
           status: ready ? 'ready' : 'waiting',
-          message: ready ? 'Ready to claim. Confirm the final wallet transaction.' : 'Watcher found the transfer and is preparing signatures.',
+          message: ready ? `${route.claimTitle} is ready. Confirm the final wallet transaction.` : 'Watcher found the transfer and is preparing signatures.',
           id,
           tx,
           raw: json,
@@ -548,7 +559,7 @@ export function InriBridgePage() {
 
     setClaim({
       status: 'waiting',
-      message: 'Watcher has not published this claim/release yet. The page keeps checking automatically.',
+      message: `${route.claimTitle} is not published yet. Keep this page open or press Check again.`,
       id: nextIds[0],
     })
   }
@@ -562,8 +573,17 @@ export function InriBridgePage() {
 
   async function claimDestination() {
     if (!provider || !address) return
-    const id = claim.id || bridgeIds[0]
-    if (!id) return
+    const id = activeClaimId
+    if (!id) {
+      setError('Paste the claim/release ID first, or submit a bridge transaction.')
+      return
+    }
+
+    if (claim.status !== 'ready' && !claim.tx) {
+      await checkApi([id])
+      setStatus('Checked watcher. If signatures are ready, press the claim button again.')
+      return
+    }
 
     if (!onClaimNetwork) {
       await switchNetwork(route.destinationChain)
@@ -581,7 +601,7 @@ export function InriBridgePage() {
       }
 
       const hash = await sendTx(provider, address, claim.tx.to, claim.tx.data, claim.tx.value)
-      setStatus(`Claim sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
+      setStatus(`${route.claimTitle} sent: ${short(hash, 10, 8)}. Waiting confirmation...`)
       await waitForReceipt(provider, hash)
       setClaim((old) => ({ ...old, status: 'done', message: 'Bridge completed successfully.' }))
       updateHistory(id, 'done')
@@ -632,69 +652,63 @@ export function InriBridgePage() {
           ? 'Approve USDT'
           : route.primaryAction
 
-  return (
-    <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
-      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.55),transparent_30rem),radial-gradient(circle_at_82%_12%,rgba(122,232,255,0.30),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.055)_1px,transparent_1px)] bg-[size:72px_72px]" />
-        <div className="absolute -left-28 top-24 h-[32rem] w-[32rem] rounded-full bg-cyan-400/20 blur-3xl" />
-        <div className="absolute -right-20 bottom-0 h-[30rem] w-[30rem] rounded-full bg-blue-500/20 blur-3xl" />
+  const claimBadge = claim.status === 'ready'
+    ? 'Ready'
+    : claim.status === 'done'
+      ? 'Done'
+      : claim.status === 'checking'
+        ? 'Checking'
+        : 'Waiting'
 
-        <div className="relative mx-auto max-w-[1460px] px-4 py-8 sm:px-8 lg:py-10 xl:px-12">
-          <div className="grid gap-5 lg:grid-cols-[0.74fr_0.92fr] lg:items-start">
-            <aside className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-6 lg:sticky lg:top-28">
+  return (
+    <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
+      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_10%,rgba(19,164,255,0.44),transparent_26rem),radial-gradient(circle_at_82%_8%,rgba(103,212,255,0.22),transparent_30rem),linear-gradient(135deg,#081c31_0%,#06111f_42%,#02050a_100%)]">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.05)_1px,transparent_1px)] bg-[size:70px_70px]" />
+
+        <div className="relative mx-auto max-w-[1420px] px-4 py-7 sm:px-8 lg:py-9 xl:px-12">
+          <div className="grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-start">
+            <aside className="rounded-[24px] border border-cyan-300/18 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-6 lg:sticky lg:top-28">
               <div className="inline-flex items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Official iUSD Bridge
               </div>
 
-              <h1 className="mt-5 max-w-2xl text-[2.7rem] font-black leading-[0.88] tracking-[-0.075em] text-white sm:text-[3.6rem] xl:text-[4.6rem]">
+              <h1 className="mt-5 max-w-xl text-[2.35rem] font-black leading-[0.92] tracking-[-0.065em] text-white sm:text-[3rem] xl:text-[3.65rem]">
                 Bridge USDT and iUSD inside INRI.
               </h1>
 
-              <p className="mt-5 max-w-xl text-sm font-semibold leading-7 text-cyan-50/70 sm:text-base">
-                Tela única para o bridge que já funciona: conecta, aprova quando precisar, faz deposit/burn,
-                detecta o watcher e mostra o claim no lugar certo.
+              <p className="mt-5 max-w-xl text-sm font-semibold leading-7 text-cyan-50/72">
+                Tela única para Buy, Sell e Claim. O usuário não precisa abrir console nem procurar link separado.
               </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                 {[
                   ['0.2%', 'Fee'],
                   ['2 / 4', 'Signatures'],
                   ['3777', 'Chain ID'],
                 ].map(([value, label]) => (
-                  <div key={label} className="rounded-[16px] border border-white/10 bg-white/[0.045] px-4 py-3">
+                  <div key={label} className="rounded-[16px] border border-white/10 bg-white/[0.055] px-4 py-3">
                     <div className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-200/70">{label}</div>
                     <div className="mt-2 text-lg font-black text-white">{value}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 grid gap-2 text-xs font-bold text-white/56">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
-                  Polygon USDT → INRI iUSD
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
-                  INRI iUSD → Polygon USDT
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-cyan-200" />
-                  Auto-check a cada 5 segundos após a transação
-                </div>
+              <div className="mt-6 grid gap-2 text-xs font-bold text-white/58">
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Buy: USDT Polygon → Claim iUSD INRI</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Sell: Burn iUSD INRI → Claim USDT Polygon</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-cyan-200" />Claim manual visível para recuperar operação antiga</div>
               </div>
             </aside>
 
-            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.065] p-3 shadow-[0_34px_110px_rgba(0,0,0,0.44),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-4">
-              <div className="rounded-[20px] border border-white/12 bg-[#061321]/82 p-4 sm:p-5">
+            <div className="rounded-[24px] border border-cyan-300/20 bg-white/[0.075] p-3 shadow-[0_30px_92px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:p-4">
+              <div className="rounded-[20px] border border-white/12 bg-[#071827]/88 p-4 sm:p-5">
                 <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Bridge</p>
                     <h2 className="mt-1 text-2xl font-black tracking-[-0.045em] text-white sm:text-3xl">iUSD Transfer</h2>
                   </div>
-                  <div className="w-full sm:w-auto">
-                    <ConnectWalletButton compact />
-                  </div>
+                  <div className="w-full sm:w-auto"><ConnectWalletButton compact /></div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1">
@@ -703,156 +717,145 @@ export function InriBridgePage() {
                       key={item}
                       type="button"
                       onClick={() => setDirection(item)}
-                      className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${
-                        direction === item
-                          ? 'bg-cyan-300 text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]'
-                          : 'text-white/55 hover:bg-white/[0.055] hover:text-white'
-                      }`}
+                      className={`rounded-[13px] px-4 py-2.5 text-sm font-black transition ${direction === item ? 'bg-cyan-300 text-black shadow-[0_12px_30px_rgba(19,164,255,0.22)]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`}
                     >
                       {item === 'buy' ? 'Buy iUSD' : 'Sell iUSD'}
                     </button>
                   ))}
                 </div>
 
-                <div className="mt-4 grid gap-2.5">
-                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">From</p>
-                        <p className="mt-2 text-2xl font-black text-white">{route.fromToken}</p>
-                        <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.fromChain}</p>
-                      </div>
-                      <span className="rounded-full border border-cyan-300/22 bg-cyan-300/[0.09] px-3 py-1.5 text-xs font-black text-cyan-100">
-                        Source
-                      </span>
-                    </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.05] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">From</p>
+                    <p className="mt-2 text-2xl font-black text-white">{route.fromToken}</p>
+                    <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.fromChain}</p>
                   </div>
-
-                  <div className="flex justify-center">
+                  <div className="flex items-center justify-center">
                     <button
                       type="button"
                       onClick={() => setDirection(direction === 'buy' ? 'sell' : 'buy')}
-                      className="-my-0.5 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_14px_32px_rgba(19,164,255,0.24)] transition hover:scale-105"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300 text-black shadow-[0_14px_32px_rgba(19,164,255,0.24)] transition hover:scale-105"
                       aria-label="Reverse bridge route"
                     >
-                      <ArrowDown className="h-4 w-4" />
+                      <ArrowDown className="h-5 w-5" />
                     </button>
                   </div>
-
-                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">To</p>
-                        <p className="mt-2 text-2xl font-black text-white">{route.toToken}</p>
-                        <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.toChain}</p>
-                      </div>
-                      <span className="rounded-full border border-emerald-300/22 bg-emerald-300/[0.08] px-3 py-1.5 text-xs font-black text-emerald-100">
-                        Auto claim
-                      </span>
-                    </div>
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-white/[0.05] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">To</p>
+                    <p className="mt-2 text-2xl font-black text-white">{route.toToken}</p>
+                    <p className="mt-1 text-sm font-bold text-cyan-200/72">{route.toChain}</p>
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[18px] border border-cyan-300/16 bg-white/[0.045] p-4">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/44">Amount</label>
-                    <button type="button" onClick={setMax} className="text-[11px] font-black uppercase tracking-[0.16em] text-cyan-200/80 hover:text-cyan-100">
-                      Max
-                    </button>
+                <div className="mt-4 rounded-[18px] border border-white/12 bg-white/[0.045] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
+                    <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
                   </div>
-
-                  <div className="flex items-center gap-3 rounded-[15px] border border-white/10 bg-[#020914]/58 px-3 py-2.5">
+                  <div className="mt-2 flex items-center gap-3 rounded-[15px] border border-white/10 bg-black/18 px-4 py-3">
                     <input
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-[-0.035em] text-white outline-none placeholder:text-white/22 sm:text-3xl"
+                      className="min-w-0 flex-1 bg-transparent text-2xl font-black tracking-[-0.035em] text-white outline-none placeholder:text-white/20 sm:text-3xl"
                       placeholder="0.00"
                     />
-                    <span className="shrink-0 rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-sm font-black text-cyan-100">
-                      {route.fromToken}
-                    </span>
+                    <span className="rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
                   </div>
 
                   <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
-                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-white/42">You receive</p>
-                      <p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">You receive</p><p className="mt-1 font-black text-white">≈ {receiveText} {route.toToken}</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Fee</p><p className="mt-1 font-black text-white">0.2%</p></div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/16 p-3"><p className="text-white/42">Balance</p><p className="mt-1 font-black text-white">{balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}</p></div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[18px] border border-cyan-300/18 bg-cyan-300/[0.06] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Step 1</p>
+                        <h3 className="mt-1 text-xl font-black text-white">{route.sourceAction}</h3>
+                        <p className="mt-2 text-xs font-semibold leading-5 text-white/56">{direction === 'buy' ? 'Aprova USDT se precisar e deposita no lockbox Polygon.' : 'Queima iUSD na INRI para gerar release de USDT Polygon.'}</p>
+                      </div>
+                      <Zap className="h-5 w-5 text-cyan-200" />
                     </div>
-                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-white/42">Fee</p>
-                      <p className="mt-1 font-black text-white">0.2%</p>
+                    <button
+                      type="button"
+                      onClick={() => void submitSourceTx()}
+                      disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
+                      className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[15px] bg-cyan-300 px-4 py-3 text-sm font-black text-black shadow-[0_16px_36px_rgba(19,164,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                      {busy ? 'Processing...' : mainButtonText}
+                    </button>
+                  </div>
+
+                  <div className="rounded-[18px] border border-emerald-300/18 bg-emerald-300/[0.055] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-200/75">Step 2</p>
+                        <h3 className="mt-1 text-xl font-black text-white">{route.claimTitle}</h3>
+                        <p className="mt-2 text-xs font-semibold leading-5 text-white/56">{route.claimHint}</p>
+                      </div>
+                      <span className="rounded-full border border-emerald-300/25 bg-emerald-300/[0.10] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100">{claimBadge}</span>
                     </div>
-                    <div className="rounded-[14px] border border-white/10 bg-white/[0.035] p-3">
-                      <p className="text-white/42">Balance</p>
-                      <p className="mt-1 truncate font-black text-white">
-                        {balance === null ? '-' : `${formatUnits(balance, decimals, 4)} ${route.fromToken}`}
-                      </p>
+
+                    <div className="mt-4 rounded-[14px] border border-white/10 bg-black/16 p-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Claim / Release ID</label>
+                      <input
+                        value={manualClaimId}
+                        onChange={(event) => setManualClaimId(event.target.value.trim())}
+                        className="mt-2 w-full bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/25"
+                        placeholder="0x... deposit/burn/claim/release id"
+                      />
+                    </div>
+
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => void checkApi(activeClaimId ? [activeClaimId] : bridgeIds)}
+                        disabled={busy || (!activeClaimId && bridgeIds.length === 0)}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.055] px-4 py-3 text-xs font-black text-white/78 transition hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        {claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                        {route.checkAction}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void claimDestination()}
+                        disabled={busy || !connected || !activeClaimId}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-300 px-4 py-3 text-xs font-black text-black shadow-[0_16px_36px_rgba(16,185,129,0.20)] transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                        {onClaimNetwork ? route.claimAction : `Switch to ${route.toChain}`}
+                      </button>
                     </div>
                   </div>
                 </div>
 
                 {error ? (
-                  <div className="mt-3 rounded-[16px] border border-red-300/25 bg-red-300/[0.08] p-3 text-sm leading-6 text-red-100">
-                    <div className="flex gap-2">
-                      <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>{error}</span>
-                    </div>
+                  <div className="mt-4 rounded-[16px] border border-red-300/25 bg-red-300/[0.08] p-3 text-sm leading-6 text-red-100">
+                    <div className="flex gap-2"><CircleAlert className="mt-1 h-4 w-4 shrink-0" /> <span>{error}</span></div>
                   </div>
                 ) : null}
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => void submitSourceTx()}
-                    disabled={busy || !connected || amountRaw <= 0n || !balanceEnough}
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] bg-cyan-300 px-4 py-3 text-sm font-black text-black shadow-[0_18px_45px_rgba(19,164,255,0.26)] transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
-                  >
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                    {busy ? 'Processing...' : mainButtonText}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => void claimDestination()}
-                    disabled={busy || !connected || !claim.id || (claim.status !== 'ready' && !claim.tx)}
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.045] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-42"
-                  >
-                    {claim.status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    {claim.status === 'ready'
-                      ? onClaimNetwork
-                        ? route.claimAction
-                        : `Switch to ${route.toChain} to claim`
-                      : 'Claim when ready'}
-                  </button>
-                </div>
-
                 <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/60">
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-black text-white/82">Status</p>
                       <p className="mt-1">{status}</p>
                       <p className="mt-1">{claim.message}</p>
                     </div>
-                    {bridgeIds.length ? (
-                      <button
-                        type="button"
-                        onClick={() => void checkApi(bridgeIds)}
-                        className="mt-2 inline-flex items-center gap-2 rounded-[12px] border border-cyan-300/18 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100 sm:mt-0"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                        Check
+                    {activeClaimId ? (
+                      <button type="button" onClick={() => copyText(activeClaimId, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-white/68 hover:text-cyan-100">
+                        <Copy className="h-3.5 w-3.5" /> Copy ID
                       </button>
                     ) : null}
                   </div>
-                  {claim.id ? <p className="mt-2 break-all text-xs font-bold text-cyan-200/70">ID: {claim.id}</p> : null}
+                  {activeClaimId ? <p className="mt-2 break-all text-xs font-bold text-cyan-200/70">ID: {activeClaimId}</p> : null}
                   {sourceTx ? (
-                    <p className="mt-2 text-xs">
-                      TX:{' '}
-                      <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">
-                        {short(sourceTx, 10, 8)}
-                      </Link>
-                    </p>
+                    <p className="mt-2 text-xs">TX: <Link href={explorerTx(route.sourceChain, sourceTx)} target="_blank" rel="noreferrer" className="font-black text-cyan-200 hover:text-cyan-100">{short(sourceTx, 10, 8)}</Link></p>
                   ) : null}
                 </div>
               </div>
@@ -860,59 +863,41 @@ export function InriBridgePage() {
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Process</p>
                   <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Live bridge steps</h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => bridgeIds.length ? void checkApi(bridgeIds) : undefined}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                  aria-label="Refresh status"
-                >
+                <button type="button" onClick={() => activeClaimId ? void checkApi([activeClaimId]) : undefined} className="inline-flex h-10 w-10 items-center justify-center rounded-[13px] border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100" aria-label="Refresh status">
                   <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <Step label="Wallet" value={connected ? `${short(address)} connected` : 'Connect wallet in the header or bridge card.'} done={connected} />
-                <Step label="Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}.`} active={connected && !onSourceNetwork} done={onSourceNetwork} />
-                <Step label={direction === 'buy' ? 'Approve / Deposit' : 'Burn'} value={sourceTx ? `Submitted: ${short(sourceTx, 10, 8)}` : direction === 'buy' ? 'Approve USDT only if needed, then deposit.' : 'Burn iUSD to request Polygon release.'} active={busy} done={Boolean(sourceTx)} />
-                <Step label="Claim" value={claim.status === 'ready' ? 'Ready to claim.' : claim.status === 'done' ? 'Completed.' : claim.message} active={claim.status === 'checking'} done={claim.status === 'done'} />
+                <Step label="Source Network" value={onSourceNetwork ? `${route.fromChain} selected` : `Switch to ${route.fromChain}.`} active={connected && !onSourceNetwork} done={onSourceNetwork} />
+                <Step label={route.sourceAction} value={sourceTx ? `Submitted: ${short(sourceTx, 10, 8)}` : direction === 'buy' ? 'Approve USDT only if needed, then deposit.' : 'Burn iUSD to request Polygon release.'} active={busy} done={Boolean(sourceTx)} />
+                <Step label={route.claimTitle} value={claim.status === 'ready' ? 'Ready to claim.' : claim.status === 'done' ? 'Completed.' : claim.message} active={claim.status === 'checking'} done={claim.status === 'done'} />
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+            <div className="rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Tools</p>
               <h3 className="mt-1 text-2xl font-black tracking-[-0.04em] text-white">Safe helpers</h3>
               <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  onClick={() => void addIusdToken()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]"
-                >
-                  Add iUSD token
-                  <Wallet className="h-4 w-4" />
+                <button type="button" onClick={() => void addIusdToken()} className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-cyan-300/22 bg-cyan-300/[0.09] px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/[0.14]">
+                  Add iUSD token <Wallet className="h-4 w-4" />
                 </button>
-                <Link
-                  href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/12 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white"
-                >
-                  Recovery old page
-                  <ExternalLink className="h-4 w-4" />
+                <Link href={`${BRIDGE_ORIGIN}/${direction === 'buy' ? 'buy.html' : 'sell.html'}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-[15px] border border-white/12 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/72 transition hover:border-cyan-300/30 hover:text-white">
+                  Recovery old page <ExternalLink className="h-4 w-4" />
                 </Link>
               </div>
-              <p className="mt-4 text-xs leading-6 text-white/50">
-                Esta página só controla a experiência do usuário. Não altera contratos, watchers, PM2, claims nem releases.
-              </p>
+              <p className="mt-4 text-xs leading-6 text-white/50">Esta página só controla a experiência do usuário. Não altera contratos, watchers, PM2, claims nem releases.</p>
             </div>
           </div>
 
-          <div className="mt-5 rounded-[24px] border border-cyan-300/18 bg-white/[0.055] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+          <div className="mt-5 rounded-[24px] border border-cyan-300/18 bg-white/[0.065] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Recent</p>
@@ -923,30 +908,19 @@ export function InriBridgePage() {
 
             <div className="mt-4 grid gap-2">
               {history.length === 0 ? (
-                <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm text-white/52">
-                  No bridge operations from this page yet.
-                </div>
+                <div className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm text-white/52">No bridge operations from this page yet.</div>
               ) : history.map((item) => (
                 <div key={`${item.id}-${item.tx}`} className="rounded-[16px] border border-white/10 bg-white/[0.035] p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="font-black text-white">
-                        {item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} {item.direction === 'buy' ? 'USDT' : 'iUSD'} → {item.receive} {item.direction === 'buy' ? 'iUSD' : 'USDT'}
-                      </p>
+                      <p className="font-black text-white">{item.direction === 'buy' ? 'Buy iUSD' : 'Sell iUSD'} · {item.amount} {item.direction === 'buy' ? 'USDT' : 'iUSD'} → {item.receive} {item.direction === 'buy' ? 'iUSD' : 'USDT'}</p>
                       <p className="mt-1 text-xs text-white/45">{new Date(item.createdAt).toLocaleString()} · {item.status}</p>
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs font-black">
-                      <Link href={explorerTx(item.direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID, item.tx)} target="_blank" rel="noreferrer" className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
-                        {short(item.tx, 10, 8)}
-                      </Link>
-                      <button type="button" onClick={() => copyText(item.id, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">
-                        <Copy className="h-3.5 w-3.5" />
-                        Copy ID
-                      </button>
+                      <Link href={explorerTx(item.direction === 'buy' ? POLYGON_CHAIN_ID : INRI_CHAIN_ID, item.tx)} target="_blank" rel="noreferrer" className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100">{short(item.tx, 10, 8)}</Link>
+                      <button type="button" onClick={() => copyText(item.id, 'id')} className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-white/68 hover:text-cyan-100"><Copy className="h-3.5 w-3.5" />Copy ID</button>
                       {item.status !== 'done' ? (
-                        <button type="button" onClick={() => { setDirection(item.direction); setBridgeIds([item.id]); setSourceTx(item.tx); void checkApi([item.id]) }} className="rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-cyan-100">
-                          Check
-                        </button>
+                        <button type="button" onClick={() => { setDirection(item.direction); setBridgeIds([item.id]); setManualClaimId(item.id); setSourceTx(item.tx); void checkApi([item.id]) }} className="rounded-[12px] border border-cyan-300/20 bg-cyan-300/[0.08] px-3 py-2 text-cyan-100">Check / Claim</button>
                       ) : null}
                     </div>
                   </div>
