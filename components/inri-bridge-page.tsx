@@ -745,8 +745,8 @@ export function InriBridgePage() {
       <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
-        <div className="relative mx-auto max-w-[1040px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto max-w-[880px]">
+        <div className="relative mx-auto max-w-[980px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mx-auto max-w-[820px]">
             <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
@@ -757,7 +757,7 @@ export function InriBridgePage() {
                   Simple bridge flow: choose Buy or Sell, confirm in MetaMask, then claim from the same page. Wallet connection stays only in the top navigation.
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs md:min-w-[280px]">
+              <div className="grid grid-cols-3 gap-2 text-xs md:min-w-[250px]">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/38">Fee</p>
                   <p className="mt-1 font-black text-white">0.2%</p>
@@ -779,17 +779,17 @@ export function InriBridgePage() {
               </div>
             ) : null}
 
-            <div className="rounded-[28px] border border-cyan-300/18 bg-white/[0.07] p-3 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
-              <div className="rounded-[24px] border border-white/12 bg-[#071827]/90 p-4 sm:p-5 lg:p-6">
-                <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
-                    <h2 className="mt-1 text-2xl font-black tracking-[-0.045em] text-white">{route.title}</h2>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 sm:min-w-[170px]">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/38">Wallet</p>
-                    <p className="mt-1 text-sm font-black text-white">{connected ? short(address, 8, 4) : 'Not connected'}</p>
-                    <p className="text-[11px] font-bold text-cyan-100/70">{normalizeChainId(chainId) === POLYGON_CHAIN_ID ? 'Polygon' : normalizeChainId(chainId) === INRI_CHAIN_ID ? 'INRI Chain' : 'Select network'}</p>
+            <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.07] p-2.5 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
+              <div className="rounded-[22px] border border-white/12 bg-[#071827]/90 p-4 sm:p-5">
+                <div className="border-b border-white/10 pb-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
+                      <h2 className="mt-1 text-[22px] font-black tracking-[-0.045em] text-white sm:text-2xl">{route.title}</h2>
+                    </div>
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-3 py-1.5 text-[11px] font-black text-cyan-100">
+                      {connected ? short(address, 8, 4) : 'Connect wallet from top'}
+                    </div>
                   </div>
                 </div>
 
@@ -845,7 +845,7 @@ export function InriBridgePage() {
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       inputMode="decimal"
-                      className="min-w-0 flex-1 bg-transparent text-[2rem] font-black tracking-[-0.04em] text-white outline-none placeholder:text-white/20"
+                      className="min-w-0 flex-1 bg-transparent text-[1.85rem] font-black tracking-[-0.04em] text-white outline-none placeholder:text-white/20"
                       placeholder="0.00"
                     />
                     <span className="rounded-[12px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-2 text-xs font-black text-cyan-100">{route.fromToken}</span>
