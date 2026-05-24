@@ -779,21 +779,21 @@ export function InriBridgePage() {
               </div>
             ) : null}
 
-            <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.07] p-3.5 sm:p-4 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
-              <div className="rounded-[22px] border border-white/12 bg-[#071827]/90 p-5 sm:p-6 md:p-7">
-                <div className="border-b border-white/10 px-1 sm:px-2 pb-4">
+            <div className="shadow-[0_28px_84px_rgba(0,0,0,0.30)]">
+              <div className="rounded-[26px] border border-cyan-300/16 bg-[#071827]/92 p-6 sm:p-7 md:p-8">
+                <div className="border-b border-white/10 px-3 sm:px-4 pb-5 pt-1">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
-                      <h2 className="mt-1 text-[22px] font-black tracking-[-0.045em] text-white sm:text-2xl">{route.title}</h2>
+                      <h2 className="mt-2 text-[22px] font-black tracking-[-0.045em] text-white sm:text-2xl">{route.title}</h2>
                     </div>
-                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-3 py-1.5 text-[11px] font-black text-cyan-100">
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-3.5 py-2 text-[11px] font-black text-cyan-100">
                       {connected ? short(address, 8, 4) : 'Connect wallet from top'}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1.5">
+                <div className="mt-6 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1.5">
                   {(['buy', 'sell'] as Direction[]).map((item) => (
                     <button
                       key={item}
@@ -806,7 +806,7 @@ export function InriBridgePage() {
                   ))}
                 </div>
 
-                <div className="mt-5 rounded-[20px] border border-white/10 bg-black/18 p-4 sm:p-5">
+                <div className="mt-6 rounded-[20px] border border-white/10 bg-black/18 p-4 sm:p-5">
                   <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
                     <div className="rounded-[16px] border border-cyan-300/14 bg-white/[0.045] p-3">
                       <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">From</p>
@@ -835,7 +835,7 @@ export function InriBridgePage() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[20px] border border-white/12 bg-white/[0.045] p-4 sm:p-5">
+                <div className="mt-5 rounded-[20px] border border-white/12 bg-white/[0.045] p-4 sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
                     <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
