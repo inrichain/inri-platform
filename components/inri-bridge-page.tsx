@@ -779,9 +779,9 @@ export function InriBridgePage() {
               </div>
             ) : null}
 
-            <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.07] p-2.5 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
-              <div className="rounded-[22px] border border-white/12 bg-[#071827]/90 p-4 sm:p-5">
-                <div className="border-b border-white/10 pb-3">
+            <div className="rounded-[26px] border border-cyan-300/18 bg-white/[0.07] p-3.5 sm:p-4 shadow-[0_28px_84px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl">
+              <div className="rounded-[22px] border border-white/12 bg-[#071827]/90 p-5 sm:p-6 md:p-7">
+                <div className="border-b border-white/10 px-1 sm:px-2 pb-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Transfer</p>
@@ -793,7 +793,7 @@ export function InriBridgePage() {
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1">
+                <div className="mt-5 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/10 bg-white/[0.035] p-1.5">
                   {(['buy', 'sell'] as Direction[]).map((item) => (
                     <button
                       key={item}
@@ -806,7 +806,7 @@ export function InriBridgePage() {
                   ))}
                 </div>
 
-                <div className="mt-4 rounded-[20px] border border-white/10 bg-black/18 p-3 sm:p-4">
+                <div className="mt-5 rounded-[20px] border border-white/10 bg-black/18 p-4 sm:p-5">
                   <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
                     <div className="rounded-[16px] border border-cyan-300/14 bg-white/[0.045] p-3">
                       <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/38">From</p>
@@ -835,7 +835,7 @@ export function InriBridgePage() {
                   </div>
                 </div>
 
-                <div className="mt-3 rounded-[20px] border border-white/12 bg-white/[0.045] p-4">
+                <div className="mt-4 rounded-[20px] border border-white/12 bg-white/[0.045] p-4 sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.22em] text-white/42">Amount</label>
                     <button type="button" onClick={setMax} className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/82 hover:text-cyan-100">Max</button>
@@ -858,7 +858,7 @@ export function InriBridgePage() {
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => void submitSourceTx()}
@@ -886,7 +886,7 @@ export function InriBridgePage() {
                   </div>
                 ) : null}
 
-                <div className="mt-3 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-white/62">
+                <div className="mt-4 rounded-[16px] border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white/62">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="font-black text-white/84">{claim.status === 'ready' ? `${route.toToken} ready to claim` : claim.status === 'done' ? 'Bridge completed' : 'Status'}</p>
