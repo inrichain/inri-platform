@@ -732,7 +732,7 @@ export function InriBridgePage() {
             address: INRI_IUSD,
             symbol: 'iUSD',
             decimals,
-            image: 'https://platform.inri.life/inri-logo.png',
+            image: 'https://platform.inri.life/iusd-logo.png',
           },
         },
       })
