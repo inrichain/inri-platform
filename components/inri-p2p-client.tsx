@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   Activity,
   AlertTriangle,
+  Bell,
   ArrowDownUp,
   BadgeCheck,
   BarChart3,
@@ -82,7 +83,18 @@ type Toast = {
   txHash?: string
 }
 
+type P2PNotification = {
+  id: string
+  title: string
+  body: string
+  txHash?: string
+  timestamp: number
+}
+
 const ORDER_PAGE_LIMIT = 42
+const PRICE_ALERT_THRESHOLD_PCT = 15
+const DEFAULT_GAS_PRICE_WEI = 1_000_000_000n
+const SECURITY_NOTICE_KEY = 'inri-p2p-security-notice-v1'
 
 function eventLabel(kind: P2PEventItem['kind']) {
   switch (kind) {
@@ -146,7 +158,7 @@ function statusClass(tone: ToastTone | 'neutral' | 'partial' = 'neutral') {
 
 function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[1.7rem] border border-cyan-300/15 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_28%),linear-gradient(180deg,rgba(7,17,29,0.96),rgba(2,7,13,0.98))] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] ${className}`}>
+    <div className={`rounded-[1.7rem] border border-cyan-300/15 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_28%),linear-gradient(180deg,rgba(7,17,29,0.96),rgba(2,7,13,0.98))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5 ${className}`}>
       {children}
     </div>
   )
@@ -204,6 +216,59 @@ function confirmAction(message: string) {
   return window.confirm(message)
 }
 
+
+function priceDeviationPercent(priceRaw: bigint, referencePriceRaw?: bigint) {
+  if (!referencePriceRaw || referencePriceRaw <= 0n || priceRaw <= 0n) return 0
+  const reference = Number(referencePriceRaw)
+  if (!Number.isFinite(reference) || reference <= 0) return 0
+  return ((Number(priceRaw) - reference) / reference) * 100
+}
+
+function buildPriceWarning(priceRaw: bigint, referencePriceRaw?: bigint) {
+  const deviation = priceDeviationPercent(priceRaw, referencePriceRaw)
+  if (!Number.isFinite(deviation) || Math.abs(deviation) < PRICE_ALERT_THRESHOLD_PCT) return ''
+  const direction = deviation > 0 ? 'higher' : 'lower'
+  return `Price fluctuation alert: your order price is ${Math.abs(deviation).toFixed(2)}% ${direction} than the current reference price. Execution may be slow or unfavorable. Do you want to continue?`
+}
+
+function friendlyP2PErrorMessage(cause: unknown, fallback: string) {
+  const raw = getErrorMessage(cause, fallback)
+  const text = raw.toLowerCase()
+
+  if (text.includes('user rejected') || text.includes('user denied') || text.includes('rejected the request')) {
+    return 'Transaction cancelled in your wallet. No order was changed.'
+  }
+  if (text.includes('approve iusd') || text.includes('allowance')) {
+    return 'iUSD approval is required first. Click Approve iUSD, confirm in your wallet, then try again.'
+  }
+  if (text.includes('not enough available iusd') || text.includes('insufficient iusd')) {
+    return 'Insufficient iUSD balance. Please add iUSD to your wallet before creating or filling this order.'
+  }
+  if (text.includes('not enough inri') || text.includes('insufficient inri') || text.includes('insufficient funds')) {
+    return 'Insufficient INRI balance. You need enough INRI for the trade amount plus a small network gas fee.'
+  }
+  if (text.includes('invalid') || text.includes('badprice') || text.includes('zeroamount') || text.includes('numeric')) {
+    return 'Please enter a valid numeric amount and price. Values cannot be 0, negative or text.'
+  }
+  if (text.includes('expired')) {
+    return 'This order is expired. It cannot be filled anymore; the maker can cancel it to refund the remaining balance.'
+  }
+  if (text.includes('filltoolarge') || text.includes('larger than the remaining')) {
+    return 'The amount is larger than the remaining order size. Please reduce the amount and try again.'
+  }
+  if (text.includes('notmaker')) {
+    return 'Only the maker of this order can edit, resize or cancel it.'
+  }
+  if (text.includes('wrongside')) {
+    return 'Wrong order side for this action. Please reload the market and try again.'
+  }
+  if (text.includes('slippage')) {
+    return 'Price protection stopped this transaction because the final amount changed. Reload and try again.'
+  }
+
+  return raw
+}
+
 export function InriP2PClient() {
   const [view, setView] = useState<P2PView>('market')
   const [myOrderTab, setMyOrderTab] = useState<MyOrderTab>('active')
@@ -233,10 +298,24 @@ export function InriP2PClient() {
   const [editDrafts, setEditDrafts] = useState<Record<number, EditDraft>>({})
   const [editingId, setEditingId] = useState<number | null>(null)
   const [copied, setCopied] = useState('')
+  const [gasPrice, setGasPrice] = useState<bigint>(0n)
+  const [showSecurityNotice, setShowSecurityNotice] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState<P2PNotification[]>([])
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([])
+  const notifiedEventKeysRef = useRef<Set<string>>(new Set())
+  const notificationReadyRef = useRef(false)
 
   const account = wallet.account || ''
   const networkReady = isInriChain(wallet.chainId || '')
   const providerReady = Boolean(wallet.providerReady && wallet.provider)
+
+  const gasCostLabel = useCallback((fallbackGas: bigint) => {
+    const price = gasPrice > 0n ? gasPrice : DEFAULT_GAS_PRICE_WEI
+    const bufferedGas = (fallbackGas * 125n) / 100n + 25_000n
+    return `~${formatInri(bufferedGas * price, 6)} INRI`
+  }, [gasPrice])
 
   const createPreview = useMemo(() => {
     try {
@@ -274,7 +353,7 @@ export function InriP2PClient() {
       setWallet(snap)
       const maker = view === 'mine' && snap.account ? snap.account : undefined
       const status = view === 'mine' ? myOrderTab : undefined
-      const [nextStats, orderPage, nextEvents, nextInri, nextIusd, nextAllowance, nextLocked] = await Promise.all([
+      const [nextStats, orderPage, nextEvents, nextInri, nextIusd, nextAllowance, nextLocked, nextGasPrice] = await Promise.all([
         loadP2PStats(),
         loadRecentP2POrders({ limit: ORDER_PAGE_LIMIT, page: nextPage, activeOnly: view === 'market', maker, status }),
         loadP2PEvents(36),
@@ -282,6 +361,7 @@ export function InriP2PClient() {
         snap.account ? getIusdBalance(snap.account) : Promise.resolve(0n),
         snap.account ? getIusdAllowance(snap.account) : Promise.resolve(0n),
         snap.account ? loadP2PLockedBalances(snap.account) : Promise.resolve({ lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 }),
+        getLegacyGasPrice().catch(() => 0n),
       ])
       setStats(nextStats)
       setOrders(orderPage.items)
@@ -291,8 +371,9 @@ export function InriP2PClient() {
       setAllowance(nextAllowance)
       setLocked(nextLocked)
       setHasMore(orderPage.hasMore)
+      setGasPrice(nextGasPrice)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Unable to load P2P market'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Unable to load P2P market'), 'error')
     } finally {
       setLoading(false)
     }
@@ -303,6 +384,57 @@ export function InriP2PClient() {
     const interval = window.setInterval(() => void refreshData(page), 25000)
     return () => window.clearInterval(interval)
   }, [page, refreshData])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.localStorage.getItem(SECURITY_NOTICE_KEY) !== 'ok') setShowSecurityNotice(true)
+  }, [])
+
+  useEffect(() => {
+    setSelectedOrderIds([])
+    notificationReadyRef.current = false
+    notifiedEventKeysRef.current.clear()
+    setNotifications([])
+    setUnreadNotifications(0)
+  }, [account, myOrderTab, view])
+
+  useEffect(() => {
+    if (!account) return
+    const accountLower = account.toLowerCase()
+    const relatedFills = events.filter((event) => event.kind === 'filled' && (
+      event.maker?.toLowerCase() === accountLower || event.taker?.toLowerCase() === accountLower
+    ))
+
+    if (!notificationReadyRef.current) {
+      relatedFills.forEach((event) => notifiedEventKeysRef.current.add(`${event.txHash}-${event.orderId}-${event.blockNumber}`))
+      notificationReadyRef.current = true
+      return
+    }
+
+    const fresh: P2PNotification[] = []
+    for (const event of relatedFills) {
+      const key = `${event.txHash}-${event.orderId}-${event.blockNumber}`
+      if (notifiedEventKeysRef.current.has(key)) continue
+      notifiedEventKeysRef.current.add(key)
+      const isMaker = event.maker?.toLowerCase() === accountLower
+      fresh.push({
+        id: key,
+        title: `Order #${event.orderId} executed`,
+        body: isMaker
+          ? `Your maker order was filled for ${event.inri || '—'} INRI. Gross: ${event.iusd || '—'} iUSD. Fee: ${event.fee || '—'} iUSD.`
+          : `You filled order #${event.orderId}. INRI: ${event.inri || '—'} · iUSD: ${event.iusd || '—'} · Fee: ${event.fee || '—'}.`,
+        txHash: event.txHash,
+        timestamp: event.timestamp || Math.floor(Date.now() / 1000),
+      })
+    }
+
+    if (fresh.length) {
+      setNotifications((previous) => [...fresh, ...previous].slice(0, 24))
+      setUnreadNotifications((previous) => previous + fresh.length)
+      showToast(`${fresh.length} P2P execution notification${fresh.length > 1 ? 's' : ''}.`, 'success', fresh[0].txHash)
+    }
+  }, [account, events, showToast])
+
 
   const filteredOrders = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -318,6 +450,14 @@ export function InriP2PClient() {
         )
       })
   }, [orders, query, sideFilter])
+
+  const myActiveVisibleOrders = useMemo(() => filteredOrders.filter((order) => (
+    account && order.maker.toLowerCase() === account.toLowerCase() && order.active
+  )), [account, filteredOrders])
+
+  const selectedCancelableOrders = useMemo(() => myActiveVisibleOrders.filter((order) => selectedOrderIds.includes(order.id)), [myActiveVisibleOrders, selectedOrderIds])
+
+  const allVisibleSelected = myActiveVisibleOrders.length > 0 && myActiveVisibleOrders.every((order) => selectedOrderIds.includes(order.id))
 
   const ensureWriteReady = useCallback(async () => {
     let snap = await syncWallet(false)
@@ -378,6 +518,12 @@ export function InriP2PClient() {
       getLegacyGasPrice(),
     ])
 
+    const requiredNative = value + gasLimit * gasPrice
+    const nativeBalance = await getInriBalance(from).catch(() => null)
+    if (nativeBalance !== null && nativeBalance < requiredNative) {
+      throw new Error(`Insufficient INRI balance for this transaction plus network gas. Required about ${formatInri(requiredNative, 6)} INRI; available ${formatInri(nativeBalance, 6)} INRI.`)
+    }
+
     const tx = {
       ...baseTx,
       gas: toHex(gasLimit),
@@ -402,7 +548,7 @@ export function InriP2PClient() {
       showToast('iUSD approval confirmed.', 'success', hash)
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Approval failed'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Approval failed'), 'error')
     } finally {
       setBusyAction(null)
     }
@@ -413,19 +559,28 @@ export function InriP2PClient() {
     try {
       const inriAmount = parseInriAmount(createInriAmount)
       const priceRaw = parsePrice(createPrice)
-      if (inriAmount <= 0n || priceRaw <= 0n) throw new Error('Enter a valid INRI amount and iUSD price.')
+      if (inriAmount <= 0n || priceRaw <= 0n) throw new Error('Incorrect Price Format: please enter a valid numeric amount and price. Values cannot be 0 or negative.')
 
-      const minutes = Math.max(0, Number(createDeadlineMinutes || 0))
+      const minutesRaw = Number(createDeadlineMinutes || 0)
+      if (!Number.isFinite(minutesRaw) || minutesRaw < 0) throw new Error('Improper validity period: use 0 for no deadline or a positive number of minutes.')
+      const minutes = Math.max(0, minutesRaw)
       const deadline = minutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(minutes * 60) : 0
       const gross = quoteIusdGrossLocal(inriAmount, priceRaw)
       const fee = feeOfLocal(gross, stats?.feeBps || 0)
       const net = gross - fee
 
+      if (createSide === 'sell') {
+        if (inriBalance < inriAmount) throw new Error('Insufficient Balance: INRI balance is insufficient. Please replenish your balance before placing the order.')
+      }
+
       if (createSide === 'buy') {
         if (gross <= 0n) throw new Error('The buy order iUSD amount is too small.')
-        if (iusdBalance < gross) throw new Error('Not enough available iUSD balance for this buy order.')
+        if (iusdBalance < gross) throw new Error('Insufficient Balance: iUSD balance is insufficient. Please replenish your balance before placing the order.')
         if (allowance < gross) throw new Error('Approve iUSD for the P2P contract before creating this buy order.')
       }
+
+      const priceWarning = buildPriceWarning(priceRaw, stats?.referencePriceRaw)
+      if (priceWarning && !confirmAction(priceWarning)) return
 
       const ok = confirmAction(
         createSide === 'sell'
@@ -447,11 +602,11 @@ export function InriP2PClient() {
       setPage(1)
       await refreshData(1)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Could not create order'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Could not create order'), 'error')
     } finally {
       setBusyAction(null)
     }
-  }, [allowance, createDeadlineMinutes, createInriAmount, createPrice, createSide, iusdBalance, refreshData, sendContractTx, showToast, stats?.feeBps])
+  }, [allowance, createDeadlineMinutes, createInriAmount, createPrice, createSide, inriBalance, iusdBalance, refreshData, sendContractTx, showToast, stats?.feeBps, stats?.referencePriceRaw])
 
   const fillOrder = useCallback(async (order: P2POrder) => {
     const action = `fill-${order.id}`
@@ -472,10 +627,12 @@ export function InriP2PClient() {
       if (!ok) return
 
       if (order.side === 'sell') {
+        if (iusdBalance < gross) throw new Error('Insufficient Balance: iUSD balance is insufficient for this fill.')
         if (allowance < gross) throw new Error('Approve enough iUSD before buying INRI from this SELL order.')
         const hash = await sendContractTx('market', 'fillSellOrder', [order.id, amount, gross], 0n, 620000n)
         showToast(`Order #${order.id} filled.`, 'success', hash)
       } else {
+        if (inriBalance < amount) throw new Error('Insufficient Balance: INRI balance is insufficient for this fill.')
         const hash = await sendContractTx('market', 'fillBuyOrder', [order.id, amount, net], amount, 620000n)
         showToast(`Order #${order.id} filled.`, 'success', hash)
       }
@@ -483,11 +640,11 @@ export function InriP2PClient() {
       setFillAmounts((previous) => ({ ...previous, [order.id]: '' }))
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Fill failed'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Fill failed'), 'error')
     } finally {
       setBusyAction(null)
     }
-  }, [allowance, fillAmounts, page, refreshData, sendContractTx, showToast, stats?.feeBps])
+  }, [allowance, fillAmounts, inriBalance, iusdBalance, page, refreshData, sendContractTx, showToast, stats?.feeBps])
 
   const cancelOrder = useCallback(async (order: P2POrder) => {
     const action = `cancel-${order.id}`
@@ -502,7 +659,7 @@ export function InriP2PClient() {
       showToast(`Order #${order.id} cancelled.`, 'success', hash)
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Cancel failed'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Cancel failed'), 'error')
     } finally {
       setBusyAction(null)
     }
@@ -527,10 +684,15 @@ export function InriP2PClient() {
     setBusyAction(action)
     try {
       const newPriceRaw = parsePrice(draft.price)
-      const newDeadlineMinutes = Math.max(0, Number(draft.deadlineMinutes || 0))
+      const newDeadlineMinutesRaw = Number(draft.deadlineMinutes || 0)
+      if (!Number.isFinite(newDeadlineMinutesRaw) || newDeadlineMinutesRaw < 0) throw new Error('Improper validity period: use 0 for no deadline or a positive number of minutes.')
+      const newDeadlineMinutes = Math.max(0, newDeadlineMinutesRaw)
       const newDeadline = newDeadlineMinutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(newDeadlineMinutes * 60) : 0
       const currentDeadlineText = order.deadline ? new Date(order.deadline * 1000).toLocaleString() : 'No deadline'
       const newDeadlineText = newDeadline ? new Date(newDeadline * 1000).toLocaleString() : 'No deadline'
+
+      const priceWarning = buildPriceWarning(newPriceRaw, stats?.referencePriceRaw)
+      if (priceWarning && !confirmAction(priceWarning)) return
 
       const ok = confirmAction(
         `Confirm edit order #${order.id}\n\nCurrent order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${order.priceDisplay} iUSD per INRI\nDeadline: ${currentDeadlineText}\n\nModified order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${draft.price} iUSD per INRI\nDeadline: ${newDeadlineText}\n\nFor BUY orders, changing price may add or refund locked iUSD automatically.`,
@@ -552,11 +714,11 @@ export function InriP2PClient() {
       setEditingId(null)
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Edit failed'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Edit failed'), 'error')
     } finally {
       setBusyAction(null)
     }
-  }, [editDrafts, page, refreshData, sendContractTx, showToast])
+  }, [editDrafts, page, refreshData, sendContractTx, showToast, stats?.referencePriceRaw])
 
   const resizeOrder = useCallback(async (order: P2POrder, direction: 'add' | 'remove') => {
     const action = `resize-${direction}-${order.id}`
@@ -603,11 +765,58 @@ export function InriP2PClient() {
       setResizeAmounts((previous) => ({ ...previous, [order.id]: '' }))
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Resize failed'), 'error')
+      showToast(friendlyP2PErrorMessage(cause, 'Resize failed'), 'error')
     } finally {
       setBusyAction(null)
     }
   }, [allowance, page, refreshData, resizeAmounts, sendContractTx, showToast])
+
+
+
+  const toggleSelectOrder = useCallback((orderId: number) => {
+    setSelectedOrderIds((previous) => previous.includes(orderId)
+      ? previous.filter((id) => id !== orderId)
+      : [...previous, orderId])
+  }, [])
+
+  const toggleSelectAllVisible = useCallback(() => {
+    setSelectedOrderIds((previous) => {
+      const visibleIds = myActiveVisibleOrders.map((order) => order.id)
+      const allSelected = visibleIds.length > 0 && visibleIds.every((id) => previous.includes(id))
+      if (allSelected) return previous.filter((id) => !visibleIds.includes(id))
+      return Array.from(new Set([...previous, ...visibleIds]))
+    })
+  }, [myActiveVisibleOrders])
+
+  const batchCancelSelected = useCallback(async () => {
+    if (selectedCancelableOrders.length === 0) {
+      showToast('Select at least one active order to cancel.', 'warning')
+      return
+    }
+
+    setBusyAction('batch-cancel')
+    try {
+      const refundSummary = selectedCancelableOrders.map((order) => (
+        order.side === 'sell'
+          ? `#${order.id}: refund ${order.remainingInriDisplay} INRI`
+          : `#${order.id}: refund ${order.remainingIusdDisplay} iUSD`
+      )).join('\n')
+      const ok = confirmAction(`Confirm batch cancel ${selectedCancelableOrders.length} order(s)?\n\n${refundSummary}\n\nThis will request one wallet confirmation per order. Each cancel also pays a small INRI network gas fee.`)
+      if (!ok) return
+
+      let lastHash = ''
+      for (const order of selectedCancelableOrders) {
+        lastHash = await sendContractTx('market', 'cancelOrder', [order.id], 0n, 360000n)
+      }
+      showToast(`${selectedCancelableOrders.length} order(s) cancelled.`, 'success', lastHash)
+      setSelectedOrderIds([])
+      await refreshData(page)
+    } catch (cause) {
+      showToast(friendlyP2PErrorMessage(cause, 'Batch cancel failed'), 'error')
+    } finally {
+      setBusyAction(null)
+    }
+  }, [page, refreshData, selectedCancelableOrders, sendContractTx, showToast])
 
   const copyValue = useCallback(async (value: string, label: string) => {
     try {
@@ -619,6 +828,11 @@ export function InriP2PClient() {
     }
   }, [showToast])
 
+  const acknowledgeSecurityNotice = useCallback(() => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(SECURITY_NOTICE_KEY, 'ok')
+    setShowSecurityNotice(false)
+  }, [])
+
   const setMainView = (nextView: P2PView) => {
     setView(nextView)
     setPage(1)
@@ -627,7 +841,7 @@ export function InriP2PClient() {
   }
 
   const navButton = (key: P2PView, label: string, icon: ReactNode) => (
-    <button key={key} type="button" onClick={() => setMainView(key)} className={`${view === key ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-sm font-black transition hover:border-cyan-300/35 hover:text-white`}>
+    <button key={key} type="button" onClick={() => setMainView(key)} className={`${view === key ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-sm sm:w-auto font-black transition hover:border-cyan-300/35 hover:text-white`}>
       {icon}{label}
     </button>
   )
@@ -636,6 +850,25 @@ export function InriP2PClient() {
 
   return (
     <div className="grid gap-6">
+      {showSecurityNotice ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/72 p-4 backdrop-blur-sm">
+          <div className="max-w-2xl rounded-[1.6rem] border border-cyan-300/24 bg-[#06111f] p-5 shadow-[0_30px_120px_rgba(0,0,0,0.65)] sm:p-7">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/22 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100"><ShieldCheck className="h-4 w-4" /> Security check</div>
+            <h3 className="mt-4 text-2xl font-black text-white">Confirm the official INRI P2P market</h3>
+            <p className="mt-3 text-sm leading-7 text-white/60">Before trading, verify that your wallet is connected to <b className="text-white">INRI CHAIN</b> and that this page uses the official contracts below. Do not approve or sign transactions from unknown links.</p>
+            <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/24 p-4 text-xs font-semibold leading-6 text-white/58">
+              <div>Network: <b className="text-white">INRI CHAIN</b> · Chain ID <b className="text-white">3777</b></div>
+              <div className="break-all">P2P contract: <b className="text-white">{P2P_MARKET_ADDRESS}</b></div>
+              <div className="break-all">iUSD token: <b className="text-white">{P2P_IUSD_ADDRESS}</b></div>
+            </div>
+            <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
+              <button type="button" onClick={acknowledgeSecurityNotice} className={buttonBase(true)}>I verified the network and contracts</button>
+              <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> View P2P contract</a>
+              <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> View iUSD token</a>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {toast ? (
         <div className={`flex flex-col gap-3 rounded-[1.25rem] border p-4 text-sm font-semibold sm:flex-row sm:items-center sm:justify-between ${statusClass(toast.tone)}`}>
           <span>{toast.message}</span>
@@ -654,7 +887,27 @@ export function InriP2PClient() {
               Trade native INRI against iUSD with on-chain escrow. The P2P fee is charged only on filled amounts and is automatically credited to treasury.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <div className="relative">
+              <button type="button" onClick={() => { setShowNotifications((current) => !current); setUnreadNotifications(0) }} className={buttonBase(false)}>
+                <Bell className="h-4 w-4" /> Alerts {unreadNotifications ? <span className="rounded-full bg-cyan-300 px-2 py-0.5 text-[10px] font-black text-black">{unreadNotifications}</span> : null}
+              </button>
+              {showNotifications ? (
+                <div className="absolute right-0 z-50 mt-2 w-[min(92vw,420px)] rounded-[1.25rem] border border-cyan-300/18 bg-[#06111f] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+                  <div className="mb-2 text-sm font-black text-white">Execution notifications</div>
+                  {notifications.length === 0 ? <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold leading-6 text-white/50">No fills detected for this wallet during this page session yet.</div> : null}
+                  <div className="grid max-h-80 gap-2 overflow-auto">
+                    {notifications.map((item) => (
+                      <div key={item.id} className="rounded-2xl border border-white/10 bg-black/24 p-3 text-xs font-semibold leading-6 text-white/58">
+                        <div className="font-black text-white">{item.title}</div>
+                        <div>{item.body}</div>
+                        {item.txHash ? <a href={`${EXPLORER_TX_URL}${item.txHash}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 font-black text-cyan-100 underline"><ExternalLink className="h-3.5 w-3.5" /> View tx</a> : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
             <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload
             </button>
@@ -671,7 +924,18 @@ export function InriP2PClient() {
           </div>
         ) : null}
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-4">
+        <div className="mt-5 grid gap-3 rounded-[1.2rem] border border-cyan-300/18 bg-cyan-300/[0.055] p-4 text-xs font-semibold leading-6 text-cyan-50/78 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-sm font-black text-white"><ShieldCheck className="h-4 w-4 text-cyan-200" /> Network and contract verification</div>
+            <div>Use only <b className="text-white">INRI CHAIN</b> (chain ID 3777). P2P contract: <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className="break-all font-black text-white underline">{P2P_MARKET_ADDRESS}</a>. iUSD token: <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className="break-all font-black text-white underline">{P2P_IUSD_ADDRESS}</a>.</div>
+          </div>
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-sm font-black text-white"><Info className="h-4 w-4 text-cyan-200" /> Gas and permissions</div>
+            <div>Creating, filling, approving, editing, cancelling and resizing are on-chain actions and require INRI gas. Estimated cancel gas now: <b className="text-white">{gasCostLabel(360000n)}</b>. iUSD approval only authorizes the official P2P contract.</div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard icon={<Store className="h-5 w-5" />} label="Orders" value={`${stats?.activeOrders ?? 0} active / ${stats?.totalOrders ?? 0} total`} sub={`${stats?.historicalOrders ?? 0} historical filled/cancelled/expired records`} />
           <StatCard icon={<BadgeCheck className="h-5 w-5" />} label="Fee" value={`${stats?.feePercentLabel ?? '0.00%'} on fills`} sub="Credited to treasury. Not charged for creating, editing or cancelling orders.">
             <div className="text-xs font-semibold leading-5 text-white/48">Treasury: <span className="font-black text-white/70">{shortAddress(stats?.treasury, 6)}</span></div>
@@ -686,7 +950,7 @@ export function InriP2PClient() {
         </div>
       </Card>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {navButton('market', 'Market', <Store className="h-4 w-4" />)}
         {navButton('create', 'Create order', <Plus className="h-4 w-4" />)}
         {navButton('mine', 'My Orders', <Wallet className="h-4 w-4" />)}
@@ -727,7 +991,8 @@ export function InriP2PClient() {
                 <div className="flex justify-between gap-3"><span>Gross iUSD value</span><b className="text-white">{formatIusd(createPreview.gross)} iUSD</b></div>
                 <div className="flex justify-between gap-3"><span>Estimated fee on full fill</span><b className="text-white">{formatIusd(createPreview.fee)} iUSD</b></div>
                 <div className="flex justify-between gap-3"><span>Estimated net iUSD</span><b className="text-white">{formatIusd(createPreview.net)} iUSD</b></div>
-                <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs leading-6 text-white/50">Fee is not paid when creating the order. It is applied only to filled order amounts.</div>
+                <div className="flex justify-between gap-3"><span>Estimated create gas</span><b className="text-white">{gasCostLabel(createSide === 'sell' ? 420000n : 520000n)}</b></div>
+                <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs leading-6 text-white/50">Fee is not paid when creating the order. It is applied only to filled order amounts. Wallet will still charge a small INRI gas fee for the on-chain transaction.</div>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2">
@@ -769,12 +1034,25 @@ export function InriP2PClient() {
           </div>
 
           {view === 'mine' ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {(['active', 'filled', 'cancelled'] as const).map((tab) => (
-                <button key={tab} type="button" onClick={() => { setMyOrderTab(tab); setPage(1) }} className={`${myOrderTab === tab ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} rounded-2xl border px-4 py-2 text-sm font-black capitalize transition hover:border-cyan-300/35 hover:text-white`}>
-                  {tab}
-                </button>
-              ))}
+            <div className="mt-5 grid gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+                {(['active', 'filled', 'cancelled'] as const).map((tab) => (
+                  <button key={tab} type="button" onClick={() => { setMyOrderTab(tab); setPage(1) }} className={`${myOrderTab === tab ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} rounded-2xl border px-3 py-2 text-sm font-black capitalize transition hover:border-cyan-300/35 hover:text-white sm:px-4`}>
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              {myOrderTab === 'active' && myActiveVisibleOrders.length > 0 ? (
+                <div className="grid gap-3 rounded-[1.15rem] border border-amber-300/16 bg-amber-300/[0.045] p-3 text-xs font-semibold leading-6 text-white/58 lg:grid-cols-[1fr_auto]">
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} className="h-4 w-4 accent-cyan-300" />
+                    <span>Batch management: select active visible orders. Cancelling selected orders requests one wallet confirmation per order and refunds remaining locked funds.</span>
+                  </label>
+                  <button type="button" onClick={() => void batchCancelSelected()} disabled={busyAction !== null || selectedCancelableOrders.length === 0} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-red-300/24 bg-red-400/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-400/14 disabled:cursor-not-allowed disabled:opacity-50">
+                    {busyAction === 'batch-cancel' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />} Cancel selected ({selectedCancelableOrders.length})
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -804,6 +1082,11 @@ export function InriP2PClient() {
                         <span className={`${order.side === 'sell' ? 'border-emerald-300/28 bg-emerald-400/10 text-emerald-100' : 'border-cyan-300/28 bg-cyan-300/10 text-cyan-100'} rounded-full border px-3 py-1.5 text-xs font-black`}>{order.side === 'sell' ? 'SELL INRI' : 'BUY INRI'}</span>
                         <span className="rounded-full border border-white/12 bg-white/[0.045] px-3 py-1.5 text-xs font-black text-white/72">#{order.id}</span>
                         <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${statusClass(orderStatusTone(order))}`}>{order.statusLabel}</span>
+                        {view === 'mine' && isMaker && order.active ? (
+                          <label className="inline-flex items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100">
+                            <input type="checkbox" checked={selectedOrderIds.includes(order.id)} onChange={() => toggleSelectOrder(order.id)} className="h-3.5 w-3.5 accent-cyan-300" /> Select
+                          </label>
+                        ) : null}
                       </div>
                       <div className="mt-3 text-2xl font-black text-white">{order.priceDisplay} iUSD <span className="text-sm font-semibold text-white/45">per INRI</span></div>
                       <div className="mt-1 text-xs font-semibold text-white/42">{priceDiff}</div>
@@ -814,7 +1097,7 @@ export function InriP2PClient() {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Remaining INRI to {order.side === 'sell' ? 'sell' : 'buy'}</div>
                       <div className="mt-1 text-lg font-black text-white">{order.remainingInriDisplay}</div>
@@ -855,10 +1138,11 @@ export function InriP2PClient() {
                           </button>
                         </div>
                       </div>
-                      <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold text-white/56 sm:grid-cols-3">
+                      <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold text-white/56 sm:grid-cols-2 xl:grid-cols-4">
                         <span>Gross amount: <b className="text-white">{formatIusd(fillGross)} iUSD</b></span>
                         <span>Fee: <b className="text-white">{formatIusd(fillFee)} iUSD</b></span>
                         <span>{order.side === 'sell' ? 'Net maker receives' : 'Net you receive'}: <b className="text-white">{formatIusd(fillNet)} iUSD</b></span>
+                        <span>Estimated fill gas: <b className="text-white">{gasCostLabel(620000n)}</b></span>
                       </div>
                     </div>
                   ) : null}
@@ -868,7 +1152,7 @@ export function InriP2PClient() {
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <div className="text-sm font-black text-white">Manage order</div>
-                          <div className="text-xs font-semibold text-white/45">Edit, add, remove or cancel. Every operation shows a confirmation preview before wallet signing.</div>
+                          <div className="text-xs font-semibold text-white/45">Edit, add, remove or cancel. Every operation shows a confirmation preview before wallet signing and uses INRI gas.</div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => startEdit(order)} className={buttonBase(false)} disabled={busyAction !== null}>
@@ -969,7 +1253,7 @@ export function InriP2PClient() {
         <div className="grid gap-3 text-xs font-semibold leading-6 text-white/48 md:grid-cols-3">
           <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> P2P contract: {shortAddress(P2P_MARKET_ADDRESS, 6)}</a>
           <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> iUSD token: {shortAddress(P2P_IUSD_ADDRESS, 6)}</a>
-          <span className="inline-flex items-center gap-2"><Info className="h-4 w-4" /> Fee estimate shown before every fill.</span>
+          <span className="inline-flex items-center gap-2"><Info className="h-4 w-4" /> Fee and estimated gas are shown before core actions.</span>
         </div>
       </Card>
     </div>
