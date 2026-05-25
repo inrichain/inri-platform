@@ -256,10 +256,16 @@ function statusClass(kind: 'ok' | 'warn' | 'info' | 'bad') {
 
 function TokenAvatar({ token, size = 'md' }: { token: TokenInfo; size?: 'sm' | 'md' | 'lg' }) {
   const logo = tokenLogo(token)
-  const sizeClass = size === 'lg' ? 'h-10 w-10' : size === 'sm' ? 'h-7 w-7' : 'h-8 w-8'
+  const sizeClass = size === 'lg' ? 'h-11 w-11' : size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
   return (
-    <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-gradient-to-br ${tokenAccent(token)}`}>
-      {logo ? <img src={logo} alt={token.symbol} className="h-full w-full object-cover" /> : <span className="text-[10px] font-black">{token.symbol.slice(0, 2).toUpperCase()}</span>}
+    <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent`}>
+      {logo ? (
+        <img src={logo} alt={token.symbol} className="h-full w-full rounded-full object-cover" />
+      ) : (
+        <span className={`inline-flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br ${tokenAccent(token)} text-[10px] font-black`}>
+          {token.symbol.slice(0, 2).toUpperCase()}
+        </span>
+      )}
     </span>
   )
 }
@@ -312,13 +318,13 @@ function TokenSelect({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex h-14 items-center justify-between gap-3 rounded-[16px] border border-white/12 bg-[#071321] px-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-cyan-300/40 hover:bg-cyan-300/10 focus:border-cyan-300/55 focus:outline-none"
+        className="group flex h-[60px] min-w-0 items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-[#081727] px-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-cyan-300/30 hover:bg-cyan-300/6 focus:border-cyan-300/45 focus:outline-none"
       >
-        <span className="flex min-w-0 items-center gap-3">
+        <span className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden pr-1">
           <TokenAvatar token={value} />
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-black text-white">{value.symbol}</span>
-            <span className="block truncate text-[10px] font-bold uppercase tracking-[0.12em] text-white/38">{value.native ? 'Native' : value.verified ? 'Verified' : 'Imported'}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[15px] font-black text-white">{value.symbol}</span>
+            <span className="block truncate text-[10px] font-bold uppercase tracking-[0.16em] text-white/42">{value.native ? 'Native' : value.verified ? 'Verified' : 'Imported'}</span>
           </span>
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-cyan-200/70 transition group-hover:text-white" />
@@ -451,7 +457,7 @@ function MiniButton({ children, onClick }: { children: ReactNode; onClick: () =>
 
 function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[24px] border border-cyan-300/18 bg-white/[0.045] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-2xl ${className}`}>
+    <div className={`rounded-[28px] border border-cyan-300/14 bg-[linear-gradient(180deg,rgba(5,19,34,0.96),rgba(4,14,26,0.98))] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl ${className}`}>
       {children}
     </div>
   )
@@ -929,16 +935,16 @@ export function InriSwapClient() {
                       </div>
                     </div>
 
-                    <div className="rounded-[24px] border border-white/10 bg-[#0a1727] p-4 transition focus-within:border-cyan-300/40">
+                    <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
                       <FieldLabel label="Sell" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                      <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
                         <div>
                           <input
                             value={swapAmount}
                             onChange={(event) => setSwapAmount(cleanDecimalInput(event.target.value))}
                             placeholder="0"
                             inputMode="decimal"
-                            className="h-16 w-full rounded-[20px] border border-white/10 bg-[#050d18] px-4 text-3xl font-black tracking-[-0.04em] text-white outline-none transition placeholder:text-white/24 focus:border-cyan-300/50"
+                            className="h-16 w-full rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white outline-none transition placeholder:text-white/24 focus:border-cyan-300/50"
                           />
                           <button type="button" onClick={() => setSwapAmount(formatTokenAmount(maxFromBalance, fromToken.decimals, fromToken.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">
                             MAX
@@ -963,10 +969,10 @@ export function InriSwapClient() {
                       </button>
                     </div>
 
-                    <div className="rounded-[24px] border border-white/10 bg-[#0a1727] p-4 transition focus-within:border-cyan-300/40">
+                    <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
                       <FieldLabel label="Buy" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
-                        <div className="flex h-16 items-center rounded-[20px] border border-white/10 bg-[#050d18] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
+                      <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
+                        <div className="flex h-16 items-center rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
                           {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals, 6) : '0'}
                         </div>
                         <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
@@ -1023,16 +1029,16 @@ export function InriSwapClient() {
                     </div>
 
                     <div className="mt-6 grid gap-4">
-                      <div className="rounded-[22px] border border-white/10 bg-[#0a1727] p-4">
+                      <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
                         <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenA)] ?? 0n, liqTokenA.decimals)}`} />
-                        <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                        <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
                           <input value={liqAmountA} onChange={(event) => setLiqAmountA(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
                           <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} />
                         </div>
                       </div>
-                      <div className="rounded-[22px] border border-white/10 bg-[#0a1727] p-4">
+                      <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
                         <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenB)] ?? 0n, liqTokenB.decimals)}`} />
-                        <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                        <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
                           <input value={liqAmountB} onChange={(event) => setLiqAmountB(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
                           <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} />
                         </div>
