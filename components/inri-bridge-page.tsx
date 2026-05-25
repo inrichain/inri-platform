@@ -334,7 +334,7 @@ function Step({ label, value, active, done }: { label: string; value: string; ac
 }
 
 function TokenLogo({ token, size = 'md' }: { token: 'USDT' | 'iUSD'; size?: 'sm' | 'md' | 'lg' }) {
-  const src = token === 'USDT' ? '/usdt-logo.svg' : '/inri-logo.png'
+  const src = token === 'USDT' ? '/usdt-logo.svg' : '/iusd-logo.png'
   const sizeClass = size === 'lg' ? 'h-12 w-12' : size === 'sm' ? 'h-7 w-7' : 'h-10 w-10'
   return (
     <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent`}>

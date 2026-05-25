@@ -1,1263 +1,502 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import {
-  Activity,
-  AlertTriangle,
-  Bell,
-  ArrowDownUp,
-  BadgeCheck,
-  BarChart3,
-  CheckCircle2,
-  Clock3,
-  Copy,
-  Edit3,
-  ExternalLink,
-  Info,
-  Minus,
-  Plus,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-  Store,
-  Wallet,
-  XCircle,
-} from 'lucide-react'
-import {
-  estimateGasWithFallback,
-  getActiveWalletProvider,
-  getErrorMessage,
-  getLegacyGasPrice,
-  INRI_CHAIN_ID_HEX,
-  isInriChain,
-  readActiveWalletSnapshot,
-  requestFromActiveWallet,
-  rpcCall,
-  switchProviderToInri,
-  toHex,
-  type ActiveWalletSnapshot,
-  type EthereumProvider,
-} from '@/lib/inri-active-wallet'
-import {
-  EXPLORER_TX_URL,
-  feeOfLocal,
-  formatInri,
-  formatIusd,
-  getInriBalance,
-  getIusdAllowance,
-  getIusdBalance,
-  IUSD_EXPLORER_TOKEN_URL,
-  iusdInterface,
-  loadP2PEvents,
-  loadP2PLockedBalances,
-  loadP2PStats,
-  loadRecentP2POrders,
-  P2P_EXPLORER_ADDRESS_URL,
-  P2P_IUSD_ADDRESS,
-  P2P_MARKET_ADDRESS,
-  p2pInterface,
-  parseInriAmount,
-  parseIusdAmount,
-  parsePrice,
-  percentVsReference,
-  quoteIusdGrossLocal,
-  shortAddress,
-  type P2PEventItem,
-  type P2PLockedBalances,
-  type P2POrder,
-  type P2PStats,
-  type P2PView,
-} from '@/lib/inri-p2p-market'
+import { useEffect, useRef, useState } from 'react'
+import { getWalletConnectProvider, getWalletConnectState } from '@/lib/walletconnect-inri'
 
-type TxTarget = 'market' | 'iusd'
-type ToastTone = 'success' | 'error' | 'warning' | 'info'
-type SideFilter = 'all' | 'sell' | 'buy'
-type BusyAction = string | null
-type DraftMap = Record<number, string>
-type EditDraft = { price: string; deadlineMinutes: string }
-type MyOrderTab = 'active' | 'filled' | 'cancelled'
-
-type Toast = {
-  tone: ToastTone
-  message: string
-  txHash?: string
+type ProviderLike = {
+  request: (args: { method: string; params?: unknown[] | object }) => Promise<any>
+  on?: (event: string, handler: (...args: unknown[]) => void) => void
+  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
+  isMetaMask?: boolean
+  isOkxWallet?: boolean
+  isRabby?: boolean
+  isCoinbaseWallet?: boolean
+  isTrust?: boolean
+  providers?: ProviderLike[]
 }
 
-type P2PNotification = {
-  id: string
-  title: string
-  body: string
-  txHash?: string
-  timestamp: number
-}
+type ConnectorType = '' | 'injected' | 'walletconnect'
 
-const ORDER_PAGE_LIMIT = 42
-const PRICE_ALERT_THRESHOLD_PCT = 15
-const DEFAULT_GAS_PRICE_WEI = 1_000_000_000n
-const SECURITY_NOTICE_KEY = 'inri-p2p-security-notice-v1'
+type ActiveWalletState = {
+  connector: ConnectorType | ''
+  address: string
+  chainId: string
+  provider?: ProviderLike
+} | null
 
-function eventLabel(kind: P2PEventItem['kind']) {
-  switch (kind) {
-    case 'created': return 'Order created'
-    case 'filled': return 'Order filled'
-    case 'cancelled': return 'Order cancelled'
-    case 'price': return 'Price updated'
-    case 'deadline': return 'Deadline updated'
-    case 'sell-add': return 'SELL size increased'
-    case 'sell-remove': return 'SELL size reduced'
-    case 'buy-add': return 'BUY iUSD added'
-    case 'buy-reduce': return 'BUY order reduced'
-    default: return 'P2P event'
+declare global {
+  interface Window {
+    ethers?: unknown
+    __INRI_WALLETCONNECT_PROVIDER__?: ProviderLike
+    __INRI_P2P_SYNC__?: (() => Promise<boolean>) | null
+    __INRI_P2P_REFRESH__?: (() => Promise<void>) | null
   }
 }
 
-function deadlineLabel(deadline: number) {
-  if (!deadline) return 'No deadline'
-  const diff = deadline - Math.floor(Date.now() / 1000)
-  if (diff <= 0) return 'Expired'
-  const minutes = Math.floor(diff / 60)
-  if (minutes < 60) return `${Math.max(1, minutes)}m left`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 48) return `${hours}h left`
-  return new Date(deadline * 1000).toLocaleDateString()
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+const htmlUrl = `${basePath}/apps/inri-p2p.html`
+
+function replaceEverywhere(input: string, search: string, replacement: string): string {
+  return input.split(search).join(replacement)
 }
 
-function fullDeadlineLabel(deadline: number) {
-  if (!deadline) return 'No deadline. Order stays open until filled or cancelled.'
-  return `${new Date(deadline * 1000).toLocaleString()} · auto-expires if unfilled; maker can cancel/refund.`
+function patchStyle(styleText: string): string {
+  const base = styleText
+    .replace(/html,body\s*\{[^}]*height:100%[^}]*\}/g, 'html,body{height:100%}')
+    .replace(/body\s*\{[^}]*margin:0[^}]*background:#000[^}]*overflow:auto[^}]*\}/g, 'body{margin:0;color:var(--text);background:transparent;overflow:auto}')
+
+  const overrides = `
+:host{display:block}
+:host *, :host *::before, :host *::after{box-sizing:border-box}
+:host a{color:inherit;text-decoration:none}
+:host .wrap{max-width:none;margin:0;padding:0;gap:16px}
+:host{color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+:host .p2pHero{display:none!important}
+:host .top{display:none!important}
+:host #btnConnect{display:none!important}
+:host #btnOpenMM{display:none!important}
+:host #btnOpenTW{display:none!important}
+:host .tabs,
+:host .card,
+:host .offer,
+:host .modal,
+:host .hint,
+:host .pill,
+:host .kv,
+:host input,
+:host select{
+  box-shadow:none!important;
+}
+:host .tabs{
+  border:1.35px solid rgba(19,164,255,.16);
+  border-radius:24px;
+  background:radial-gradient(circle at top left,rgba(19,164,255,.09),transparent 26%),linear-gradient(180deg,rgba(8,16,28,.96),rgba(2,7,14,.96));
+  padding:16px 18px;
+  backdrop-filter:blur(14px);
+}
+:host .tab{
+  min-height:42px;
+  padding:10px 16px;
+  border-radius:999px;
+  border:1.25px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  font-size:13px;
+  letter-spacing:.02em;
+}
+:host .tab.active{background:linear-gradient(90deg,#13a4ff,#0a84ff); color:#08111d}
+:host .panelWrap{grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:16px}
+@media(max-width:1100px){:host .panelWrap{grid-template-columns:1fr}}
+:host .card{
+  border:1.35px solid rgba(19,164,255,.16);
+  border-radius:28px;
+  background:radial-gradient(circle at top left,rgba(19,164,255,.085),transparent 28%),linear-gradient(180deg,rgba(7,15,28,.98),rgba(1,5,10,.98));
+  padding:22px;
+  backdrop-filter:blur(16px);
+}
+:host .card h2{font-size:18px;margin:0 0 14px 0;color:#fff;font-weight:900;letter-spacing:-0.02em}
+:host .hint{
+  border:1.25px solid rgba(19,164,255,.26);
+  background:linear-gradient(180deg,rgba(19,164,255,.12),rgba(19,164,255,.05));
+  padding:15px 16px;
+  border-radius:18px;
+  font-size:12.5px;
+  line-height:1.6;
+  color:rgba(255,255,255,.80);
+}
+:host .hint b{color:#fff}
+:host label{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+:host input,
+:host select{
+  min-height:52px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1.3px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.34);
+  color:#fff;
+  outline:none;
+  font-size:14px;
+}
+:host input::placeholder{color:rgba(255,255,255,.34)}
+:host select option{background:#07111d;color:#fff}
+:host input:focus,
+:host select:focus{border-color:rgba(19,164,255,.55); box-shadow:0 0 0 1px rgba(19,164,255,.18)}
+:host .pill,
+:host .chip{
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1.25px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.045);
+  color:rgba(255,255,255,.88);
+  font-size:12px;
+  font-weight:700;
+}
+:host .pill b,:host .chip b{color:#fff}
+:host .btn{
+  min-height:44px;
+  padding:10px 15px;
+  border-radius:999px;
+  border:1.25px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font-size:13px;
+  font-weight:800;
+}
+:host .btn-pri{background:linear-gradient(90deg,#13a4ff,#0a84ff); color:#08111d; border-color:rgba(255,255,255,.08)}
+:host .btn-ok{background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.26)}
+:host .btn-bad{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.26)}
+:host .btn-warn{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.26)}
+:host .toolbar{gap:14px;align-items:flex-end}
+:host .search{gap:10px}
+:host .search input{width:320px}
+@media(max-width:640px){:host .search input{width:100%}
+:host .tabs{justify-content:flex-start}
+:host .panelWrap{gap:14px}}
+:host .offers{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;max-height:none;overflow:visible;padding-right:0}
+:host .offer{
+  border:1.25px solid rgba(19,164,255,.14);
+  background:radial-gradient(circle at top left,rgba(19,164,255,.07),transparent 26%),linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+  border-radius:24px;
+  padding:18px;
+}
+:host .offer .mono,:host .offer .v,:host .offer [style*=font-weight:900]{color:#fff}
+:host .tag{min-height:34px;padding:6px 11px;border-radius:999px}
+:host .kvs{gap:10px;margin-top:10px}
+:host .kv{border-radius:16px;padding:10px;border:1.25px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03)}
+:host .kv .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+:host .kv .v{font-size:13px}
+:host .actions{gap:10px;margin-top:12px}
+:host .marketFooter{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+:host .walletBox{gap:14px}
+:host .modal{
+  width:min(1120px,100%);
+  border-radius:30px;
+  border:1.35px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg,rgba(10,18,30,.96),rgba(3,8,14,.96));
+  padding:18px;
+}
+:host .modalGrid{gap:14px}
+:host .modal .card{padding:16px;border-radius:22px}
+:host .toast{border-radius:16px;padding:12px 14px;background:rgba(8,15,26,.96)}
+:host .muted{font-size:12px;color:rgba(255,255,255,.76)}
+:host .muted2{font-size:12px;color:rgba(255,255,255,.64)}
+:host .right .mono,:host .kv .v,:host .walletLeft .mono{word-break:break-word}
+`
+
+  return `${base}\n${overrides}`
 }
 
-function normalizeHash(result: unknown) {
-  if (typeof result === 'string') return result
-  if (result && typeof result === 'object' && 'hash' in result) return String((result as { hash: unknown }).hash)
-  return ''
-}
-
-function buttonBase(primary = false) {
-  return primary
-    ? 'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-cyan-200/50 bg-cyan-300 px-4 py-2 text-sm font-black text-[#03111a] shadow-[0_14px_34px_rgba(19,164,255,0.18)] transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
-    : 'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.045] px-4 py-2 text-sm font-black text-white transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
-}
-
-function inputClass() {
-  return 'min-h-12 w-full rounded-2xl border border-white/12 bg-black/28 px-4 py-3 text-sm font-semibold text-white outline-none transition placeholder:text-white/32 focus:border-cyan-300/60 focus:bg-black/36'
-}
-
-function selectClass() {
-  return 'min-h-12 w-full rounded-2xl border border-white/12 bg-[#040b14] px-4 py-3 text-sm font-extrabold text-white outline-none transition focus:border-cyan-300/60'
-}
-
-function statusClass(tone: ToastTone | 'neutral' | 'partial' = 'neutral') {
-  if (tone === 'success') return 'border-emerald-400/24 bg-emerald-400/10 text-emerald-100'
-  if (tone === 'warning') return 'border-amber-300/26 bg-amber-300/10 text-amber-100'
-  if (tone === 'error') return 'border-red-400/24 bg-red-400/10 text-red-100'
-  if (tone === 'info') return 'border-cyan-300/24 bg-cyan-300/10 text-cyan-100'
-  if (tone === 'partial') return 'border-violet-300/24 bg-violet-300/10 text-violet-100'
-  return 'border-white/12 bg-white/[0.045] text-white/72'
-}
-
-function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return (
-    <div className={`rounded-[1.7rem] border border-cyan-300/15 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_28%),linear-gradient(180deg,rgba(7,17,29,0.96),rgba(2,7,13,0.98))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5 ${className}`}>
-      {children}
-    </div>
+function patchScript(scriptText: string): string {
+  const patched = replaceEverywhere(
+    replaceEverywhere(
+      replaceEverywhere(
+        replaceEverywhere(
+          replaceEverywhere(
+            replaceEverywhere(
+              replaceEverywhere(
+                scriptText,
+                'const DAPP_URL = "https://p2p.inri.life/";',
+                'const DAPP_URL = window.location.href.split("#")[0];',
+              ),
+              'document.getElementById(',
+              '__root.getElementById(',
+            ),
+            'document.querySelectorAll(',
+            '__root.querySelectorAll(',
+          ),
+          'document.querySelector(',
+          '__root.querySelector(',
+        ),
+        'document.createElement(',
+        '__root.ownerDocument.createElement(',
+      ),
+      'document.addEventListener(',
+      '__root.addEventListener(',
+    ),
+    'if(window.ethereum) return window.ethereum;',
+    'if(window.__INRI_ACTIVE_WALLET__ && window.__INRI_ACTIVE_WALLET__.provider) return window.__INRI_ACTIVE_WALLET__.provider;\n    if(window.ethereum) return window.ethereum;\n    if(window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__;',
   )
+
+  return `${patched}
+
+function __inriHeaderBridge(){
+  return window.__INRI_ACTIVE_WALLET__ || null
 }
 
-function StatCard({ icon, label, value, sub, children }: { icon: ReactNode; label: string; value: string; sub?: string; children?: ReactNode }) {
-  return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.035] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/58">{label}</div>
-          <div className="mt-2 text-xl font-black tracking-tight text-white">{value}</div>
-          {sub ? <div className="mt-1 text-xs font-semibold leading-5 text-white/50">{sub}</div> : null}
-        </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/18 bg-cyan-300/10 text-cyan-200">{icon}</div>
-      </div>
-      {children ? <div className="mt-3 border-t border-white/10 pt-3">{children}</div> : null}
-    </div>
-  )
+const __inriOriginalPickBestProvider = typeof pickBestProvider === 'function' ? pickBestProvider : null
+pickBestProvider = function(){
+  const bridge = __inriHeaderBridge()
+  if (bridge?.provider) return bridge.provider
+  if (window.__INRI_WALLETCONNECT_PROVIDER__) return window.__INRI_WALLETCONNECT_PROVIDER__
+  return __inriOriginalPickBestProvider ? __inriOriginalPickBestProvider() : null
 }
 
-function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/54">{label}</span>
-      {children}
-      {hint ? <span className="text-xs font-semibold leading-5 text-white/44">{hint}</span> : null}
-    </label>
-  )
+async function __inriSyncFromHeader(){
+  try {
+    const bridge = __inriHeaderBridge()
+    const provider = pickBestProvider()
+    if (!provider) {
+      if (el?.syncInfo) {
+        el.syncInfo.textContent = 'No header wallet provider found yet.'
+      }
+      return false
+    }
+
+    await connectWallet()
+
+    if (bridge?.address && el?.meAddr) {
+      el.meAddr.textContent = bridge.address
+    }
+    if (el?.btnConnect) {
+      el.btnConnect.style.display = 'none'
+      el.btnConnect.setAttribute('aria-hidden', 'true')
+      el.btnConnect.setAttribute('tabindex', '-1')
+    }
+    if (el?.btnOpenMM) el.btnOpenMM.style.display = 'none'
+    if (el?.btnOpenTW) el.btnOpenTW.style.display = 'none'
+    if (el?.syncInfo) {
+      el.syncInfo.textContent = bridge?.address
+        ? 'Wallet synced from the top header: ' + bridge.address.slice(0, 6) + '...' + bridge.address.slice(-4)
+        : 'Wallet synced from the top header.'
+    }
+    return true
+  } catch (err) {
+    console.warn('P2P header sync failed', err)
+    if (el?.syncInfo) {
+      el.syncInfo.textContent = 'Wallet sync failed. Reconnect in the top header and try again.'
+    }
+    return false
+  }
 }
 
-function EmptyState({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-[1.4rem] border border-white/10 bg-black/24 p-8 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
-        <Store className="h-5 w-5" />
-      </div>
-      <div className="mt-4 text-lg font-black text-white">{title}</div>
-      <div className="mx-auto mt-2 max-w-xl text-sm leading-7 text-white/54">{body}</div>
-    </div>
-  )
+window.__INRI_P2P_SYNC__ = __inriSyncFromHeader
+window.__INRI_P2P_REFRESH__ = async () => { await refreshMarket() }
+window.addEventListener('inri:wallet-state', () => { setTimeout(() => { void __inriSyncFromHeader() }, 120) })
+setTimeout(() => { void __inriSyncFromHeader() }, 320)
+`
 }
 
-function orderStatusTone(order: P2POrder): ToastTone | 'partial' | 'neutral' {
-  if (order.status === 'partial') return 'partial'
-  if (order.status === 'active') return 'success'
-  if (order.status === 'expired') return 'warning'
-  if (order.status === 'cancelled') return 'error'
-  if (order.status === 'filled') return 'info'
-  return 'neutral'
+async function ensureEthers(): Promise<void> {
+  if (typeof window === 'undefined' || window.ethers) return
+
+  const existing = document.getElementById('inri-p2p-ethers-loader') as HTMLScriptElement | null
+  if (existing) {
+    await new Promise<void>((resolve, reject) => {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('Failed to load ethers runtime.')), { once: true })
+    })
+    return
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.id = 'inri-p2p-ethers-loader'
+    script.src = 'https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Failed to load ethers runtime.'))
+    document.head.appendChild(script)
+  })
 }
 
-function confirmAction(message: string) {
-  if (typeof window === 'undefined') return true
-  return window.confirm(message)
+
+function getActiveWalletState(): ActiveWalletState {
+  if (typeof window === 'undefined') return null
+  return (window as Window & { __INRI_ACTIVE_WALLET__?: ActiveWalletState }).__INRI_ACTIVE_WALLET__ ?? null
 }
 
-
-function priceDeviationPercent(priceRaw: bigint, referencePriceRaw?: bigint) {
-  if (!referencePriceRaw || referencePriceRaw <= 0n || priceRaw <= 0n) return 0
-  const reference = Number(referencePriceRaw)
-  if (!Number.isFinite(reference) || reference <= 0) return 0
-  return ((Number(priceRaw) - reference) / reference) * 100
+function setShadowText(root: ShadowRoot | null | undefined, id: string, value: string) {
+  const node = root?.getElementById(id)
+  if (node) node.textContent = value
 }
 
-function buildPriceWarning(priceRaw: bigint, referencePriceRaw?: bigint) {
-  const deviation = priceDeviationPercent(priceRaw, referencePriceRaw)
-  if (!Number.isFinite(deviation) || Math.abs(deviation) < PRICE_ALERT_THRESHOLD_PCT) return ''
-  const direction = deviation > 0 ? 'higher' : 'lower'
-  return `Price fluctuation alert: your order price is ${Math.abs(deviation).toFixed(2)}% ${direction} than the current reference price. Execution may be slow or unfavorable. Do you want to continue?`
-}
-
-function friendlyP2PErrorMessage(cause: unknown, fallback: string) {
-  const raw = getErrorMessage(cause, fallback)
-  const text = raw.toLowerCase()
-
-  if (text.includes('user rejected') || text.includes('user denied') || text.includes('rejected the request')) {
-    return 'Transaction cancelled in your wallet. No order was changed.'
-  }
-  if (text.includes('approve iusd') || text.includes('allowance')) {
-    return 'iUSD approval is required first. Click Approve iUSD, confirm in your wallet, then try again.'
-  }
-  if (text.includes('not enough available iusd') || text.includes('insufficient iusd')) {
-    return 'Insufficient iUSD balance. Please add iUSD to your wallet before creating or filling this order.'
-  }
-  if (text.includes('not enough inri') || text.includes('insufficient inri') || text.includes('insufficient funds')) {
-    return 'Insufficient INRI balance. You need enough INRI for the trade amount plus a small network gas fee.'
-  }
-  if (text.includes('invalid') || text.includes('badprice') || text.includes('zeroamount') || text.includes('numeric')) {
-    return 'Please enter a valid numeric amount and price. Values cannot be 0, negative or text.'
-  }
-  if (text.includes('expired')) {
-    return 'This order is expired. It cannot be filled anymore; the maker can cancel it to refund the remaining balance.'
-  }
-  if (text.includes('filltoolarge') || text.includes('larger than the remaining')) {
-    return 'The amount is larger than the remaining order size. Please reduce the amount and try again.'
-  }
-  if (text.includes('notmaker')) {
-    return 'Only the maker of this order can edit, resize or cancel it.'
-  }
-  if (text.includes('wrongside')) {
-    return 'Wrong order side for this action. Please reload the market and try again.'
-  }
-  if (text.includes('slippage')) {
-    return 'Price protection stopped this transaction because the final amount changed. Reload and try again.'
-  }
-
-  return raw
+function shortAddr(address?: string) {
+  if (!address) return '—'
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 export function InriP2PClient() {
-  const [view, setView] = useState<P2PView>('market')
-  const [myOrderTab, setMyOrderTab] = useState<MyOrderTab>('active')
-  const [wallet, setWallet] = useState<ActiveWalletSnapshot>({ provider: null, providerReady: false, account: null, chainId: null, connector: '' })
-  const [stats, setStats] = useState<P2PStats | null>(null)
-  const [orders, setOrders] = useState<P2POrder[]>([])
-  const [events, setEvents] = useState<P2PEventItem[]>([])
-  const [inriBalance, setInriBalance] = useState<bigint>(0n)
-  const [iusdBalance, setIusdBalance] = useState<bigint>(0n)
-  const [allowance, setAllowance] = useState<bigint>(0n)
-  const [locked, setLocked] = useState<P2PLockedBalances>({ lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 })
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [busyAction, setBusyAction] = useState<BusyAction>(null)
-  const [toast, setToast] = useState<Toast | null>(null)
-  const [query, setQuery] = useState('')
-  const [sideFilter, setSideFilter] = useState<SideFilter>('all')
-
-  const [createSide, setCreateSide] = useState<'sell' | 'buy'>('sell')
-  const [createInriAmount, setCreateInriAmount] = useState('')
-  const [createPrice, setCreatePrice] = useState('')
-  const [createDeadlineMinutes, setCreateDeadlineMinutes] = useState('0')
-
-  const [fillAmounts, setFillAmounts] = useState<DraftMap>({})
-  const [resizeAmounts, setResizeAmounts] = useState<DraftMap>({})
-  const [editDrafts, setEditDrafts] = useState<Record<number, EditDraft>>({})
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [copied, setCopied] = useState('')
-  const [gasPrice, setGasPrice] = useState<bigint>(0n)
-  const [showSecurityNotice, setShowSecurityNotice] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState<P2PNotification[]>([])
-  const [unreadNotifications, setUnreadNotifications] = useState(0)
-  const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([])
-  const notifiedEventKeysRef = useRef<Set<string>>(new Set())
-  const notificationReadyRef = useRef(false)
-
-  const account = wallet.account || ''
-  const networkReady = isInriChain(wallet.chainId || '')
-  const providerReady = Boolean(wallet.providerReady && wallet.provider)
-
-  const gasCostLabel = useCallback((fallbackGas: bigint) => {
-    const price = gasPrice > 0n ? gasPrice : DEFAULT_GAS_PRICE_WEI
-    const bufferedGas = (fallbackGas * 125n) / 100n + 25_000n
-    return `~${formatInri(bufferedGas * price, 6)} INRI`
-  }, [gasPrice])
-
-  const createPreview = useMemo(() => {
-    try {
-      const inri = parseInriAmount(createInriAmount)
-      const price = parsePrice(createPrice)
-      const gross = quoteIusdGrossLocal(inri, price)
-      const fee = feeOfLocal(gross, stats?.feeBps || 0)
-      return { inri, price, gross, fee, net: gross - fee }
-    } catch {
-      return { inri: 0n, price: 0n, gross: 0n, fee: 0n, net: 0n }
-    }
-  }, [createInriAmount, createPrice, stats?.feeBps])
-
-  const showToast = useCallback((message: string, tone: ToastTone = 'info', txHash?: string) => {
-    setToast({ message, tone, txHash })
-    window.setTimeout(() => setToast((current) => (current?.message === message ? null : current)), 9000)
-  }, [])
-
-  const syncWallet = useCallback(async (switchNetwork = false) => {
-    const snap = await readActiveWalletSnapshot()
-    if (switchNetwork && snap.provider) {
-      const nextChainId = await switchProviderToInri(snap.provider)
-      const switched = { ...snap, chainId: nextChainId || INRI_CHAIN_ID_HEX }
-      setWallet(switched)
-      return switched
-    }
-    setWallet(snap)
-    return snap
-  }, [])
-
-  const refreshData = useCallback(async (nextPage = page) => {
-    setLoading(true)
-    try {
-      const snap = await readActiveWalletSnapshot()
-      setWallet(snap)
-      const maker = view === 'mine' && snap.account ? snap.account : undefined
-      const status = view === 'mine' ? myOrderTab : undefined
-      const [nextStats, orderPage, nextEvents, nextInri, nextIusd, nextAllowance, nextLocked, nextGasPrice] = await Promise.all([
-        loadP2PStats(),
-        loadRecentP2POrders({ limit: ORDER_PAGE_LIMIT, page: nextPage, activeOnly: view === 'market', maker, status }),
-        loadP2PEvents(36),
-        snap.account ? getInriBalance(snap.account) : Promise.resolve(0n),
-        snap.account ? getIusdBalance(snap.account) : Promise.resolve(0n),
-        snap.account ? getIusdAllowance(snap.account) : Promise.resolve(0n),
-        snap.account ? loadP2PLockedBalances(snap.account) : Promise.resolve({ lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 }),
-        getLegacyGasPrice().catch(() => 0n),
-      ])
-      setStats(nextStats)
-      setOrders(orderPage.items)
-      setEvents(nextEvents)
-      setInriBalance(nextInri)
-      setIusdBalance(nextIusd)
-      setAllowance(nextAllowance)
-      setLocked(nextLocked)
-      setHasMore(orderPage.hasMore)
-      setGasPrice(nextGasPrice)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Unable to load P2P market'), 'error')
-    } finally {
-      setLoading(false)
-    }
-  }, [myOrderTab, page, showToast, view])
+  const hostRef = useRef<HTMLDivElement | null>(null)
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [error, setError] = useState<string>('')
+  const [syncing, setSyncing] = useState(false)
+  const autoSyncRef = useRef(false)
 
   useEffect(() => {
-    void refreshData(page)
-    const interval = window.setInterval(() => void refreshData(page), 25000)
-    return () => window.clearInterval(interval)
-  }, [page, refreshData])
+    let cancelled = false
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.localStorage.getItem(SECURITY_NOTICE_KEY) !== 'ok') setShowSecurityNotice(true)
+    window.__INRI_P2P_SYNC__ = null
+    window.__INRI_P2P_REFRESH__ = null
+
+    async function mountP2P() {
+      try {
+        setStatus('loading')
+        setError('')
+
+        const res = await fetch(`${htmlUrl}?t=${Date.now()}`, { cache: 'no-store' })
+        if (!res.ok) {
+          throw new Error(`Could not load P2P runtime (${res.status}).`)
+        }
+
+        const html = await res.text()
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(html, 'text/html')
+
+        const styleText = Array.from(doc.querySelectorAll('style'))
+          .map((node) => node.textContent ?? '')
+          .join('\n\n')
+
+        const body = doc.body.cloneNode(true) as HTMLBodyElement
+        const inlineScripts = Array.from(body.querySelectorAll('script'))
+          .map((node) => node.textContent ?? '')
+          .join('\n\n')
+        body.querySelectorAll('script').forEach((node) => node.remove())
+
+        body.querySelector('.p2pHero')?.remove()
+        body.querySelector('.top .brand')?.remove()
+        const backBtn = body.querySelector('.top a.btn.btn-ghost')
+        backBtn?.remove()
+
+        const wrap = body.querySelector('.wrap') as HTMLElement | null
+        if (wrap) {
+          wrap.classList.add('integrated-wrap')
+        }
+
+        try {
+          window.__INRI_WALLETCONNECT_PROVIDER__ = await getWalletConnectProvider()
+          await getWalletConnectState()
+        } catch {
+          // no-op
+        }
+
+        const host = hostRef.current
+        if (!host || cancelled) return
+
+        const root = host.shadowRoot ?? host.attachShadow({ mode: 'open' })
+        root.innerHTML = `\n          <style>${patchStyle(styleText)}</style>\n          ${body.innerHTML}\n        `
+
+        await ensureEthers()
+        if (cancelled) return
+
+        const runtime = patchScript(inlineScripts)
+        // eslint-disable-next-line no-new-func
+        const run = new Function('__root', runtime)
+        run(root)
+
+        if (!cancelled) {
+          setStatus('ready')
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setStatus('error')
+          setError(err instanceof Error ? err.message : 'Failed to load the P2P application.')
+        }
+      }
+    }
+
+    mountP2P()
+
+    return () => {
+      cancelled = true
+      if (hostRef.current?.shadowRoot) {
+        hostRef.current.shadowRoot.innerHTML = ''
+      }
+      window.__INRI_P2P_SYNC__ = null
+      window.__INRI_P2P_REFRESH__ = null
+    }
   }, [])
 
   useEffect(() => {
-    setSelectedOrderIds([])
-    notificationReadyRef.current = false
-    notifiedEventKeysRef.current.clear()
-    setNotifications([])
-    setUnreadNotifications(0)
-  }, [account, myOrderTab, view])
+    if (status !== 'ready' || autoSyncRef.current) return
+    const active = getActiveWalletState()
+    if (!active?.address) return
+    autoSyncRef.current = true
+    const t = window.setTimeout(() => {
+      void syncWallet(true)
+    }, 350)
+    return () => window.clearTimeout(t)
+  }, [status])
 
-  useEffect(() => {
-    if (!account) return
-    const accountLower = account.toLowerCase()
-    const relatedFills = events.filter((event) => event.kind === 'filled' && (
-      event.maker?.toLowerCase() === accountLower || event.taker?.toLowerCase() === accountLower
-    ))
+  const syncWallet = async (silent = false) => {
+    const root = hostRef.current?.shadowRoot ?? null
+    const active = getActiveWalletState()
 
-    if (!notificationReadyRef.current) {
-      relatedFills.forEach((event) => notifiedEventKeysRef.current.add(`${event.txHash}-${event.orderId}-${event.blockNumber}`))
-      notificationReadyRef.current = true
-      return
-    }
-
-    const fresh: P2PNotification[] = []
-    for (const event of relatedFills) {
-      const key = `${event.txHash}-${event.orderId}-${event.blockNumber}`
-      if (notifiedEventKeysRef.current.has(key)) continue
-      notifiedEventKeysRef.current.add(key)
-      const isMaker = event.maker?.toLowerCase() === accountLower
-      fresh.push({
-        id: key,
-        title: `Order #${event.orderId} executed`,
-        body: isMaker
-          ? `Your maker order was filled for ${event.inri || '—'} INRI. Gross: ${event.iusd || '—'} iUSD. Fee: ${event.fee || '—'} iUSD.`
-          : `You filled order #${event.orderId}. INRI: ${event.inri || '—'} · iUSD: ${event.iusd || '—'} · Fee: ${event.fee || '—'}.`,
-        txHash: event.txHash,
-        timestamp: event.timestamp || Math.floor(Date.now() / 1000),
-      })
-    }
-
-    if (fresh.length) {
-      setNotifications((previous) => [...fresh, ...previous].slice(0, 24))
-      setUnreadNotifications((previous) => previous + fresh.length)
-      showToast(`${fresh.length} P2P execution notification${fresh.length > 1 ? 's' : ''}.`, 'success', fresh[0].txHash)
-    }
-  }, [account, events, showToast])
-
-
-  const filteredOrders = useMemo(() => {
-    const needle = query.trim().toLowerCase()
-    return orders
-      .filter((order) => sideFilter === 'all' || order.side === sideFilter)
-      .filter((order) => {
-        if (!needle) return true
-        return (
-          String(order.id).includes(needle) ||
-          order.maker.toLowerCase().includes(needle) ||
-          order.priceDisplay.toLowerCase().includes(needle) ||
-          order.statusLabel.toLowerCase().includes(needle)
-        )
-      })
-  }, [orders, query, sideFilter])
-
-  const myActiveVisibleOrders = useMemo(() => filteredOrders.filter((order) => (
-    account && order.maker.toLowerCase() === account.toLowerCase() && order.active
-  )), [account, filteredOrders])
-
-  const selectedCancelableOrders = useMemo(() => myActiveVisibleOrders.filter((order) => selectedOrderIds.includes(order.id)), [myActiveVisibleOrders, selectedOrderIds])
-
-  const allVisibleSelected = myActiveVisibleOrders.length > 0 && myActiveVisibleOrders.every((order) => selectedOrderIds.includes(order.id))
-
-  const ensureWriteReady = useCallback(async () => {
-    let snap = await syncWallet(false)
-    const provider = snap.provider || getActiveWalletProvider()
-    if (!provider) throw new Error('Connect wallet in the top header first.')
-
-    if (!snap.account) {
-      const accounts = (await requestFromActiveWallet(provider, 'eth_requestAccounts')) as string[]
-      snap = await readActiveWalletSnapshot()
-      snap = { ...snap, account: accounts?.[0] || snap.account }
-      setWallet(snap)
-    }
-
-    if (!snap.account) throw new Error('Wallet connected, but no account was returned.')
-    const account = snap.account
-
-    if (!isInriChain(snap.chainId || '')) {
-      const nextChainId = await switchProviderToInri(provider)
-      snap = { ...snap, chainId: nextChainId || INRI_CHAIN_ID_HEX }
-      setWallet(snap)
-    }
-
-    return { provider, account }
-  }, [syncWallet])
-
-  const waitForReceipt = useCallback(async (hash: string) => {
-    for (let attempt = 0; attempt < 90; attempt += 1) {
-      const receipt = (await rpcCall('eth_getTransactionReceipt', [hash]).catch(() => null)) as { status?: string } | null
-      if (receipt?.status === '0x1') return receipt
-      if (receipt?.status === '0x0') throw new Error('Transaction reverted on INRI CHAIN. Check the explorer details.')
-      await new Promise((resolve) => window.setTimeout(resolve, 2500))
-    }
-    return null
-  }, [])
-
-  const sendContractTx = useCallback(async (
-    target: TxTarget,
-    functionName: string,
-    args: readonly unknown[] = [],
-    value = 0n,
-    fallbackGas = 520000n,
-  ) => {
-    const { provider, account } = await ensureWriteReady()
-    const from = account
-    const isToken = target === 'iusd'
-    const to = isToken ? P2P_IUSD_ADDRESS : P2P_MARKET_ADDRESS
-    const data = isToken
-      ? iusdInterface.encodeFunctionData(functionName, args)
-      : p2pInterface.encodeFunctionData(functionName, args)
-
-    const baseTx: Record<string, unknown> = {
-      from,
-      to,
-      data,
-      ...(value > 0n ? { value: toHex(value) } : {}),
-    }
-
-    const [gasLimit, gasPrice] = await Promise.all([
-      estimateGasWithFallback(baseTx, fallbackGas),
-      getLegacyGasPrice(),
-    ])
-
-    const requiredNative = value + gasLimit * gasPrice
-    const nativeBalance = await getInriBalance(from).catch(() => null)
-    if (nativeBalance !== null && nativeBalance < requiredNative) {
-      throw new Error(`Insufficient INRI balance for this transaction plus network gas. Required about ${formatInri(requiredNative, 6)} INRI; available ${formatInri(nativeBalance, 6)} INRI.`)
-    }
-
-    const tx = {
-      ...baseTx,
-      gas: toHex(gasLimit),
-      gasPrice: toHex(gasPrice),
-      type: '0x0',
-    }
-
-    const hash = normalizeHash(await requestFromActiveWallet(provider as EthereumProvider, 'eth_sendTransaction', [tx]))
-    if (!hash) throw new Error('Wallet did not return a transaction hash.')
-    setToast({ message: 'Transaction sent. Waiting for confirmation...', tone: 'info', txHash: hash })
-    await waitForReceipt(hash)
-    return hash
-  }, [ensureWriteReady, waitForReceipt])
-
-  const approveIusd = useCallback(async (amount: bigint, label = 'Approve iUSD') => {
-    if (amount <= 0n) throw new Error('Invalid approval amount.')
-    setBusyAction(label)
     try {
-      const ok = confirmAction(`Approve ${formatIusd(amount)} iUSD for the P2P escrow contract?\n\nThis only gives allowance to the P2P contract. It does not create or fill an order by itself.`)
-      if (!ok) return
-      const hash = await sendContractTx('iusd', 'approve', [P2P_MARKET_ADDRESS, amount], 0n, 120000n)
-      showToast('iUSD approval confirmed.', 'success', hash)
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Approval failed'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [page, refreshData, sendContractTx, showToast])
+      setSyncing(true)
 
-  const createOrder = useCallback(async () => {
-    setBusyAction('create')
-    try {
-      const inriAmount = parseInriAmount(createInriAmount)
-      const priceRaw = parsePrice(createPrice)
-      if (inriAmount <= 0n || priceRaw <= 0n) throw new Error('Incorrect Price Format: please enter a valid numeric amount and price. Values cannot be 0 or negative.')
-
-      const minutesRaw = Number(createDeadlineMinutes || 0)
-      if (!Number.isFinite(minutesRaw) || minutesRaw < 0) throw new Error('Improper validity period: use 0 for no deadline or a positive number of minutes.')
-      const minutes = Math.max(0, minutesRaw)
-      const deadline = minutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(minutes * 60) : 0
-      const gross = quoteIusdGrossLocal(inriAmount, priceRaw)
-      const fee = feeOfLocal(gross, stats?.feeBps || 0)
-      const net = gross - fee
-
-      if (createSide === 'sell') {
-        if (inriBalance < inriAmount) throw new Error('Insufficient Balance: INRI balance is insufficient. Please replenish your balance before placing the order.')
+      if (!silent) {
+        setShadowText(root, 'syncInfo', active?.address ? `Connecting top header wallet: ${shortAddr(active.address)}` : 'Connecting top header wallet...')
       }
 
-      if (createSide === 'buy') {
-        if (gross <= 0n) throw new Error('The buy order iUSD amount is too small.')
-        if (iusdBalance < gross) throw new Error('Insufficient Balance: iUSD balance is insufficient. Please replenish your balance before placing the order.')
-        if (allowance < gross) throw new Error('Approve iUSD for the P2P contract before creating this buy order.')
+      let synced = false
+      try {
+        synced = Boolean(await window.__INRI_P2P_SYNC__?.())
+      } catch {
+        synced = false
       }
 
-      const priceWarning = buildPriceWarning(priceRaw, stats?.referencePriceRaw)
-      if (priceWarning && !confirmAction(priceWarning)) return
-
-      const ok = confirmAction(
-        createSide === 'sell'
-          ? `Confirm SELL order\n\nLock INRI: ${formatInri(inriAmount)}\nPrice per INRI: ${createPrice} iUSD\nIf fully filled, maker receives about ${formatIusd(net)} iUSD after ${formatIusd(fee)} iUSD fee.\nDeadline: ${deadline ? new Date(deadline * 1000).toLocaleString() : 'No deadline'}`
-          : `Confirm BUY order\n\nWant INRI: ${formatInri(inriAmount)}\nLock iUSD: ${formatIusd(gross)}\nPrice per INRI: ${createPrice} iUSD\nFee is charged only when fills happen, from filled amount.\nDeadline: ${deadline ? new Date(deadline * 1000).toLocaleString() : 'No deadline'}`,
-      )
-      if (!ok) return
-
-      const hash = createSide === 'sell'
-        ? await sendContractTx('market', 'createSellOrder', [priceRaw, deadline], inriAmount, 420000n)
-        : await sendContractTx('market', 'createBuyOrder', [inriAmount, priceRaw, deadline], 0n, 520000n)
-
-      showToast(`${createSide === 'sell' ? 'SELL' : 'BUY'} order created.`, 'success', hash)
-      setCreateInriAmount('')
-      setCreatePrice('')
-      setCreateDeadlineMinutes('0')
-      setView('mine')
-      setMyOrderTab('active')
-      setPage(1)
-      await refreshData(1)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Could not create order'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [allowance, createDeadlineMinutes, createInriAmount, createPrice, createSide, inriBalance, iusdBalance, refreshData, sendContractTx, showToast, stats?.feeBps, stats?.referencePriceRaw])
-
-  const fillOrder = useCallback(async (order: P2POrder) => {
-    const action = `fill-${order.id}`
-    setBusyAction(action)
-    try {
-      const amount = parseInriAmount(fillAmounts[order.id] || '')
-      if (amount <= 0n) throw new Error('Enter the INRI amount to fill.')
-      if (amount > order.remainingInri) throw new Error('Fill amount is larger than the remaining order size.')
-      const gross = quoteIusdGrossLocal(amount, order.priceRaw)
-      const fee = feeOfLocal(gross, stats?.feeBps || 0)
-      const net = gross - fee
-
-      const ok = confirmAction(
-        order.side === 'sell'
-          ? `Confirm fill SELL order #${order.id}\n\nYou receive: ${formatInri(amount)} INRI\nGross iUSD paid: ${formatIusd(gross)}\nTransaction fee: ${formatIusd(fee)} iUSD credited to treasury\nMaker receives net: ${formatIusd(net)} iUSD\n\nContinue?`
-          : `Confirm fill BUY order #${order.id}\n\nYou send: ${formatInri(amount)} INRI\nGross iUSD matched: ${formatIusd(gross)}\nTransaction fee: ${formatIusd(fee)} iUSD credited to treasury\nYou receive net: ${formatIusd(net)} iUSD\n\nContinue?`,
-      )
-      if (!ok) return
-
-      if (order.side === 'sell') {
-        if (iusdBalance < gross) throw new Error('Insufficient Balance: iUSD balance is insufficient for this fill.')
-        if (allowance < gross) throw new Error('Approve enough iUSD before buying INRI from this SELL order.')
-        const hash = await sendContractTx('market', 'fillSellOrder', [order.id, amount, gross], 0n, 620000n)
-        showToast(`Order #${order.id} filled.`, 'success', hash)
-      } else {
-        if (inriBalance < amount) throw new Error('Insufficient Balance: INRI balance is insufficient for this fill.')
-        const hash = await sendContractTx('market', 'fillBuyOrder', [order.id, amount, net], amount, 620000n)
-        showToast(`Order #${order.id} filled.`, 'success', hash)
+      if (!synced) {
+        const connectBtn = root?.getElementById('btnConnect') as HTMLButtonElement | null
+        connectBtn?.click()
       }
 
-      setFillAmounts((previous) => ({ ...previous, [order.id]: '' }))
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Fill failed'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [allowance, fillAmounts, inriBalance, iusdBalance, page, refreshData, sendContractTx, showToast, stats?.feeBps])
+      await new Promise((resolve) => window.setTimeout(resolve, 900))
+      try {
+        await window.__INRI_P2P_REFRESH__?.()
+      } catch {}
+      await new Promise((resolve) => window.setTimeout(resolve, 250))
 
-  const cancelOrder = useCallback(async (order: P2POrder) => {
-    const action = `cancel-${order.id}`
-    setBusyAction(action)
-    try {
-      const refund = order.side === 'sell'
-        ? `Remaining ${order.remainingInriDisplay} INRI will be refunded to your wallet.`
-        : `Remaining ${order.remainingIusdDisplay} iUSD will be refunded to your wallet.`
-      const ok = confirmAction(`Confirm cancel order #${order.id}?\n\n${refund}\nThis operation is irreversible; to trade again, create a new order.`)
-      if (!ok) return
-      const hash = await sendContractTx('market', 'cancelOrder', [order.id], 0n, 360000n)
-      showToast(`Order #${order.id} cancelled.`, 'success', hash)
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Cancel failed'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [page, refreshData, sendContractTx, showToast])
+      if (active?.address) {
+        setShadowText(root, 'meAddr', active.address)
+        setShadowText(root, 'netPill', active.chainId?.toLowerCase() === '0xec1' ? 'Network: INRI CHAIN' : 'Network: connected')
+        const btn = root?.getElementById('btnConnect') as HTMLButtonElement | null
+        if (btn) btn.textContent = shortAddr(active.address)
+      }
 
-  const startEdit = (order: P2POrder) => {
-    setEditingId(order.id)
-    const currentRemainingMinutes = order.deadline ? Math.max(0, Math.round((order.deadline - Math.floor(Date.now() / 1000)) / 60)) : 0
-    setEditDrafts((previous) => ({
-      ...previous,
-      [order.id]: {
-        price: order.priceDisplay.replace(/,/g, ''),
-        deadlineMinutes: String(currentRemainingMinutes),
-      },
-    }))
+      const meAddr = root?.getElementById('meAddr')?.textContent?.trim()
+      if (!meAddr || meAddr === '—') {
+        setShadowText(root, 'syncInfo', 'Top wallet detected, but the market did not bind yet. Click Use header wallet again.')
+      } else if (!silent) {
+        setShadowText(root, 'syncInfo', `Wallet synced from the top header: ${shortAddr(meAddr)}`)
+      }
+    } finally {
+      setSyncing(false)
+    }
   }
 
-  const saveEdit = useCallback(async (order: P2POrder) => {
-    const draft = editDrafts[order.id]
-    if (!draft) return
-    const action = `edit-${order.id}`
-    setBusyAction(action)
+  const refreshMarket = async () => {
     try {
-      const newPriceRaw = parsePrice(draft.price)
-      const newDeadlineMinutesRaw = Number(draft.deadlineMinutes || 0)
-      if (!Number.isFinite(newDeadlineMinutesRaw) || newDeadlineMinutesRaw < 0) throw new Error('Improper validity period: use 0 for no deadline or a positive number of minutes.')
-      const newDeadlineMinutes = Math.max(0, newDeadlineMinutesRaw)
-      const newDeadline = newDeadlineMinutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(newDeadlineMinutes * 60) : 0
-      const currentDeadlineText = order.deadline ? new Date(order.deadline * 1000).toLocaleString() : 'No deadline'
-      const newDeadlineText = newDeadline ? new Date(newDeadline * 1000).toLocaleString() : 'No deadline'
-
-      const priceWarning = buildPriceWarning(newPriceRaw, stats?.referencePriceRaw)
-      if (priceWarning && !confirmAction(priceWarning)) return
-
-      const ok = confirmAction(
-        `Confirm edit order #${order.id}\n\nCurrent order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${order.priceDisplay} iUSD per INRI\nDeadline: ${currentDeadlineText}\n\nModified order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${draft.price} iUSD per INRI\nDeadline: ${newDeadlineText}\n\nFor BUY orders, changing price may add or refund locked iUSD automatically.`,
-      )
-      if (!ok) return
-
-      const txHashes: string[] = []
-      if (newPriceRaw > 0n && newPriceRaw !== order.priceRaw) {
-        txHashes.push(await sendContractTx('market', 'updatePrice', [order.id, newPriceRaw], 0n, 520000n))
-      }
-
-      const oldMinutes = order.deadline ? Math.max(0, Math.round((order.deadline - Math.floor(Date.now() / 1000)) / 60)) : 0
-      if (Math.abs(newDeadlineMinutes - oldMinutes) > 1) {
-        txHashes.push(await sendContractTx('market', 'updateDeadline', [order.id, newDeadline], 0n, 260000n))
-      }
-
-      if (txHashes.length === 0) showToast('No edit changes detected.', 'warning')
-      else showToast(`Order #${order.id} updated.`, 'success', txHashes[txHashes.length - 1])
-      setEditingId(null)
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Edit failed'), 'error')
+      setSyncing(true)
+      await window.__INRI_P2P_REFRESH__?.()
     } finally {
-      setBusyAction(null)
+      setSyncing(false)
     }
-  }, [editDrafts, page, refreshData, sendContractTx, showToast, stats?.referencePriceRaw])
-
-  const resizeOrder = useCallback(async (order: P2POrder, direction: 'add' | 'remove') => {
-    const action = `resize-${direction}-${order.id}`
-    setBusyAction(action)
-    try {
-      const raw = resizeAmounts[order.id] || ''
-      if (!raw) throw new Error('Enter an amount first.')
-      let hash = ''
-
-      if (order.side === 'sell') {
-        const amount = parseInriAmount(raw)
-        if (amount <= 0n) throw new Error('Enter a valid INRI amount.')
-        const ok = confirmAction(
-          direction === 'add'
-            ? `Confirm add to SELL order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI\nAdd: ${formatInri(amount)} INRI\nNew estimated remaining: ${formatInri(order.remainingInri + amount)} INRI`
-            : `Confirm remove from SELL order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI\nRemove/refund: ${formatInri(amount)} INRI\nThis reduces the open order size.`,
-        )
-        if (!ok) return
-        hash = direction === 'add'
-          ? await sendContractTx('market', 'addInriToSellOrder', [order.id], amount, 360000n)
-          : await sendContractTx('market', 'removeInriFromSellOrder', [order.id, amount], 0n, 360000n)
-      } else if (direction === 'add') {
-        const amount = parseIusdAmount(raw)
-        if (amount <= 0n) throw new Error('Enter a valid iUSD amount.')
-        if (allowance < amount) throw new Error('Approve iUSD before adding size to this BUY order.')
-        const deltaInri = order.priceRaw > 0n ? (amount * 10n ** 18n) / order.priceRaw : 0n
-        const ok = confirmAction(
-          `Confirm add to BUY order #${order.id}\n\nCurrent locked iUSD: ${order.remainingIusdDisplay}\nAdd locked iUSD: ${formatIusd(amount)}\nEstimated extra INRI wanted: ${formatInri(deltaInri)}\nNew estimated remaining INRI: ${formatInri(order.remainingInri + deltaInri)}`,
-        )
-        if (!ok) return
-        hash = await sendContractTx('market', 'addIusdToBuyOrder', [order.id, amount], 0n, 420000n)
-      } else {
-        const amount = parseInriAmount(raw)
-        if (amount <= 0n) throw new Error('Enter a valid INRI amount.')
-        const refundIusd = quoteIusdGrossLocal(amount, order.priceRaw)
-        const ok = confirmAction(
-          `Confirm reduce BUY order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI wanted\nReduce: ${formatInri(amount)} INRI\nEstimated iUSD refund: ${formatIusd(refundIusd)}\nThis reduces the open order size.`,
-        )
-        if (!ok) return
-        hash = await sendContractTx('market', 'reduceBuyOrder', [order.id, amount], 0n, 420000n)
-      }
-
-      showToast(`Order #${order.id} resized.`, 'success', hash)
-      setResizeAmounts((previous) => ({ ...previous, [order.id]: '' }))
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Resize failed'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [allowance, page, refreshData, resizeAmounts, sendContractTx, showToast])
-
-
-
-  const toggleSelectOrder = useCallback((orderId: number) => {
-    setSelectedOrderIds((previous) => previous.includes(orderId)
-      ? previous.filter((id) => id !== orderId)
-      : [...previous, orderId])
-  }, [])
-
-  const toggleSelectAllVisible = useCallback(() => {
-    setSelectedOrderIds((previous) => {
-      const visibleIds = myActiveVisibleOrders.map((order) => order.id)
-      const allSelected = visibleIds.length > 0 && visibleIds.every((id) => previous.includes(id))
-      if (allSelected) return previous.filter((id) => !visibleIds.includes(id))
-      return Array.from(new Set([...previous, ...visibleIds]))
-    })
-  }, [myActiveVisibleOrders])
-
-  const batchCancelSelected = useCallback(async () => {
-    if (selectedCancelableOrders.length === 0) {
-      showToast('Select at least one active order to cancel.', 'warning')
-      return
-    }
-
-    setBusyAction('batch-cancel')
-    try {
-      const refundSummary = selectedCancelableOrders.map((order) => (
-        order.side === 'sell'
-          ? `#${order.id}: refund ${order.remainingInriDisplay} INRI`
-          : `#${order.id}: refund ${order.remainingIusdDisplay} iUSD`
-      )).join('\n')
-      const ok = confirmAction(`Confirm batch cancel ${selectedCancelableOrders.length} order(s)?\n\n${refundSummary}\n\nThis will request one wallet confirmation per order. Each cancel also pays a small INRI network gas fee.`)
-      if (!ok) return
-
-      let lastHash = ''
-      for (const order of selectedCancelableOrders) {
-        lastHash = await sendContractTx('market', 'cancelOrder', [order.id], 0n, 360000n)
-      }
-      showToast(`${selectedCancelableOrders.length} order(s) cancelled.`, 'success', lastHash)
-      setSelectedOrderIds([])
-      await refreshData(page)
-    } catch (cause) {
-      showToast(friendlyP2PErrorMessage(cause, 'Batch cancel failed'), 'error')
-    } finally {
-      setBusyAction(null)
-    }
-  }, [page, refreshData, selectedCancelableOrders, sendContractTx, showToast])
-
-  const copyValue = useCallback(async (value: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopied(label)
-      window.setTimeout(() => setCopied(''), 1600)
-    } catch {
-      showToast('Could not copy to clipboard.', 'warning')
-    }
-  }, [showToast])
-
-  const acknowledgeSecurityNotice = useCallback(() => {
-    if (typeof window !== 'undefined') window.localStorage.setItem(SECURITY_NOTICE_KEY, 'ok')
-    setShowSecurityNotice(false)
-  }, [])
-
-  const setMainView = (nextView: P2PView) => {
-    setView(nextView)
-    setPage(1)
-    setQuery('')
-    setSideFilter('all')
   }
-
-  const navButton = (key: P2PView, label: string, icon: ReactNode) => (
-    <button key={key} type="button" onClick={() => setMainView(key)} className={`${view === key ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-sm sm:w-auto font-black transition hover:border-cyan-300/35 hover:text-white`}>
-      {icon}{label}
-    </button>
-  )
-
-  const disconnectedNotice = !providerReady ? 'Connect wallet in the top header to trade.' : !networkReady ? 'Switch wallet to INRI CHAIN before trading.' : ''
 
   return (
-    <div className="grid gap-6">
-      {showSecurityNotice ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/72 p-4 backdrop-blur-sm">
-          <div className="max-w-2xl rounded-[1.6rem] border border-cyan-300/24 bg-[#06111f] p-5 shadow-[0_30px_120px_rgba(0,0,0,0.65)] sm:p-7">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/22 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100"><ShieldCheck className="h-4 w-4" /> Security check</div>
-            <h3 className="mt-4 text-2xl font-black text-white">Confirm the official INRI P2P market</h3>
-            <p className="mt-3 text-sm leading-7 text-white/60">Before trading, verify that your wallet is connected to <b className="text-white">INRI CHAIN</b> and that this page uses the official contracts below. Do not approve or sign transactions from unknown links.</p>
-            <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/24 p-4 text-xs font-semibold leading-6 text-white/58">
-              <div>Network: <b className="text-white">INRI CHAIN</b> · Chain ID <b className="text-white">3777</b></div>
-              <div className="break-all">P2P contract: <b className="text-white">{P2P_MARKET_ADDRESS}</b></div>
-              <div className="break-all">iUSD token: <b className="text-white">{P2P_IUSD_ADDRESS}</b></div>
-            </div>
-            <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
-              <button type="button" onClick={acknowledgeSecurityNotice} className={buttonBase(true)}>I verified the network and contracts</button>
-              <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> View P2P contract</a>
-              <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> View iUSD token</a>
-            </div>
-          </div>
+    <div className="rounded-[2rem] border border-primary/20 bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_26%),linear-gradient(180deg,#07111d_0%,#02060b_100%)] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-5 xl:p-6">
+      <div className="mb-5 flex flex-col gap-4 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm leading-7 text-white/68">
+          P2P uses only the wallet connected in the top header. Use the button below to bind that same wallet to the market.
         </div>
-      ) : null}
-      {toast ? (
-        <div className={`flex flex-col gap-3 rounded-[1.25rem] border p-4 text-sm font-semibold sm:flex-row sm:items-center sm:justify-between ${statusClass(toast.tone)}`}>
-          <span>{toast.message}</span>
-          {toast.txHash ? <a href={`${EXPLORER_TX_URL}${toast.txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-black underline"><ExternalLink className="h-4 w-4" /> View tx</a> : null}
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={() => void syncWallet()} disabled={syncing} className="inri-button-primary disabled:cursor-not-allowed disabled:opacity-60">{syncing ? 'Connecting...' : 'Use header wallet'}</button>
+          <button type="button" onClick={refreshMarket} disabled={syncing} className="inri-button-secondary disabled:cursor-not-allowed disabled:opacity-60">Refresh market</button>
         </div>
-      ) : null}
-
-      <Card>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/22 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100">
-              <ShieldCheck className="h-4 w-4" /> Official INRI P2P Escrow
-            </div>
-            <h2 className="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Market, orders and wallet balances</h2>
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-white/58">
-              Trade native INRI against iUSD with on-chain escrow. The P2P fee is charged only on filled amounts and is automatically credited to treasury.
-            </p>
-          </div>
-          <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
-            <div className="relative">
-              <button type="button" onClick={() => { setShowNotifications((current) => !current); setUnreadNotifications(0) }} className={buttonBase(false)}>
-                <Bell className="h-4 w-4" /> Alerts {unreadNotifications ? <span className="rounded-full bg-cyan-300 px-2 py-0.5 text-[10px] font-black text-black">{unreadNotifications}</span> : null}
-              </button>
-              {showNotifications ? (
-                <div className="absolute right-0 z-50 mt-2 w-[min(92vw,420px)] rounded-[1.25rem] border border-cyan-300/18 bg-[#06111f] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
-                  <div className="mb-2 text-sm font-black text-white">Execution notifications</div>
-                  {notifications.length === 0 ? <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold leading-6 text-white/50">No fills detected for this wallet during this page session yet.</div> : null}
-                  <div className="grid max-h-80 gap-2 overflow-auto">
-                    {notifications.map((item) => (
-                      <div key={item.id} className="rounded-2xl border border-white/10 bg-black/24 p-3 text-xs font-semibold leading-6 text-white/58">
-                        <div className="font-black text-white">{item.title}</div>
-                        <div>{item.body}</div>
-                        {item.txHash ? <a href={`${EXPLORER_TX_URL}${item.txHash}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 font-black text-cyan-100 underline"><ExternalLink className="h-3.5 w-3.5" /> View tx</a> : null}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload
-            </button>
-            <button type="button" onClick={() => void syncWallet(true)} className={buttonBase(!networkReady && providerReady)}>
-              <Wallet className="h-4 w-4" /> {account ? shortAddress(account, 5) : 'Connect header wallet'}
-            </button>
-          </div>
-        </div>
-
-        {disconnectedNotice ? (
-          <div className="mt-5 flex gap-3 rounded-[1.15rem] border border-amber-300/20 bg-amber-300/10 p-4 text-sm font-semibold leading-6 text-amber-50">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-            <span>{disconnectedNotice}</span>
-          </div>
-        ) : null}
-
-        <div className="mt-5 grid gap-3 rounded-[1.2rem] border border-cyan-300/18 bg-cyan-300/[0.055] p-4 text-xs font-semibold leading-6 text-cyan-50/78 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-sm font-black text-white"><ShieldCheck className="h-4 w-4 text-cyan-200" /> Network and contract verification</div>
-            <div>Use only <b className="text-white">INRI CHAIN</b> (chain ID 3777). P2P contract: <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className="break-all font-black text-white underline">{P2P_MARKET_ADDRESS}</a>. iUSD token: <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className="break-all font-black text-white underline">{P2P_IUSD_ADDRESS}</a>.</div>
-          </div>
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-sm font-black text-white"><Info className="h-4 w-4 text-cyan-200" /> Gas and permissions</div>
-            <div>Creating, filling, approving, editing, cancelling and resizing are on-chain actions and require INRI gas. Estimated cancel gas now: <b className="text-white">{gasCostLabel(360000n)}</b>. iUSD approval only authorizes the official P2P contract.</div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard icon={<Store className="h-5 w-5" />} label="Orders" value={`${stats?.activeOrders ?? 0} active / ${stats?.totalOrders ?? 0} total`} sub={`${stats?.historicalOrders ?? 0} historical filled/cancelled/expired records`} />
-          <StatCard icon={<BadgeCheck className="h-5 w-5" />} label="Fee" value={`${stats?.feePercentLabel ?? '0.00%'} on fills`} sub="Credited to treasury. Not charged for creating, editing or cancelling orders.">
-            <div className="text-xs font-semibold leading-5 text-white/48">Treasury: <span className="font-black text-white/70">{shortAddress(stats?.treasury, 6)}</span></div>
-          </StatCard>
-          <StatCard icon={<BarChart3 className="h-5 w-5" />} label="Reference price" value={`${stats?.referencePriceDisplay ?? '—'} iUSD`} sub={stats?.referenceSource || 'Median active order price'} />
-          <StatCard icon={<Wallet className="h-5 w-5" />} label="Balance" value="Available / Locked">
-            <div className="grid gap-2 text-xs font-semibold leading-5 text-white/60">
-              <div>INRI: <b className="text-white">Available {formatInri(inriBalance)}</b> · Locked in sell orders <b className="text-white">{formatInri(locked.lockedInri)}</b></div>
-              <div>iUSD: <b className="text-white">Available {formatIusd(iusdBalance)}</b> · Locked in buy orders <b className="text-white">{formatIusd(locked.lockedIusd)}</b></div>
-            </div>
-          </StatCard>
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        {navButton('market', 'Market', <Store className="h-4 w-4" />)}
-        {navButton('create', 'Create order', <Plus className="h-4 w-4" />)}
-        {navButton('mine', 'My Orders', <Wallet className="h-4 w-4" />)}
-        {navButton('activity', 'Activity', <Activity className="h-4 w-4" />)}
       </div>
-
-      {view === 'create' ? (
-        <Card>
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">Create order</div>
-              <h3 className="mt-2 text-2xl font-black text-white">Open a BUY or SELL position</h3>
-              <p className="mt-2 text-sm leading-7 text-white/54">SELL locks native INRI. BUY locks iUSD. Funds stay in the P2P escrow until filled, cancelled or resized.</p>
-
-              <div className="mt-5 grid gap-4">
-                <Field label="Order side">
-                  <select className={selectClass()} value={createSide} onChange={(event) => setCreateSide(event.target.value as 'sell' | 'buy')}>
-                    <option value="sell">SELL INRI for iUSD</option>
-                    <option value="buy">BUY INRI with iUSD</option>
-                  </select>
-                </Field>
-                <Field label={createSide === 'sell' ? 'INRI amount to sell' : 'INRI amount wanted'} hint={createSide === 'sell' ? 'This INRI amount will be locked in the escrow order.' : 'The matching iUSD amount will be locked in the escrow order.'}>
-                  <input className={inputClass()} value={createInriAmount} onChange={(event) => setCreateInriAmount(event.target.value)} placeholder="0.00" inputMode="decimal" />
-                </Field>
-                <Field label="Price per INRI" hint="Example: 0.019 means 1 INRI = 0.019 iUSD.">
-                  <input className={inputClass()} value={createPrice} onChange={(event) => setCreatePrice(event.target.value)} placeholder="0.019" inputMode="decimal" />
-                </Field>
-                <Field label="Deadline in minutes" hint="Use 0 for no deadline. Expired orders stop filling and maker can cancel/refund.">
-                  <input className={inputClass()} value={createDeadlineMinutes} onChange={(event) => setCreateDeadlineMinutes(event.target.value)} placeholder="0" inputMode="numeric" />
-                </Field>
-              </div>
-            </div>
-
-            <div className="rounded-[1.35rem] border border-cyan-300/14 bg-cyan-300/[0.055] p-5">
-              <div className="flex items-center gap-2 text-sm font-black text-cyan-100"><Info className="h-4 w-4" /> Preview before submit</div>
-              <div className="mt-4 grid gap-3 text-sm font-semibold text-white/62">
-                <div className="flex justify-between gap-3"><span>INRI amount</span><b className="text-white">{formatInri(createPreview.inri)} INRI</b></div>
-                <div className="flex justify-between gap-3"><span>Gross iUSD value</span><b className="text-white">{formatIusd(createPreview.gross)} iUSD</b></div>
-                <div className="flex justify-between gap-3"><span>Estimated fee on full fill</span><b className="text-white">{formatIusd(createPreview.fee)} iUSD</b></div>
-                <div className="flex justify-between gap-3"><span>Estimated net iUSD</span><b className="text-white">{formatIusd(createPreview.net)} iUSD</b></div>
-                <div className="flex justify-between gap-3"><span>Estimated create gas</span><b className="text-white">{gasCostLabel(createSide === 'sell' ? 420000n : 520000n)}</b></div>
-                <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs leading-6 text-white/50">Fee is not paid when creating the order. It is applied only to filled order amounts. Wallet will still charge a small INRI gas fee for the on-chain transaction.</div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {createSide === 'buy' && createPreview.gross > 0n && allowance < createPreview.gross ? (
-                  <button type="button" onClick={() => void approveIusd(createPreview.gross, 'approve-create')} disabled={busyAction !== null} className={buttonBase(false)}>
-                    <BadgeCheck className="h-4 w-4" /> Approve iUSD
-                  </button>
-                ) : null}
-                <button type="button" onClick={() => void createOrder()} disabled={busyAction !== null || !providerReady} className={buttonBase(true)}>
-                  {busyAction === 'create' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Create order
-                </button>
-              </div>
-            </div>
-          </div>
-        </Card>
-      ) : null}
-
-      {(view === 'market' || view === 'mine') ? (
-        <Card>
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">{view === 'market' ? 'Open orders' : 'My order history'}</div>
-              <h3 className="mt-2 text-2xl font-black text-white">{view === 'market' ? 'Available P2P orders' : 'Active, filled and cancelled orders'}</h3>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-white/54">
-                Reference price: <b className="text-white">{stats?.referencePriceDisplay ?? '—'} iUSD</b> · {stats?.referenceSource || 'No reference yet'}. Deadlines expire open orders and stop new fills.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-              <div className="relative min-w-[240px]">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/32" />
-                <input className={`${inputClass()} pl-11`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search id, maker, price..." />
-              </div>
-              <select className={selectClass()} value={sideFilter} onChange={(event) => setSideFilter(event.target.value as SideFilter)}>
-                <option value="all">All sides</option>
-                <option value="sell">SELL orders</option>
-                <option value="buy">BUY orders</option>
-              </select>
-            </div>
-          </div>
-
-          {view === 'mine' ? (
-            <div className="mt-5 grid gap-3">
-              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
-                {(['active', 'filled', 'cancelled'] as const).map((tab) => (
-                  <button key={tab} type="button" onClick={() => { setMyOrderTab(tab); setPage(1) }} className={`${myOrderTab === tab ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} rounded-2xl border px-3 py-2 text-sm font-black capitalize transition hover:border-cyan-300/35 hover:text-white sm:px-4`}>
-                    {tab}
-                  </button>
-                ))}
-              </div>
-              {myOrderTab === 'active' && myActiveVisibleOrders.length > 0 ? (
-                <div className="grid gap-3 rounded-[1.15rem] border border-amber-300/16 bg-amber-300/[0.045] p-3 text-xs font-semibold leading-6 text-white/58 lg:grid-cols-[1fr_auto]">
-                  <label className="flex items-center gap-3">
-                    <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} className="h-4 w-4 accent-cyan-300" />
-                    <span>Batch management: select active visible orders. Cancelling selected orders requests one wallet confirmation per order and refunds remaining locked funds.</span>
-                  </label>
-                  <button type="button" onClick={() => void batchCancelSelected()} disabled={busyAction !== null || selectedCancelableOrders.length === 0} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-red-300/24 bg-red-400/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-400/14 disabled:cursor-not-allowed disabled:opacity-50">
-                    {busyAction === 'batch-cancel' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />} Cancel selected ({selectedCancelableOrders.length})
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-black/18 p-4 text-xs font-semibold leading-6 text-white/52">
-            <b className="text-white">How to read cards:</b> SELL orders lock INRI and takers pay iUSD to receive INRI. BUY orders lock iUSD and takers send INRI to receive iUSD. The estimate panel shows gross amount, fee and net amount before you fill.
-          </div>
-
-          <div className="mt-5 grid gap-4">
-            {filteredOrders.length === 0 ? <EmptyState title="No matching orders" body={view === 'market' ? 'No active open orders matched the current filters.' : 'No orders were found in this tab for your wallet.'} /> : null}
-
-            {filteredOrders.map((order) => {
-              const isMaker = account && order.maker.toLowerCase() === account.toLowerCase()
-              const amountText = fillAmounts[order.id] || ''
-              let fillAmount = 0n
-              try { fillAmount = parseInriAmount(amountText) } catch { fillAmount = 0n }
-              const fillGross = fillAmount > 0n ? quoteIusdGrossLocal(fillAmount, order.priceRaw) : 0n
-              const fillFee = feeOfLocal(fillGross, stats?.feeBps || 0)
-              const fillNet = fillGross - fillFee
-              const draft = editDrafts[order.id] || { price: order.priceDisplay.replace(/,/g, ''), deadlineMinutes: '0' }
-              const priceDiff = stats?.referencePriceRaw ? percentVsReference(order.priceRaw, stats.referencePriceRaw) : '—'
-
-              return (
-                <div key={order.id} className="rounded-[1.45rem] border border-white/10 bg-black/22 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`${order.side === 'sell' ? 'border-emerald-300/28 bg-emerald-400/10 text-emerald-100' : 'border-cyan-300/28 bg-cyan-300/10 text-cyan-100'} rounded-full border px-3 py-1.5 text-xs font-black`}>{order.side === 'sell' ? 'SELL INRI' : 'BUY INRI'}</span>
-                        <span className="rounded-full border border-white/12 bg-white/[0.045] px-3 py-1.5 text-xs font-black text-white/72">#{order.id}</span>
-                        <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${statusClass(orderStatusTone(order))}`}>{order.statusLabel}</span>
-                        {view === 'mine' && isMaker && order.active ? (
-                          <label className="inline-flex items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100">
-                            <input type="checkbox" checked={selectedOrderIds.includes(order.id)} onChange={() => toggleSelectOrder(order.id)} className="h-3.5 w-3.5 accent-cyan-300" /> Select
-                          </label>
-                        ) : null}
-                      </div>
-                      <div className="mt-3 text-2xl font-black text-white">{order.priceDisplay} iUSD <span className="text-sm font-semibold text-white/45">per INRI</span></div>
-                      <div className="mt-1 text-xs font-semibold text-white/42">{priceDiff}</div>
-                    </div>
-                    <div className="grid gap-2 text-xs font-semibold text-white/48 xl:text-right">
-                      <button type="button" onClick={() => void copyValue(String(order.id), `order-${order.id}`)} className="inline-flex items-center gap-2 hover:text-white"><Copy className="h-3.5 w-3.5" /> {copied === `order-${order.id}` ? 'Copied order id' : 'Copy order id'}</button>
-                      <div>Maker: <button type="button" onClick={() => void copyValue(order.maker, `maker-${order.id}`)} className="font-black text-white/70 hover:text-white">{shortAddress(order.maker, 6)}</button></div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Remaining INRI to {order.side === 'sell' ? 'sell' : 'buy'}</div>
-                      <div className="mt-1 text-lg font-black text-white">{order.remainingInriDisplay}</div>
-                      <div className="mt-1 text-xs font-semibold text-white/42">Original size: {order.initialInriDisplay} INRI</div>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">{order.side === 'sell' ? 'Locked INRI' : 'Locked iUSD'}</div>
-                      <div className="mt-1 text-lg font-black text-white">{order.side === 'sell' ? order.remainingInriDisplay : order.remainingIusdDisplay}</div>
-                      <div className="mt-1 text-xs font-semibold text-white/42">{order.lockedLabel}</div>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Order expires</div>
-                      <div className="mt-1 text-lg font-black text-white">{deadlineLabel(order.deadline)}</div>
-                      <div className="mt-1 text-xs font-semibold text-white/42">{fullDeadlineLabel(order.deadline)}</div>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Fill progress</div>
-                      <div className="mt-1 text-lg font-black text-white">{order.progressPercent.toFixed(2)}%</div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-cyan-300" style={{ width: `${order.progressPercent}%` }} /></div>
-                    </div>
-                  </div>
-
-                  {order.active && view === 'market' ? (
-                    <div className="mt-4 rounded-[1.25rem] border border-cyan-300/14 bg-cyan-300/[0.045] p-4">
-                      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_auto] lg:items-end">
-                        <Field label={order.side === 'sell' ? 'INRI to buy' : 'INRI to sell'} hint={order.side === 'sell' ? 'You pay iUSD and receive native INRI.' : 'You send native INRI and receive iUSD net after fee.'}>
-                          <input className={inputClass()} value={amountText} onChange={(event) => setFillAmounts((previous) => ({ ...previous, [order.id]: event.target.value }))} placeholder="Amount" inputMode="decimal" />
-                        </Field>
-                        <div className="flex flex-wrap gap-2">
-                          {order.side === 'sell' && fillGross > 0n && allowance < fillGross ? (
-                            <button type="button" onClick={() => void approveIusd(fillGross, `approve-fill-${order.id}`)} disabled={busyAction !== null} className={buttonBase(false)}>
-                              <BadgeCheck className="h-4 w-4" /> Approve iUSD
-                            </button>
-                          ) : null}
-                          <button type="button" onClick={() => void fillOrder(order)} disabled={busyAction !== null || !providerReady} className={buttonBase(true)}>
-                            {busyAction === `fill-${order.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowDownUp className="h-4 w-4" />}
-                            Fill
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold text-white/56 sm:grid-cols-2 xl:grid-cols-4">
-                        <span>Gross amount: <b className="text-white">{formatIusd(fillGross)} iUSD</b></span>
-                        <span>Fee: <b className="text-white">{formatIusd(fillFee)} iUSD</b></span>
-                        <span>{order.side === 'sell' ? 'Net maker receives' : 'Net you receive'}: <b className="text-white">{formatIusd(fillNet)} iUSD</b></span>
-                        <span>Estimated fill gas: <b className="text-white">{gasCostLabel(620000n)}</b></span>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {isMaker && order.active ? (
-                    <div className="mt-4 grid gap-3 rounded-[1.25rem] border border-amber-300/14 bg-amber-300/[0.045] p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-black text-white">Manage order</div>
-                          <div className="text-xs font-semibold text-white/45">Edit, add, remove or cancel. Every operation shows a confirmation preview before wallet signing and uses INRI gas.</div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => startEdit(order)} className={buttonBase(false)} disabled={busyAction !== null}>
-                            <Edit3 className="h-4 w-4" /> Edit
-                          </button>
-                          <button type="button" onClick={() => void cancelOrder(order)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-red-300/24 bg-red-400/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-400/14 disabled:cursor-not-allowed disabled:opacity-50" disabled={busyAction !== null}>
-                            {busyAction === `cancel-${order.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />} Cancel
-                          </button>
-                        </div>
-                      </div>
-
-                      {editingId === order.id ? (
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <Field label="New price iUSD / INRI">
-                            <input className={inputClass()} value={draft.price} onChange={(event) => setEditDrafts((previous) => ({ ...previous, [order.id]: { ...draft, price: event.target.value } }))} inputMode="decimal" />
-                          </Field>
-                          <Field label="New deadline minutes">
-                            <input className={inputClass()} value={draft.deadlineMinutes} onChange={(event) => setEditDrafts((previous) => ({ ...previous, [order.id]: { ...draft, deadlineMinutes: event.target.value } }))} inputMode="numeric" />
-                          </Field>
-                          <button type="button" onClick={() => void saveEdit(order)} className={buttonBase(true)} disabled={busyAction !== null}>
-                            {busyAction === `edit-${order.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Save changes
-                          </button>
-                          <button type="button" onClick={() => setEditingId(null)} className={buttonBase(false)} disabled={busyAction !== null}>Close edit</button>
-                        </div>
-                      ) : null}
-
-                      <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-end">
-                        <Field label={order.side === 'sell' ? 'Resize INRI amount' : 'Resize amount'} hint={order.side === 'buy' ? 'Add uses iUSD amount. Reduce uses INRI amount.' : 'Add/remove native INRI from this SELL order.'}>
-                          <input className={inputClass()} value={resizeAmounts[order.id] || ''} onChange={(event) => setResizeAmounts((previous) => ({ ...previous, [order.id]: event.target.value }))} placeholder={order.side === 'buy' ? 'iUSD for add, INRI for reduce' : 'INRI amount'} inputMode="decimal" />
-                        </Field>
-                        {order.side === 'buy' ? (
-                          <button type="button" onClick={() => {
-                            try { void approveIusd(parseIusdAmount(resizeAmounts[order.id] || ''), `approve-resize-${order.id}`) } catch { showToast('Enter an iUSD amount first.', 'warning') }
-                          }} className={buttonBase(false)} disabled={busyAction !== null}>
-                            <BadgeCheck className="h-4 w-4" /> Approve add
-                          </button>
-                        ) : null}
-                        <button type="button" onClick={() => void resizeOrder(order, 'add')} className={buttonBase(false)} disabled={busyAction !== null}>
-                          {busyAction === `resize-add-${order.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
-                        </button>
-                        <button type="button" onClick={() => void resizeOrder(order, 'remove')} className={buttonBase(false)} disabled={busyAction !== null}>
-                          {busyAction === `resize-remove-${order.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Minus className="h-4 w-4" />} {order.side === 'buy' ? 'Reduce' : 'Remove'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm font-semibold text-white/48">Page {page} · showing {filteredOrders.length} orders</div>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} className={buttonBase(false)} disabled={page <= 1 || loading}>Previous</button>
-              <button type="button" onClick={() => setPage((current) => current + 1)} className={buttonBase(false)} disabled={!hasMore || loading}>Next</button>
-            </div>
-          </div>
-        </Card>
-      ) : null}
-
-      {view === 'activity' ? (
-        <Card>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">Recent events</div>
-              <h3 className="mt-2 text-2xl font-black text-white">On-chain P2P activity</h3>
-              <p className="mt-2 text-sm leading-7 text-white/54">Create, fill, cancel, price/deadline edits and resize events from the official P2P contract.</p>
-            </div>
-            <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload events</button>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {events.length === 0 ? <EmptyState title="No recent events loaded" body="The contract may be new or the RPC event window has no matching logs yet." /> : events.map((event, index) => (
-              <div key={`${event.txHash}-${index}`} className="grid gap-3 rounded-[1.25rem] border border-white/10 bg-black/22 p-4 md:grid-cols-[1fr_auto] md:items-center">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100">#{event.orderId}</span>
-                    <span className="text-sm font-black text-white">{eventLabel(event.kind)}</span>
-                    {event.timestamp ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-white/42"><Clock3 className="h-3.5 w-3.5" /> {new Date(event.timestamp * 1000).toLocaleString()}</span> : null}
-                  </div>
-                  <div className="mt-2 grid gap-1 text-xs font-semibold text-white/50 sm:grid-cols-2 lg:grid-cols-4">
-                    {event.inri ? <span>INRI: <b className="text-white">{event.inri}</b></span> : null}
-                    {event.iusd ? <span>iUSD: <b className="text-white">{event.iusd}</b></span> : null}
-                    {event.fee ? <span>Fee: <b className="text-white">{event.fee}</b></span> : null}
-                    {event.price ? <span>Price: <b className="text-white">{event.price}</b></span> : null}
-                  </div>
-                  <div className="mt-2 break-all text-xs font-semibold text-white/36">TX: {event.txHash}</div>
-                </div>
-                <a href={`${EXPLORER_TX_URL}${event.txHash}`} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> Explorer</a>
-              </div>
-            ))}
-          </div>
-        </Card>
-      ) : null}
-
-      <Card className="p-4">
-        <div className="grid gap-3 text-xs font-semibold leading-6 text-white/48 md:grid-cols-3">
-          <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> P2P contract: {shortAddress(P2P_MARKET_ADDRESS, 6)}</a>
-          <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> iUSD token: {shortAddress(P2P_IUSD_ADDRESS, 6)}</a>
-          <span className="inline-flex items-center gap-2"><Info className="h-4 w-4" /> Fee and estimated gas are shown before core actions.</span>
+      {status === 'loading' ? (
+        <div className="flex min-h-[840px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/60 text-sm font-semibold text-white/72">
+          Loading P2P market interface...
         </div>
-      </Card>
+      ) : null}
+
+      {status === 'error' ? (
+        <div className="rounded-[1.6rem] border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-100">
+          {error || 'The P2P application could not be loaded inside the new site.'}
+        </div>
+      ) : null}
+
+      <div ref={hostRef} className={status === 'ready' ? 'block' : 'hidden'} />
     </div>
   )
 }
