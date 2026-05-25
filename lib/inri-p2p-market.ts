@@ -11,6 +11,7 @@ export const EXPLORER_TX_URL = 'https://explorer.inri.life/tx/'
 
 export type P2PSide = 'sell' | 'buy'
 export type P2PView = 'market' | 'create' | 'mine' | 'activity'
+export type P2POrderStatus = 'active' | 'partial' | 'filled' | 'cancelled' | 'expired'
 
 export type P2POrder = {
   id: number
@@ -22,16 +23,39 @@ export type P2POrder = {
   remainingInriDisplay: string
   remainingIusd: bigint
   remainingIusdDisplay: string
+  initialInri: bigint
+  initialInriDisplay: string
+  initialIusd: bigint
+  initialIusdDisplay: string
+  filledInri: bigint
+  filledInriDisplay: string
+  lockedLabel: string
+  progressPercent: number
   deadline: number
   active: boolean
   expired: boolean
+  status: P2POrderStatus
+  statusLabel: string
 }
 
 export type P2PStats = {
   nextOrderId: number
   feeBps: number
+  feePercentLabel: string
   treasury: string
   totalOrders: number
+  activeOrders: number
+  historicalOrders: number
+  referencePriceRaw: bigint
+  referencePriceDisplay: string
+  referenceSource: string
+}
+
+export type P2PLockedBalances = {
+  lockedInri: bigint
+  lockedIusd: bigint
+  sellOrders: number
+  buyOrders: number
 }
 
 export type P2PEventItem = {
@@ -46,6 +70,20 @@ export type P2PEventItem = {
   iusd?: string
   fee?: string
   price?: string
+}
+
+type CreatedMeta = {
+  inriAmount: bigint
+  iusdAmount: bigint
+  maker: string
+  side: P2PSide
+}
+
+type EventMeta = {
+  created: Map<number, CreatedMeta>
+  cancelled: Set<number>
+  filledInri: Map<number, bigint>
+  latestFillPriceRaw: bigint
 }
 
 export const P2P_ABI = [
@@ -90,6 +128,9 @@ export const P2P_IUSD_ABI = [
 
 export const p2pInterface = new ethers.Interface(P2P_ABI)
 export const iusdInterface = new ethers.Interface(P2P_IUSD_ABI)
+
+const MAX_ORDER_SCAN = 1000
+const P2P_EVENT_SCAN_BLOCKS = 250_000
 
 export function getP2PReadProvider() {
   return new ethers.JsonRpcProvider(INRI_RPC_URL, { chainId: 3777, name: 'INRI CHAIN' })
@@ -170,16 +211,57 @@ export function feeOfLocal(iusdGross: bigint, feeBps: number) {
   return (iusdGross * BigInt(feeBps || 0)) / 10_000n
 }
 
-export function normalizeOrder(id: number, raw: any): P2POrder {
+export function percentVsReference(priceRaw: bigint, referencePriceRaw: bigint) {
+  if (priceRaw <= 0n || referencePriceRaw <= 0n) return '—'
+  const price = Number(ethers.formatUnits(priceRaw, 6))
+  const reference = Number(ethers.formatUnits(referencePriceRaw, 6))
+  if (!Number.isFinite(price) || !Number.isFinite(reference) || reference <= 0) return '—'
+  const pct = ((price - reference) / reference) * 100
+  const sign = pct > 0 ? '+' : ''
+  return `${sign}${pct.toFixed(2)}% vs reference`
+}
+
+function statusForOrder(active: boolean, expired: boolean, remainingInri: bigint, initialInri: bigint, cancelled: boolean): P2POrderStatus {
+  if (cancelled) return 'cancelled'
+  if (active && expired) return 'expired'
+  if (active && initialInri > 0n && remainingInri < initialInri) return 'partial'
+  if (active) return 'active'
+  return 'filled'
+}
+
+function statusLabel(status: P2POrderStatus, filledInriDisplay: string) {
+  if (status === 'partial') return `Active · partial filled: ${filledInriDisplay} INRI`
+  if (status === 'filled') return 'Filled / completed'
+  if (status === 'cancelled') return 'Cancelled / refunded'
+  if (status === 'expired') return 'Expired · must be cancelled by maker'
+  return 'Active · no fill yet'
+}
+
+export function normalizeOrder(id: number, raw: any, meta?: EventMeta): P2POrder {
   const sideNum = Number(raw?.side ?? raw?.[0] ?? 0)
+  const side: P2PSide = sideNum === 0 ? 'sell' : 'buy'
   const priceRaw = BigInt(raw?.priceIusdPer1e18Inri ?? raw?.[2] ?? 0)
   const remainingInri = BigInt(raw?.remainingInri ?? raw?.[3] ?? 0)
   const remainingIusd = BigInt(raw?.remainingIusd ?? raw?.[4] ?? 0)
   const deadline = Number(raw?.deadline ?? raw?.[5] ?? 0)
   const active = Boolean(raw?.active ?? raw?.[6] ?? false)
+  const expired = deadline !== 0 && Date.now() / 1000 > deadline
+  const created = meta?.created.get(id)
+  const cancelled = Boolean(meta?.cancelled.has(id))
+  const initialInri = created?.inriAmount && created.inriAmount > 0n ? created.inriAmount : remainingInri
+  const initialIusd = created?.iusdAmount && created.iusdAmount > 0n ? created.iusdAmount : remainingIusd
+  const filledFromEvents = meta?.filledInri.get(id) || 0n
+  let filledInri = filledFromEvents
+  if (filledInri === 0n && initialInri > remainingInri) filledInri = initialInri - remainingInri
+
+  const status = statusForOrder(active, expired, remainingInri, initialInri, cancelled)
+  const progressPercent = initialInri > 0n
+    ? Math.max(0, Math.min(100, Number(((initialInri - remainingInri) * 10_000n) / initialInri) / 100))
+    : 0
+
   return {
     id,
-    side: sideNum === 0 ? 'sell' : 'buy',
+    side,
     maker: String(raw?.maker ?? raw?.[1] ?? '0x0000000000000000000000000000000000000000'),
     priceRaw,
     priceDisplay: formatPriceDisplay(priceRaw),
@@ -187,25 +269,137 @@ export function normalizeOrder(id: number, raw: any): P2POrder {
     remainingInriDisplay: formatInri(remainingInri),
     remainingIusd,
     remainingIusdDisplay: formatIusd(remainingIusd),
+    initialInri,
+    initialInriDisplay: formatInri(initialInri),
+    initialIusd,
+    initialIusdDisplay: formatIusd(initialIusd),
+    filledInri,
+    filledInriDisplay: formatInri(filledInri),
+    lockedLabel: side === 'sell' ? `Locked INRI: ${formatInri(remainingInri)}` : `Locked iUSD: ${formatIusd(remainingIusd)}`,
+    progressPercent,
     deadline,
     active,
-    expired: deadline !== 0 && Date.now() / 1000 > deadline,
+    expired,
+    status,
+    statusLabel: statusLabel(status, formatInri(filledInri)),
   }
+}
+
+async function queryNamedEvents(contract: ethers.Contract, filterName: string, fromBlock: number, toBlock: number) {
+  try {
+    const filterBuilder = (contract.filters as any)[filterName] as (() => unknown) | undefined
+    if (!filterBuilder) return [] as ethers.EventLog[]
+    return (await contract.queryFilter(filterBuilder() as any, fromBlock, toBlock)) as ethers.EventLog[]
+  } catch {
+    return [] as ethers.EventLog[]
+  }
+}
+
+async function loadEventMeta(): Promise<EventMeta> {
+  const provider = getP2PReadProvider()
+  const contract = getP2PContract()
+  const latestBlock = await provider.getBlockNumber().catch(() => 0)
+  const fromBlock = latestBlock > P2P_EVENT_SCAN_BLOCKS ? latestBlock - P2P_EVENT_SCAN_BLOCKS : 0
+
+  const [created, filled, cancelled] = await Promise.all([
+    queryNamedEvents(contract, 'OrderCreated', fromBlock, latestBlock),
+    queryNamedEvents(contract, 'OrderFilled', fromBlock, latestBlock),
+    queryNamedEvents(contract, 'OrderCancelled', fromBlock, latestBlock),
+  ])
+
+  const meta: EventMeta = {
+    created: new Map(),
+    cancelled: new Set(),
+    filledInri: new Map(),
+    latestFillPriceRaw: 0n,
+  }
+
+  for (const event of created) {
+    const args: any = event.args || []
+    const orderId = Number(args.orderId ?? args[0] ?? 0)
+    const sideNum = Number(args.side ?? args[1] ?? 0)
+    if (!orderId) continue
+    meta.created.set(orderId, {
+      side: sideNum === 0 ? 'sell' : 'buy',
+      maker: String(args.maker ?? args[2] ?? ''),
+      inriAmount: BigInt(args.inriAmount ?? args[4] ?? 0),
+      iusdAmount: BigInt(args.iusdAmount ?? args[5] ?? 0),
+    })
+  }
+
+  const sortedFilled = [...filled].sort((a, b) => Number(b.blockNumber || 0) - Number(a.blockNumber || 0))
+  for (const event of sortedFilled) {
+    const args: any = event.args || []
+    const orderId = Number(args.orderId ?? args[0] ?? 0)
+    const inri = BigInt(args.inriFilled ?? args[3] ?? 0)
+    const iusd = BigInt(args.iusdGross ?? args[4] ?? 0)
+    if (!orderId) continue
+    meta.filledInri.set(orderId, (meta.filledInri.get(orderId) || 0n) + inri)
+    if (meta.latestFillPriceRaw === 0n && inri > 0n && iusd > 0n) {
+      meta.latestFillPriceRaw = (iusd * 10n ** 18n) / inri
+    }
+  }
+
+  for (const event of cancelled) {
+    const args: any = event.args || []
+    const orderId = Number(args.orderId ?? args[0] ?? 0)
+    if (orderId) meta.cancelled.add(orderId)
+  }
+
+  return meta
+}
+
+async function readOrdersByIds(ids: number[], meta?: EventMeta) {
+  const contract = getP2PContract()
+  const raws = await Promise.all(ids.map((id) => contract.orders(id).catch(() => null)))
+  return raws
+    .map((raw, index) => (raw ? normalizeOrder(ids[index], raw, meta) : null))
+    .filter(Boolean) as P2POrder[]
+}
+
+async function readLatestOrderIds(totalOrders: number, limit: number, page: number) {
+  const newestId = Math.max(1, totalOrders - (page - 1) * limit)
+  const ids: number[] = []
+  for (let id = newestId; id >= 1 && ids.length < limit; id -= 1) ids.push(id)
+  return ids
 }
 
 export async function loadP2PStats(): Promise<P2PStats> {
   const contract = getP2PContract()
-  const [nextOrderId, feeBps, treasury] = await Promise.all([
+  const [nextOrderId, feeBps, treasury, meta] = await Promise.all([
     contract.nextOrderId(),
     contract.FEE_BPS(),
     contract.treasury(),
+    loadEventMeta().catch(() => ({ created: new Map(), cancelled: new Set(), filledInri: new Map(), latestFillPriceRaw: 0n } as EventMeta)),
   ])
   const next = Number(nextOrderId)
+  const totalOrders = Math.max(0, next - 1)
+  const scanCount = Math.min(totalOrders, MAX_ORDER_SCAN)
+  const firstId = Math.max(1, totalOrders - scanCount + 1)
+  const ids: number[] = []
+  for (let id = firstId; id <= totalOrders; id += 1) ids.push(id)
+  const orders = await readOrdersByIds(ids, meta)
+  const activeOrders = orders.filter((order) => order.active && !order.expired).length
+  const activePrices = orders.filter((order) => order.active && !order.expired && order.priceRaw > 0n).map((order) => order.priceRaw).sort((a, b) => Number(a - b))
+  const medianActivePrice = activePrices.length ? activePrices[Math.floor(activePrices.length / 2)] : 0n
+  const referencePriceRaw = meta.latestFillPriceRaw > 0n ? meta.latestFillPriceRaw : medianActivePrice
+  const referenceSource = meta.latestFillPriceRaw > 0n
+    ? 'Last on-chain fill price'
+    : medianActivePrice > 0n
+      ? 'Median active order price'
+      : 'No market reference yet'
+
   return {
     nextOrderId: next,
-    totalOrders: Math.max(0, next - 1),
+    totalOrders,
+    activeOrders,
+    historicalOrders: Math.max(0, totalOrders - activeOrders),
     feeBps: Number(feeBps),
+    feePercentLabel: `${(Number(feeBps) / 100).toFixed(2)}%`,
     treasury: String(treasury),
+    referencePriceRaw,
+    referencePriceDisplay: referencePriceRaw > 0n ? formatPriceDisplay(referencePriceRaw) : '—',
+    referenceSource,
   }
 }
 
@@ -214,30 +408,61 @@ export async function loadRecentP2POrders(options?: {
   page?: number
   activeOnly?: boolean
   maker?: string
+  status?: P2POrderStatus | 'all'
 }) {
   const contract = getP2PContract()
-  const nextOrderId = Number(await contract.nextOrderId())
-  const limit = Math.max(1, Math.min(80, options?.limit || 36))
+  const [nextOrderId, meta] = await Promise.all([
+    contract.nextOrderId(),
+    loadEventMeta().catch(() => ({ created: new Map(), cancelled: new Set(), filledInri: new Map(), latestFillPriceRaw: 0n } as EventMeta)),
+  ])
+  const totalOrders = Math.max(0, Number(nextOrderId) - 1)
+  const limit = Math.max(1, Math.min(100, options?.limit || 42))
   const page = Math.max(1, Number(options?.page || 1))
   const maker = options?.maker?.toLowerCase() || ''
-  const newestId = Math.max(1, nextOrderId - 1 - (page - 1) * limit)
-  const ids: number[] = []
 
-  for (let id = newestId; id >= 1 && ids.length < limit; id -= 1) ids.push(id)
+  let scanLimit = limit
+  if (maker || options?.status || options?.activeOnly) scanLimit = Math.min(MAX_ORDER_SCAN, totalOrders)
+  const ids = maker || options?.status || options?.activeOnly
+    ? Array.from({ length: scanLimit }, (_, index) => totalOrders - index).filter((id) => id >= 1)
+    : await readLatestOrderIds(totalOrders, limit, page)
 
-  const raws = await Promise.all(ids.map((id) => contract.orders(id).catch(() => null)))
-  const items = raws
-    .map((raw, index) => (raw ? normalizeOrder(ids[index], raw) : null))
-    .filter(Boolean)
-    .filter((item) => (options?.activeOnly ? item?.active : true))
-    .filter((item) => (maker ? item?.maker.toLowerCase() === maker : true)) as P2POrder[]
+  let items = await readOrdersByIds(ids, meta)
+  if (options?.activeOnly) items = items.filter((item) => item.active && !item.expired)
+  if (maker) items = items.filter((item) => item.maker.toLowerCase() === maker)
+  if (options?.status && options.status !== 'all') items = items.filter((item) => item.status === options.status || (options.status === 'active' && item.active && !item.expired))
+
+  const offset = maker || options?.status || options?.activeOnly ? (page - 1) * limit : 0
+  const paged = maker || options?.status || options?.activeOnly ? items.slice(offset, offset + limit) : items
 
   return {
-    items,
-    hasMore: newestId - limit >= 1,
+    items: paged,
+    hasMore: maker || options?.status || options?.activeOnly ? offset + limit < items.length : totalOrders - page * limit > 0,
     page,
-    totalApprox: Math.max(0, nextOrderId - 1),
+    totalApprox: totalOrders,
   }
+}
+
+export async function loadP2PLockedBalances(address: string): Promise<P2PLockedBalances> {
+  if (!address) return { lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 }
+  const contract = getP2PContract()
+  const [nextOrderId, meta] = await Promise.all([
+    contract.nextOrderId(),
+    loadEventMeta().catch(() => ({ created: new Map(), cancelled: new Set(), filledInri: new Map(), latestFillPriceRaw: 0n } as EventMeta)),
+  ])
+  const totalOrders = Math.max(0, Number(nextOrderId) - 1)
+  const scanCount = Math.min(totalOrders, MAX_ORDER_SCAN)
+  const ids = Array.from({ length: scanCount }, (_, index) => totalOrders - index).filter((id) => id >= 1)
+  const mine = (await readOrdersByIds(ids, meta)).filter((order) => order.maker.toLowerCase() === address.toLowerCase() && order.active && !order.expired)
+  return mine.reduce((acc, order) => {
+    if (order.side === 'sell') {
+      acc.lockedInri += order.remainingInri
+      acc.sellOrders += 1
+    } else {
+      acc.lockedIusd += order.remainingIusd
+      acc.buyOrders += 1
+    }
+    return acc
+  }, { lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 } as P2PLockedBalances)
 }
 
 export async function getIusdBalance(address: string) {
@@ -255,17 +480,7 @@ export async function getInriBalance(address: string) {
   return BigInt(await getP2PReadProvider().getBalance(address))
 }
 
-async function queryNamedEvents(contract: ethers.Contract, filterName: string, fromBlock: number, toBlock: number) {
-  try {
-    const filterBuilder = (contract.filters as any)[filterName] as (() => unknown) | undefined
-    if (!filterBuilder) return [] as ethers.EventLog[]
-    return (await contract.queryFilter(filterBuilder() as any, fromBlock, toBlock)) as ethers.EventLog[]
-  } catch {
-    return [] as ethers.EventLog[]
-  }
-}
-
-export async function loadP2PEvents(limit = 24, scanBlocks = 12000): Promise<P2PEventItem[]> {
+export async function loadP2PEvents(limit = 24, scanBlocks = P2P_EVENT_SCAN_BLOCKS): Promise<P2PEventItem[]> {
   const provider = getP2PReadProvider()
   const contract = getP2PContract()
   const latestBlock = await provider.getBlockNumber().catch(() => 0)
@@ -343,75 +558,32 @@ export async function loadP2PEvents(limit = 24, scanBlocks = 12000): Promise<P2P
 
   for (const event of price) {
     const args: any = event.args || []
-    items.push({
-      kind: 'price',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-      price: formatPriceDisplay(BigInt(args.newPrice ?? args[2] ?? 0)),
-    })
+    items.push({ kind: 'price', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)), price: formatPriceDisplay(BigInt(args.newPrice ?? args[2] ?? 0)) })
   }
 
   for (const event of deadline) {
     const args: any = event.args || []
-    items.push({
-      kind: 'deadline',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-    })
+    items.push({ kind: 'deadline', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)) })
   }
 
   for (const event of sellAdd) {
     const args: any = event.args || []
-    items.push({
-      kind: 'sell-add',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-      inri: formatInri(BigInt(args.inriAdded ?? args[1] ?? 0)),
-    })
+    items.push({ kind: 'sell-add', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)), inri: formatInri(BigInt(args.inriAdded ?? args[1] ?? 0)) })
   }
 
   for (const event of sellRemove) {
     const args: any = event.args || []
-    items.push({
-      kind: 'sell-remove',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-      inri: formatInri(BigInt(args.inriRemoved ?? args[1] ?? 0)),
-    })
+    items.push({ kind: 'sell-remove', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)), inri: formatInri(BigInt(args.inriRemoved ?? args[1] ?? 0)) })
   }
 
   for (const event of buyAdd) {
     const args: any = event.args || []
-    items.push({
-      kind: 'buy-add',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-      iusd: formatIusd(BigInt(args.iusdAdded ?? args[1] ?? 0)),
-      inri: formatInri(BigInt(args.newRemainingInri ?? args[3] ?? 0)),
-    })
+    items.push({ kind: 'buy-add', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)), iusd: formatIusd(BigInt(args.iusdAdded ?? args[1] ?? 0)), inri: formatInri(BigInt(args.newRemainingInri ?? args[3] ?? 0)) })
   }
 
   for (const event of buyReduce) {
     const args: any = event.args || []
-    items.push({
-      kind: 'buy-reduce',
-      orderId: Number(args.orderId ?? args[0] ?? 0),
-      txHash: String(event.transactionHash || ''),
-      blockNumber: Number(event.blockNumber || 0),
-      timestamp: blockMap.get(Number(event.blockNumber || 0)),
-      inri: formatInri(BigInt(args.inriReduced ?? args[1] ?? 0)),
-      iusd: formatIusd(BigInt(args.iusdRefunded ?? args[2] ?? 0)),
-    })
+    items.push({ kind: 'buy-reduce', orderId: Number(args.orderId ?? args[0] ?? 0), txHash: String(event.transactionHash || ''), blockNumber: Number(event.blockNumber || 0), timestamp: blockMap.get(Number(event.blockNumber || 0)), inri: formatInri(BigInt(args.inriReduced ?? args[1] ?? 0)), iusd: formatIusd(BigInt(args.iusdRefunded ?? args[2] ?? 0)) })
   }
 
   return items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0) || b.blockNumber - a.blockNumber).slice(0, Math.max(1, Math.min(limit, 250)))

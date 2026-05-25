@@ -6,11 +6,13 @@ import {
   AlertTriangle,
   ArrowDownUp,
   BadgeCheck,
+  BarChart3,
   CheckCircle2,
   Clock3,
   Copy,
   Edit3,
   ExternalLink,
+  Info,
   Minus,
   Plus,
   RefreshCw,
@@ -46,6 +48,7 @@ import {
   IUSD_EXPLORER_TOKEN_URL,
   iusdInterface,
   loadP2PEvents,
+  loadP2PLockedBalances,
   loadP2PStats,
   loadRecentP2POrders,
   P2P_EXPLORER_ADDRESS_URL,
@@ -55,9 +58,11 @@ import {
   parseInriAmount,
   parseIusdAmount,
   parsePrice,
+  percentVsReference,
   quoteIusdGrossLocal,
   shortAddress,
   type P2PEventItem,
+  type P2PLockedBalances,
   type P2POrder,
   type P2PStats,
   type P2PView,
@@ -67,9 +72,9 @@ type TxTarget = 'market' | 'iusd'
 type ToastTone = 'success' | 'error' | 'warning' | 'info'
 type SideFilter = 'all' | 'sell' | 'buy'
 type BusyAction = string | null
-
 type DraftMap = Record<number, string>
 type EditDraft = { price: string; deadlineMinutes: string }
+type MyOrderTab = 'active' | 'filled' | 'cancelled'
 
 type Toast = {
   tone: ToastTone
@@ -78,8 +83,6 @@ type Toast = {
 }
 
 const ORDER_PAGE_LIMIT = 42
-const ACTIVE_ONLY_DEFAULT = true
-const FEE_DENOM = 10_000
 
 function eventLabel(kind: P2PEventItem['kind']) {
   switch (kind) {
@@ -107,6 +110,11 @@ function deadlineLabel(deadline: number) {
   return new Date(deadline * 1000).toLocaleDateString()
 }
 
+function fullDeadlineLabel(deadline: number) {
+  if (!deadline) return 'No deadline. Order stays open until filled or cancelled.'
+  return `${new Date(deadline * 1000).toLocaleString()} · auto-expires if unfilled; maker can cancel/refund.`
+}
+
 function normalizeHash(result: unknown) {
   if (typeof result === 'string') return result
   if (result && typeof result === 'object' && 'hash' in result) return String((result as { hash: unknown }).hash)
@@ -127,11 +135,12 @@ function selectClass() {
   return 'min-h-12 w-full rounded-2xl border border-white/12 bg-[#040b14] px-4 py-3 text-sm font-extrabold text-white outline-none transition focus:border-cyan-300/60'
 }
 
-function statusClass(tone: ToastTone | 'neutral' = 'neutral') {
+function statusClass(tone: ToastTone | 'neutral' | 'partial' = 'neutral') {
   if (tone === 'success') return 'border-emerald-400/24 bg-emerald-400/10 text-emerald-100'
   if (tone === 'warning') return 'border-amber-300/26 bg-amber-300/10 text-amber-100'
   if (tone === 'error') return 'border-red-400/24 bg-red-400/10 text-red-100'
   if (tone === 'info') return 'border-cyan-300/24 bg-cyan-300/10 text-cyan-100'
+  if (tone === 'partial') return 'border-violet-300/24 bg-violet-300/10 text-violet-100'
   return 'border-white/12 bg-white/[0.045] text-white/72'
 }
 
@@ -143,17 +152,18 @@ function Card({ children, className = '' }: { children: ReactNode; className?: s
   )
 }
 
-function StatCard({ icon, label, value, sub }: { icon: ReactNode; label: string; value: string; sub?: string }) {
+function StatCard({ icon, label, value, sub, children }: { icon: ReactNode; label: string; value: string; sub?: string; children?: ReactNode }) {
   return (
     <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.035] p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-100/58">{label}</div>
           <div className="mt-2 text-xl font-black tracking-tight text-white">{value}</div>
-          {sub ? <div className="mt-1 text-xs font-semibold text-white/46">{sub}</div> : null}
+          {sub ? <div className="mt-1 text-xs font-semibold leading-5 text-white/50">{sub}</div> : null}
         </div>
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/18 bg-cyan-300/10 text-cyan-200">{icon}</div>
       </div>
+      {children ? <div className="mt-3 border-t border-white/10 pt-3">{children}</div> : null}
     </div>
   )
 }
@@ -180,8 +190,23 @@ function EmptyState({ title, body }: { title: string; body: string }) {
   )
 }
 
+function orderStatusTone(order: P2POrder): ToastTone | 'partial' | 'neutral' {
+  if (order.status === 'partial') return 'partial'
+  if (order.status === 'active') return 'success'
+  if (order.status === 'expired') return 'warning'
+  if (order.status === 'cancelled') return 'error'
+  if (order.status === 'filled') return 'info'
+  return 'neutral'
+}
+
+function confirmAction(message: string) {
+  if (typeof window === 'undefined') return true
+  return window.confirm(message)
+}
+
 export function InriP2PClient() {
   const [view, setView] = useState<P2PView>('market')
+  const [myOrderTab, setMyOrderTab] = useState<MyOrderTab>('active')
   const [wallet, setWallet] = useState<ActiveWalletSnapshot>({ provider: null, providerReady: false, account: null, chainId: null, connector: '' })
   const [stats, setStats] = useState<P2PStats | null>(null)
   const [orders, setOrders] = useState<P2POrder[]>([])
@@ -189,6 +214,7 @@ export function InriP2PClient() {
   const [inriBalance, setInriBalance] = useState<bigint>(0n)
   const [iusdBalance, setIusdBalance] = useState<bigint>(0n)
   const [allowance, setAllowance] = useState<bigint>(0n)
+  const [locked, setLocked] = useState<P2PLockedBalances>({ lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 })
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -196,7 +222,6 @@ export function InriP2PClient() {
   const [toast, setToast] = useState<Toast | null>(null)
   const [query, setQuery] = useState('')
   const [sideFilter, setSideFilter] = useState<SideFilter>('all')
-  const [activeOnly, setActiveOnly] = useState(ACTIVE_ONLY_DEFAULT)
 
   const [createSide, setCreateSide] = useState<'sell' | 'buy'>('sell')
   const [createInriAmount, setCreateInriAmount] = useState('')
@@ -234,8 +259,9 @@ export function InriP2PClient() {
     const snap = await readActiveWalletSnapshot()
     if (switchNetwork && snap.provider) {
       const nextChainId = await switchProviderToInri(snap.provider)
-      setWallet({ ...snap, chainId: nextChainId || INRI_CHAIN_ID_HEX })
-      return { ...snap, chainId: nextChainId || INRI_CHAIN_ID_HEX }
+      const switched = { ...snap, chainId: nextChainId || INRI_CHAIN_ID_HEX }
+      setWallet(switched)
+      return switched
     }
     setWallet(snap)
     return snap
@@ -247,13 +273,15 @@ export function InriP2PClient() {
       const snap = await readActiveWalletSnapshot()
       setWallet(snap)
       const maker = view === 'mine' && snap.account ? snap.account : undefined
-      const [nextStats, orderPage, nextEvents, nextInri, nextIusd, nextAllowance] = await Promise.all([
+      const status = view === 'mine' ? myOrderTab : undefined
+      const [nextStats, orderPage, nextEvents, nextInri, nextIusd, nextAllowance, nextLocked] = await Promise.all([
         loadP2PStats(),
-        loadRecentP2POrders({ limit: ORDER_PAGE_LIMIT, page: nextPage, activeOnly, maker }),
-        loadP2PEvents(32),
+        loadRecentP2POrders({ limit: ORDER_PAGE_LIMIT, page: nextPage, activeOnly: view === 'market', maker, status }),
+        loadP2PEvents(36),
         snap.account ? getInriBalance(snap.account) : Promise.resolve(0n),
         snap.account ? getIusdBalance(snap.account) : Promise.resolve(0n),
         snap.account ? getIusdAllowance(snap.account) : Promise.resolve(0n),
+        snap.account ? loadP2PLockedBalances(snap.account) : Promise.resolve({ lockedInri: 0n, lockedIusd: 0n, sellOrders: 0, buyOrders: 0 }),
       ])
       setStats(nextStats)
       setOrders(orderPage.items)
@@ -261,13 +289,14 @@ export function InriP2PClient() {
       setInriBalance(nextInri)
       setIusdBalance(nextIusd)
       setAllowance(nextAllowance)
+      setLocked(nextLocked)
       setHasMore(orderPage.hasMore)
     } catch (cause) {
       showToast(getErrorMessage(cause, 'Unable to load P2P market'), 'error')
     } finally {
       setLoading(false)
     }
-  }, [activeOnly, page, showToast, view])
+  }, [myOrderTab, page, showToast, view])
 
   useEffect(() => {
     void refreshData(page)
@@ -284,7 +313,8 @@ export function InriP2PClient() {
         return (
           String(order.id).includes(needle) ||
           order.maker.toLowerCase().includes(needle) ||
-          order.priceDisplay.toLowerCase().includes(needle)
+          order.priceDisplay.toLowerCase().includes(needle) ||
+          order.statusLabel.toLowerCase().includes(needle)
         )
       })
   }, [orders, query, sideFilter])
@@ -366,6 +396,8 @@ export function InriP2PClient() {
     if (amount <= 0n) throw new Error('Invalid approval amount.')
     setBusyAction(label)
     try {
+      const ok = confirmAction(`Approve ${formatIusd(amount)} iUSD for the P2P escrow contract?\n\nThis only gives allowance to the P2P contract. It does not create or fill an order by itself.`)
+      if (!ok) return
       const hash = await sendContractTx('iusd', 'approve', [P2P_MARKET_ADDRESS, amount], 0n, 120000n)
       showToast('iUSD approval confirmed.', 'success', hash)
       await refreshData(page)
@@ -386,12 +418,21 @@ export function InriP2PClient() {
       const minutes = Math.max(0, Number(createDeadlineMinutes || 0))
       const deadline = minutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(minutes * 60) : 0
       const gross = quoteIusdGrossLocal(inriAmount, priceRaw)
+      const fee = feeOfLocal(gross, stats?.feeBps || 0)
+      const net = gross - fee
 
       if (createSide === 'buy') {
         if (gross <= 0n) throw new Error('The buy order iUSD amount is too small.')
-        if (iusdBalance < gross) throw new Error('Not enough iUSD balance for this buy order.')
+        if (iusdBalance < gross) throw new Error('Not enough available iUSD balance for this buy order.')
         if (allowance < gross) throw new Error('Approve iUSD for the P2P contract before creating this buy order.')
       }
+
+      const ok = confirmAction(
+        createSide === 'sell'
+          ? `Confirm SELL order\n\nLock INRI: ${formatInri(inriAmount)}\nPrice per INRI: ${createPrice} iUSD\nIf fully filled, maker receives about ${formatIusd(net)} iUSD after ${formatIusd(fee)} iUSD fee.\nDeadline: ${deadline ? new Date(deadline * 1000).toLocaleString() : 'No deadline'}`
+          : `Confirm BUY order\n\nWant INRI: ${formatInri(inriAmount)}\nLock iUSD: ${formatIusd(gross)}\nPrice per INRI: ${createPrice} iUSD\nFee is charged only when fills happen, from filled amount.\nDeadline: ${deadline ? new Date(deadline * 1000).toLocaleString() : 'No deadline'}`,
+      )
+      if (!ok) return
 
       const hash = createSide === 'sell'
         ? await sendContractTx('market', 'createSellOrder', [priceRaw, deadline], inriAmount, 420000n)
@@ -402,6 +443,7 @@ export function InriP2PClient() {
       setCreatePrice('')
       setCreateDeadlineMinutes('0')
       setView('mine')
+      setMyOrderTab('active')
       setPage(1)
       await refreshData(1)
     } catch (cause) {
@@ -409,7 +451,7 @@ export function InriP2PClient() {
     } finally {
       setBusyAction(null)
     }
-  }, [allowance, createDeadlineMinutes, createInriAmount, createPrice, createSide, iusdBalance, refreshData, sendContractTx, showToast])
+  }, [allowance, createDeadlineMinutes, createInriAmount, createPrice, createSide, iusdBalance, refreshData, sendContractTx, showToast, stats?.feeBps])
 
   const fillOrder = useCallback(async (order: P2POrder) => {
     const action = `fill-${order.id}`
@@ -421,6 +463,13 @@ export function InriP2PClient() {
       const gross = quoteIusdGrossLocal(amount, order.priceRaw)
       const fee = feeOfLocal(gross, stats?.feeBps || 0)
       const net = gross - fee
+
+      const ok = confirmAction(
+        order.side === 'sell'
+          ? `Confirm fill SELL order #${order.id}\n\nYou receive: ${formatInri(amount)} INRI\nGross iUSD paid: ${formatIusd(gross)}\nTransaction fee: ${formatIusd(fee)} iUSD credited to treasury\nMaker receives net: ${formatIusd(net)} iUSD\n\nContinue?`
+          : `Confirm fill BUY order #${order.id}\n\nYou send: ${formatInri(amount)} INRI\nGross iUSD matched: ${formatIusd(gross)}\nTransaction fee: ${formatIusd(fee)} iUSD credited to treasury\nYou receive net: ${formatIusd(net)} iUSD\n\nContinue?`,
+      )
+      if (!ok) return
 
       if (order.side === 'sell') {
         if (allowance < gross) throw new Error('Approve enough iUSD before buying INRI from this SELL order.')
@@ -444,6 +493,11 @@ export function InriP2PClient() {
     const action = `cancel-${order.id}`
     setBusyAction(action)
     try {
+      const refund = order.side === 'sell'
+        ? `Remaining ${order.remainingInriDisplay} INRI will be refunded to your wallet.`
+        : `Remaining ${order.remainingIusdDisplay} iUSD will be refunded to your wallet.`
+      const ok = confirmAction(`Confirm cancel order #${order.id}?\n\n${refund}\nThis operation is irreversible; to trade again, create a new order.`)
+      if (!ok) return
       const hash = await sendContractTx('market', 'cancelOrder', [order.id], 0n, 360000n)
       showToast(`Order #${order.id} cancelled.`, 'success', hash)
       await refreshData(page)
@@ -475,54 +529,77 @@ export function InriP2PClient() {
       const newPriceRaw = parsePrice(draft.price)
       const newDeadlineMinutes = Math.max(0, Number(draft.deadlineMinutes || 0))
       const newDeadline = newDeadlineMinutes > 0 ? Math.floor(Date.now() / 1000) + Math.floor(newDeadlineMinutes * 60) : 0
-      const txHashes: string[] = []
+      const currentDeadlineText = order.deadline ? new Date(order.deadline * 1000).toLocaleString() : 'No deadline'
+      const newDeadlineText = newDeadline ? new Date(newDeadline * 1000).toLocaleString() : 'No deadline'
 
+      const ok = confirmAction(
+        `Confirm edit order #${order.id}\n\nCurrent order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${order.priceDisplay} iUSD per INRI\nDeadline: ${currentDeadlineText}\n\nModified order:\nRemaining: ${order.remainingInriDisplay} INRI\nPrice: ${draft.price} iUSD per INRI\nDeadline: ${newDeadlineText}\n\nFor BUY orders, changing price may add or refund locked iUSD automatically.`,
+      )
+      if (!ok) return
+
+      const txHashes: string[] = []
       if (newPriceRaw > 0n && newPriceRaw !== order.priceRaw) {
         txHashes.push(await sendContractTx('market', 'updatePrice', [order.id, newPriceRaw], 0n, 520000n))
       }
 
       const oldMinutes = order.deadline ? Math.max(0, Math.round((order.deadline - Math.floor(Date.now() / 1000)) / 60)) : 0
       if (Math.abs(newDeadlineMinutes - oldMinutes) > 1) {
-        txHashes.push(await sendContractTx('market', 'updateDeadline', [order.id, newDeadline], 0n, 280000n))
+        txHashes.push(await sendContractTx('market', 'updateDeadline', [order.id, newDeadline], 0n, 260000n))
       }
 
-      if (txHashes.length === 0) throw new Error('Nothing changed in this order.')
-      showToast(`Order #${order.id} updated.`, 'success', txHashes[txHashes.length - 1])
+      if (txHashes.length === 0) showToast('No edit changes detected.', 'warning')
+      else showToast(`Order #${order.id} updated.`, 'success', txHashes[txHashes.length - 1])
       setEditingId(null)
       await refreshData(page)
     } catch (cause) {
-      showToast(getErrorMessage(cause, 'Update failed'), 'error')
+      showToast(getErrorMessage(cause, 'Edit failed'), 'error')
     } finally {
       setBusyAction(null)
     }
   }, [editDrafts, page, refreshData, sendContractTx, showToast])
 
-  const resizeOrder = useCallback(async (order: P2POrder, mode: 'add' | 'remove') => {
-    const action = `resize-${mode}-${order.id}`
+  const resizeOrder = useCallback(async (order: P2POrder, direction: 'add' | 'remove') => {
+    const action = `resize-${direction}-${order.id}`
     setBusyAction(action)
     try {
-      const rawValue = resizeAmounts[order.id] || ''
-      if (!rawValue) throw new Error('Enter an amount first.')
+      const raw = resizeAmounts[order.id] || ''
+      if (!raw) throw new Error('Enter an amount first.')
       let hash = ''
 
       if (order.side === 'sell') {
-        const inriAmount = parseInriAmount(rawValue)
-        if (inriAmount <= 0n) throw new Error('Enter a valid INRI amount.')
-        hash = mode === 'add'
-          ? await sendContractTx('market', 'addInriToSellOrder', [order.id], inriAmount, 420000n)
-          : await sendContractTx('market', 'removeInriFromSellOrder', [order.id, inriAmount], 0n, 420000n)
-      } else if (mode === 'add') {
-        const iusdAmount = parseIusdAmount(rawValue)
-        if (iusdAmount <= 0n) throw new Error('Enter a valid iUSD amount.')
-        if (allowance < iusdAmount) throw new Error('Approve enough iUSD before adding to this BUY order.')
-        hash = await sendContractTx('market', 'addIusdToBuyOrder', [order.id, iusdAmount], 0n, 520000n)
+        const amount = parseInriAmount(raw)
+        if (amount <= 0n) throw new Error('Enter a valid INRI amount.')
+        const ok = confirmAction(
+          direction === 'add'
+            ? `Confirm add to SELL order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI\nAdd: ${formatInri(amount)} INRI\nNew estimated remaining: ${formatInri(order.remainingInri + amount)} INRI`
+            : `Confirm remove from SELL order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI\nRemove/refund: ${formatInri(amount)} INRI\nThis reduces the open order size.`,
+        )
+        if (!ok) return
+        hash = direction === 'add'
+          ? await sendContractTx('market', 'addInriToSellOrder', [order.id], amount, 360000n)
+          : await sendContractTx('market', 'removeInriFromSellOrder', [order.id, amount], 0n, 360000n)
+      } else if (direction === 'add') {
+        const amount = parseIusdAmount(raw)
+        if (amount <= 0n) throw new Error('Enter a valid iUSD amount.')
+        if (allowance < amount) throw new Error('Approve iUSD before adding size to this BUY order.')
+        const deltaInri = order.priceRaw > 0n ? (amount * 10n ** 18n) / order.priceRaw : 0n
+        const ok = confirmAction(
+          `Confirm add to BUY order #${order.id}\n\nCurrent locked iUSD: ${order.remainingIusdDisplay}\nAdd locked iUSD: ${formatIusd(amount)}\nEstimated extra INRI wanted: ${formatInri(deltaInri)}\nNew estimated remaining INRI: ${formatInri(order.remainingInri + deltaInri)}`,
+        )
+        if (!ok) return
+        hash = await sendContractTx('market', 'addIusdToBuyOrder', [order.id, amount], 0n, 420000n)
       } else {
-        const inriAmount = parseInriAmount(rawValue)
-        if (inriAmount <= 0n) throw new Error('Enter a valid INRI amount.')
-        hash = await sendContractTx('market', 'reduceBuyOrder', [order.id, inriAmount], 0n, 420000n)
+        const amount = parseInriAmount(raw)
+        if (amount <= 0n) throw new Error('Enter a valid INRI amount.')
+        const refundIusd = quoteIusdGrossLocal(amount, order.priceRaw)
+        const ok = confirmAction(
+          `Confirm reduce BUY order #${order.id}\n\nCurrent remaining: ${order.remainingInriDisplay} INRI wanted\nReduce: ${formatInri(amount)} INRI\nEstimated iUSD refund: ${formatIusd(refundIusd)}\nThis reduces the open order size.`,
+        )
+        if (!ok) return
+        hash = await sendContractTx('market', 'reduceBuyOrder', [order.id, amount], 0n, 420000n)
       }
 
-      showToast(`Order #${order.id} size updated.`, 'success', hash)
+      showToast(`Order #${order.id} resized.`, 'success', hash)
       setResizeAmounts((previous) => ({ ...previous, [order.id]: '' }))
       await refreshData(page)
     } catch (cause) {
@@ -532,252 +609,238 @@ export function InriP2PClient() {
     }
   }, [allowance, page, refreshData, resizeAmounts, sendContractTx, showToast])
 
-  const copyText = async (value: string, label: string) => {
+  const copyValue = useCallback(async (value: string, label: string) => {
     try {
       await navigator.clipboard.writeText(value)
       setCopied(label)
-      window.setTimeout(() => setCopied(''), 1800)
-    } catch {}
+      window.setTimeout(() => setCopied(''), 1600)
+    } catch {
+      showToast('Could not copy to clipboard.', 'warning')
+    }
+  }, [showToast])
+
+  const setMainView = (nextView: P2PView) => {
+    setView(nextView)
+    setPage(1)
+    setQuery('')
+    setSideFilter('all')
   }
 
-  const needsCreateApproval = createSide === 'buy' && createPreview.gross > 0n && allowance < createPreview.gross
-
-  const viewButton = (target: P2PView, label: string, icon: ReactNode) => (
-    <button
-      type="button"
-      onClick={() => { setView(target); setPage(1) }}
-      className={`flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-black transition ${
-        view === target
-          ? 'border-cyan-200/60 bg-cyan-300 text-[#03111a] shadow-[0_14px_34px_rgba(19,164,255,0.18)]'
-          : 'border-white/10 bg-white/[0.04] text-white/70 hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-white'
-      }`}
-    >
-      {icon}
-      {label}
+  const navButton = (key: P2PView, label: string, icon: ReactNode) => (
+    <button key={key} type="button" onClick={() => setMainView(key)} className={`${view === key ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-sm font-black transition hover:border-cyan-300/35 hover:text-white`}>
+      {icon}{label}
     </button>
   )
 
+  const disconnectedNotice = !providerReady ? 'Connect wallet in the top header to trade.' : !networkReady ? 'Switch wallet to INRI CHAIN before trading.' : ''
+
   return (
-    <div className="notranslate grid gap-6 text-white" translate="no">
-      <div className="rounded-[2rem] border border-cyan-300/20 bg-[radial-gradient(circle_at_20%_0%,rgba(19,164,255,0.16),transparent_34%),linear-gradient(180deg,rgba(7,18,31,0.98),rgba(1,5,10,0.98))] p-5 shadow-[0_34px_110px_rgba(0,0,0,0.42)] sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/22 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100">
-              <ShieldCheck className="h-4 w-4" /> Live INRI contract
-            </div>
-            <h2 className="mt-4 text-3xl font-black tracking-[-0.05em] text-white sm:text-4xl">INRI / iUSD P2P Market</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-white/60">
-              Create buy and sell orders, fill partially, edit price or deadline, resize your open positions and cancel safely. Native INRI is held by the contract for SELL orders; iUSD is locked for BUY orders.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:flex sm:flex-wrap sm:justify-end">
-            <button type="button" onClick={() => void syncWallet(true).then(() => refreshData(page))} className={buttonBase(false)} disabled={busyAction !== null}>
-              <Wallet className="h-4 w-4" /> {providerReady ? shortAddress(account, 5) : 'Use top wallet'}
-            </button>
-            <button type="button" onClick={() => void refreshData(page)} className={buttonBase(true)} disabled={loading || busyAction !== null}>
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <StatCard icon={<Store className="h-4 w-4" />} label="Orders" value={String(stats?.totalOrders ?? '—')} sub="created on-chain" />
-          <StatCard icon={<ShieldCheck className="h-4 w-4" />} label="Fee" value={`${((stats?.feeBps || 0) / 100).toFixed(2)}%`} sub={`${stats?.feeBps || 0} bps to treasury`} />
-          <StatCard icon={<Wallet className="h-4 w-4" />} label="INRI balance" value={formatInri(inriBalance)} sub="native wallet balance" />
-          <StatCard icon={<BadgeCheck className="h-4 w-4" />} label="iUSD balance" value={formatIusd(iusdBalance)} sub={shortAddress(P2P_IUSD_ADDRESS, 5)} />
-          <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label="Allowance" value={formatIusd(allowance)} sub="approved for P2P" />
-        </div>
-
-        <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-white/10 bg-black/22 p-4 text-sm leading-7 text-white/60 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="grid gap-1">
-            <div>
-              Wallet: <span className="font-black text-white">{account ? shortAddress(account, 6) : 'not connected'}</span> · Network: <span className={networkReady ? 'font-black text-emerald-200' : 'font-black text-amber-200'}>{networkReady ? 'INRI CHAIN' : wallet.chainId || 'not ready'}</span>
-            </div>
-            <div className="break-all text-xs text-white/42">
-              P2P: {P2P_MARKET_ADDRESS} · iUSD: {P2P_IUSD_ADDRESS}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> Contract</a>
-            <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className={buttonBase(false)}><ExternalLink className="h-4 w-4" /> iUSD</a>
-          </div>
-        </div>
-      </div>
-
+    <div className="grid gap-6">
       {toast ? (
-        <div className={`flex flex-col gap-3 rounded-[1.35rem] border p-4 text-sm font-semibold sm:flex-row sm:items-center sm:justify-between ${statusClass(toast.tone)}`}>
-          <div className="flex items-center gap-3">
-            {toast.tone === 'success' ? <CheckCircle2 className="h-5 w-5" /> : toast.tone === 'error' ? <XCircle className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
-            <span>{toast.message}</span>
-          </div>
-          {toast.txHash ? (
-            <a href={`${EXPLORER_TX_URL}${toast.txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] underline underline-offset-4">
-              View TX <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          ) : null}
+        <div className={`flex flex-col gap-3 rounded-[1.25rem] border p-4 text-sm font-semibold sm:flex-row sm:items-center sm:justify-between ${statusClass(toast.tone)}`}>
+          <span>{toast.message}</span>
+          {toast.txHash ? <a href={`${EXPLORER_TX_URL}${toast.txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-black underline"><ExternalLink className="h-4 w-4" /> View tx</a> : null}
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {viewButton('market', 'Market', <Store className="h-4 w-4" />)}
-        {viewButton('create', 'Create', <Plus className="h-4 w-4" />)}
-        {viewButton('mine', 'My Orders', <Wallet className="h-4 w-4" />)}
-        {viewButton('activity', 'Activity', <Activity className="h-4 w-4" />)}
+      <Card>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/22 bg-cyan-300/10 px-3 py-1.5 text-xs font-black text-cyan-100">
+              <ShieldCheck className="h-4 w-4" /> Official INRI P2P Escrow
+            </div>
+            <h2 className="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">Market, orders and wallet balances</h2>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-white/58">
+              Trade native INRI against iUSD with on-chain escrow. The P2P fee is charged only on filled amounts and is automatically credited to treasury.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload
+            </button>
+            <button type="button" onClick={() => void syncWallet(true)} className={buttonBase(!networkReady && providerReady)}>
+              <Wallet className="h-4 w-4" /> {account ? shortAddress(account, 5) : 'Connect header wallet'}
+            </button>
+          </div>
+        </div>
+
+        {disconnectedNotice ? (
+          <div className="mt-5 flex gap-3 rounded-[1.15rem] border border-amber-300/20 bg-amber-300/10 p-4 text-sm font-semibold leading-6 text-amber-50">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+            <span>{disconnectedNotice}</span>
+          </div>
+        ) : null}
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-4">
+          <StatCard icon={<Store className="h-5 w-5" />} label="Orders" value={`${stats?.activeOrders ?? 0} active / ${stats?.totalOrders ?? 0} total`} sub={`${stats?.historicalOrders ?? 0} historical filled/cancelled/expired records`} />
+          <StatCard icon={<BadgeCheck className="h-5 w-5" />} label="Fee" value={`${stats?.feePercentLabel ?? '0.00%'} on fills`} sub="Credited to treasury. Not charged for creating, editing or cancelling orders.">
+            <div className="text-xs font-semibold leading-5 text-white/48">Treasury: <span className="font-black text-white/70">{shortAddress(stats?.treasury, 6)}</span></div>
+          </StatCard>
+          <StatCard icon={<BarChart3 className="h-5 w-5" />} label="Reference price" value={`${stats?.referencePriceDisplay ?? '—'} iUSD`} sub={stats?.referenceSource || 'Median active order price'} />
+          <StatCard icon={<Wallet className="h-5 w-5" />} label="Balance" value="Available / Locked">
+            <div className="grid gap-2 text-xs font-semibold leading-5 text-white/60">
+              <div>INRI: <b className="text-white">Available {formatInri(inriBalance)}</b> · Locked in sell orders <b className="text-white">{formatInri(locked.lockedInri)}</b></div>
+              <div>iUSD: <b className="text-white">Available {formatIusd(iusdBalance)}</b> · Locked in buy orders <b className="text-white">{formatIusd(locked.lockedIusd)}</b></div>
+            </div>
+          </StatCard>
+        </div>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        {navButton('market', 'Market', <Store className="h-4 w-4" />)}
+        {navButton('create', 'Create order', <Plus className="h-4 w-4" />)}
+        {navButton('mine', 'My Orders', <Wallet className="h-4 w-4" />)}
+        {navButton('activity', 'Activity', <Activity className="h-4 w-4" />)}
       </div>
 
       {view === 'create' ? (
-        <div className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
-          <Card>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">New order</div>
-                <h3 className="mt-2 text-2xl font-black text-white">Create a P2P offer</h3>
+        <Card>
+          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">Create order</div>
+              <h3 className="mt-2 text-2xl font-black text-white">Open a BUY or SELL position</h3>
+              <p className="mt-2 text-sm leading-7 text-white/54">SELL locks native INRI. BUY locks iUSD. Funds stay in the P2P escrow until filled, cancelled or resized.</p>
+
+              <div className="mt-5 grid gap-4">
+                <Field label="Order side">
+                  <select className={selectClass()} value={createSide} onChange={(event) => setCreateSide(event.target.value as 'sell' | 'buy')}>
+                    <option value="sell">SELL INRI for iUSD</option>
+                    <option value="buy">BUY INRI with iUSD</option>
+                  </select>
+                </Field>
+                <Field label={createSide === 'sell' ? 'INRI amount to sell' : 'INRI amount wanted'} hint={createSide === 'sell' ? 'This INRI amount will be locked in the escrow order.' : 'The matching iUSD amount will be locked in the escrow order.'}>
+                  <input className={inputClass()} value={createInriAmount} onChange={(event) => setCreateInriAmount(event.target.value)} placeholder="0.00" inputMode="decimal" />
+                </Field>
+                <Field label="Price per INRI" hint="Example: 0.019 means 1 INRI = 0.019 iUSD.">
+                  <input className={inputClass()} value={createPrice} onChange={(event) => setCreatePrice(event.target.value)} placeholder="0.019" inputMode="decimal" />
+                </Field>
+                <Field label="Deadline in minutes" hint="Use 0 for no deadline. Expired orders stop filling and maker can cancel/refund.">
+                  <input className={inputClass()} value={createDeadlineMinutes} onChange={(event) => setCreateDeadlineMinutes(event.target.value)} placeholder="0" inputMode="numeric" />
+                </Field>
               </div>
-              <div className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100">iUSD / INRI</div>
             </div>
 
-            <div className="mt-5 grid gap-4">
-              <Field label="Order side">
-                <select className={selectClass()} value={createSide} onChange={(event) => setCreateSide(event.target.value as 'sell' | 'buy')}>
-                  <option value="sell">SELL INRI for iUSD</option>
-                  <option value="buy">BUY INRI with iUSD</option>
-                </select>
-              </Field>
+            <div className="rounded-[1.35rem] border border-cyan-300/14 bg-cyan-300/[0.055] p-5">
+              <div className="flex items-center gap-2 text-sm font-black text-cyan-100"><Info className="h-4 w-4" /> Preview before submit</div>
+              <div className="mt-4 grid gap-3 text-sm font-semibold text-white/62">
+                <div className="flex justify-between gap-3"><span>INRI amount</span><b className="text-white">{formatInri(createPreview.inri)} INRI</b></div>
+                <div className="flex justify-between gap-3"><span>Gross iUSD value</span><b className="text-white">{formatIusd(createPreview.gross)} iUSD</b></div>
+                <div className="flex justify-between gap-3"><span>Estimated fee on full fill</span><b className="text-white">{formatIusd(createPreview.fee)} iUSD</b></div>
+                <div className="flex justify-between gap-3"><span>Estimated net iUSD</span><b className="text-white">{formatIusd(createPreview.net)} iUSD</b></div>
+                <div className="rounded-2xl border border-white/10 bg-black/22 p-3 text-xs leading-6 text-white/50">Fee is not paid when creating the order. It is applied only to filled order amounts.</div>
+              </div>
 
-              <Field label="INRI amount" hint={createSide === 'sell' ? 'This native INRI amount will be locked in the contract.' : 'How much INRI you want to buy.'}>
-                <input className={inputClass()} value={createInriAmount} onChange={(event) => setCreateInriAmount(event.target.value)} placeholder="Example: 1000" inputMode="decimal" />
-              </Field>
-
-              <Field label="Price: iUSD per 1 INRI" hint="Example: 1 means 1 iUSD for each 1 INRI.">
-                <input className={inputClass()} value={createPrice} onChange={(event) => setCreatePrice(event.target.value)} placeholder="Example: 1" inputMode="decimal" />
-              </Field>
-
-              <Field label="Deadline in minutes" hint="Use 0 for no deadline. Example: 1440 = 24 hours.">
-                <input className={inputClass()} value={createDeadlineMinutes} onChange={(event) => setCreateDeadlineMinutes(event.target.value)} placeholder="0" inputMode="numeric" />
-              </Field>
-
-              {needsCreateApproval ? (
-                <button type="button" onClick={() => void approveIusd(createPreview.gross, 'approve-create')} disabled={busyAction !== null} className={buttonBase(false)}>
-                  <BadgeCheck className="h-4 w-4" /> Approve {formatIusd(createPreview.gross)} iUSD first
+              <div className="mt-5 flex flex-wrap gap-2">
+                {createSide === 'buy' && createPreview.gross > 0n && allowance < createPreview.gross ? (
+                  <button type="button" onClick={() => void approveIusd(createPreview.gross, 'approve-create')} disabled={busyAction !== null} className={buttonBase(false)}>
+                    <BadgeCheck className="h-4 w-4" /> Approve iUSD
+                  </button>
+                ) : null}
+                <button type="button" onClick={() => void createOrder()} disabled={busyAction !== null || !providerReady} className={buttonBase(true)}>
+                  {busyAction === 'create' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Create order
                 </button>
-              ) : null}
-
-              <button type="button" onClick={() => void createOrder()} disabled={busyAction !== null || !providerReady} className={buttonBase(true)}>
-                {busyAction === 'create' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                Create {createSide === 'sell' ? 'SELL' : 'BUY'} order
-              </button>
+              </div>
             </div>
-          </Card>
-
-          <Card>
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">Preview</div>
-            <h3 className="mt-2 text-2xl font-black text-white">Order summary</h3>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <StatCard icon={<ArrowDownUp className="h-4 w-4" />} label="INRI size" value={formatInri(createPreview.inri)} sub={createSide === 'sell' ? 'you lock native INRI' : 'you want to receive'} />
-              <StatCard icon={<BadgeCheck className="h-4 w-4" />} label="iUSD gross" value={formatIusd(createPreview.gross)} sub={createSide === 'buy' ? 'locked by maker' : 'paid by taker'} />
-              <StatCard icon={<ShieldCheck className="h-4 w-4" />} label="Fee estimate" value={formatIusd(createPreview.fee)} sub={`${stats?.feeBps || 0} bps`} />
-              <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label="Net iUSD" value={formatIusd(createPreview.net)} sub="after fee on fill" />
-            </div>
-            <div className="mt-5 rounded-[1.25rem] border border-cyan-300/14 bg-cyan-300/8 p-4 text-sm leading-7 text-white/64">
-              <b className="text-white">How this contract works:</b> SELL orders lock native INRI and takers pay iUSD. BUY orders lock iUSD and takers sell native INRI into the order. Partial fills are supported and slippage protection is automatically passed in every fill transaction.
-            </div>
-          </Card>
-        </div>
+          </div>
+        </Card>
       ) : null}
 
-      {view === 'market' || view === 'mine' ? (
+      {(view === 'market' || view === 'mine') ? (
         <Card>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">{view === 'mine' ? 'Wallet orders' : 'Live market'}</div>
-              <h3 className="mt-2 text-2xl font-black text-white">{view === 'mine' ? 'Manage your orders' : 'Open INRI/iUSD orders'}</h3>
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">{view === 'market' ? 'Open orders' : 'My order history'}</div>
+              <h3 className="mt-2 text-2xl font-black text-white">{view === 'market' ? 'Available P2P orders' : 'Active, filled and cancelled orders'}</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-white/54">
+                Reference price: <b className="text-white">{stats?.referencePriceDisplay ?? '—'} iUSD</b> · {stats?.referenceSource || 'No reference yet'}. Deadlines expire open orders and stop new fills.
+              </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-[minmax(180px,1fr)_160px_140px_auto] lg:min-w-[720px]">
-              <label className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/36" />
-                <input className={`${inputClass()} pl-11`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search order or maker" />
-              </label>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+              <div className="relative min-w-[240px]">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/32" />
+                <input className={`${inputClass()} pl-11`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search id, maker, price..." />
+              </div>
               <select className={selectClass()} value={sideFilter} onChange={(event) => setSideFilter(event.target.value as SideFilter)}>
                 <option value="all">All sides</option>
-                <option value="sell">Sell INRI</option>
-                <option value="buy">Buy INRI</option>
+                <option value="sell">SELL orders</option>
+                <option value="buy">BUY orders</option>
               </select>
-              <select className={selectClass()} value={activeOnly ? 'active' : 'all'} onChange={(event) => setActiveOnly(event.target.value === 'active')}>
-                <option value="active">Active only</option>
-                <option value="all">All orders</option>
-              </select>
-              <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}>
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload
-              </button>
             </div>
           </div>
 
-          <div className="mt-5 grid gap-4 xl:grid-cols-2">
-            {filteredOrders.length === 0 ? (
-              <div className="xl:col-span-2">
-                <EmptyState title={loading ? 'Loading orders...' : 'No orders found'} body={view === 'mine' ? 'Connect your wallet or create a new order to see it here.' : 'There are no matching orders in the current page/filter.'} />
-              </div>
-            ) : filteredOrders.map((order) => {
+          {view === 'mine' ? (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {(['active', 'filled', 'cancelled'] as const).map((tab) => (
+                <button key={tab} type="button" onClick={() => { setMyOrderTab(tab); setPage(1) }} className={`${myOrderTab === tab ? 'border-cyan-300/45 bg-cyan-300/12 text-cyan-50' : 'border-white/10 bg-white/[0.035] text-white/58'} rounded-2xl border px-4 py-2 text-sm font-black capitalize transition hover:border-cyan-300/35 hover:text-white`}>
+                  {tab}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-black/18 p-4 text-xs font-semibold leading-6 text-white/52">
+            <b className="text-white">How to read cards:</b> SELL orders lock INRI and takers pay iUSD to receive INRI. BUY orders lock iUSD and takers send INRI to receive iUSD. The estimate panel shows gross amount, fee and net amount before you fill.
+          </div>
+
+          <div className="mt-5 grid gap-4">
+            {filteredOrders.length === 0 ? <EmptyState title="No matching orders" body={view === 'market' ? 'No active open orders matched the current filters.' : 'No orders were found in this tab for your wallet.'} /> : null}
+
+            {filteredOrders.map((order) => {
               const isMaker = account && order.maker.toLowerCase() === account.toLowerCase()
               const amountText = fillAmounts[order.id] || ''
-              let fillGross = 0n
-              try {
-                const amount = parseInriAmount(amountText)
-                fillGross = quoteIusdGrossLocal(amount, order.priceRaw)
-              } catch {}
-
+              let fillAmount = 0n
+              try { fillAmount = parseInriAmount(amountText) } catch { fillAmount = 0n }
+              const fillGross = fillAmount > 0n ? quoteIusdGrossLocal(fillAmount, order.priceRaw) : 0n
               const fillFee = feeOfLocal(fillGross, stats?.feeBps || 0)
               const fillNet = fillGross - fillFee
-              const canFill = order.active && !order.expired && !isMaker
               const draft = editDrafts[order.id] || { price: order.priceDisplay.replace(/,/g, ''), deadlineMinutes: '0' }
+              const priceDiff = stats?.referencePriceRaw ? percentVsReference(order.priceRaw, stats.referencePriceRaw) : '—'
 
               return (
-                <div key={order.id} className="rounded-[1.5rem] border border-white/10 bg-black/22 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div key={order.id} className="rounded-[1.45rem] border border-white/10 bg-black/22 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full border px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] ${order.side === 'sell' ? 'border-cyan-300/22 bg-cyan-300/10 text-cyan-100' : 'border-emerald-300/22 bg-emerald-300/10 text-emerald-100'}`}>
-                          {order.side === 'sell' ? 'SELL INRI' : 'BUY INRI'}
-                        </span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-black text-white/60">#{order.id}</span>
-                        {isMaker ? <span className="rounded-full border border-amber-300/24 bg-amber-300/10 px-3 py-1.5 text-xs font-black text-amber-100">Your order</span> : null}
+                        <span className={`${order.side === 'sell' ? 'border-emerald-300/28 bg-emerald-400/10 text-emerald-100' : 'border-cyan-300/28 bg-cyan-300/10 text-cyan-100'} rounded-full border px-3 py-1.5 text-xs font-black`}>{order.side === 'sell' ? 'SELL INRI' : 'BUY INRI'}</span>
+                        <span className="rounded-full border border-white/12 bg-white/[0.045] px-3 py-1.5 text-xs font-black text-white/72">#{order.id}</span>
+                        <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${statusClass(orderStatusTone(order))}`}>{order.statusLabel}</span>
                       </div>
-                      <div className="mt-3 text-xs font-semibold text-white/46">Maker</div>
-                      <button type="button" onClick={() => void copyText(order.maker, `maker-${order.id}`)} className="mt-1 inline-flex items-center gap-2 break-all text-left text-sm font-black text-white hover:text-cyan-100">
-                        {shortAddress(order.maker, 8)} <Copy className="h-3.5 w-3.5" />
-                      </button>
-                      {copied === `maker-${order.id}` ? <span className="ml-2 text-xs font-black text-emerald-200">copied</span> : null}
+                      <div className="mt-3 text-2xl font-black text-white">{order.priceDisplay} iUSD <span className="text-sm font-semibold text-white/45">per INRI</span></div>
+                      <div className="mt-1 text-xs font-semibold text-white/42">{priceDiff}</div>
                     </div>
-
-                    <div className={`rounded-full border px-3 py-1.5 text-xs font-black ${order.active && !order.expired ? statusClass('success') : statusClass(order.expired ? 'warning' : 'neutral')}`}>
-                      {order.active ? (order.expired ? 'Expired' : 'Active') : 'Closed'}
+                    <div className="grid gap-2 text-xs font-semibold text-white/48 xl:text-right">
+                      <button type="button" onClick={() => void copyValue(String(order.id), `order-${order.id}`)} className="inline-flex items-center gap-2 hover:text-white"><Copy className="h-3.5 w-3.5" /> {copied === `order-${order.id}` ? 'Copied order id' : 'Copy order id'}</button>
+                      <div>Maker: <button type="button" onClick={() => void copyValue(order.maker, `maker-${order.id}`)} className="font-black text-white/70 hover:text-white">{shortAddress(order.maker, 6)}</button></div>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
+                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Remaining INRI</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Remaining INRI to {order.side === 'sell' ? 'sell' : 'buy'}</div>
                       <div className="mt-1 text-lg font-black text-white">{order.remainingInriDisplay}</div>
+                      <div className="mt-1 text-xs font-semibold text-white/42">Original size: {order.initialInriDisplay} INRI</div>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Price</div>
-                      <div className="mt-1 text-lg font-black text-white">{order.priceDisplay} iUSD</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">{order.side === 'sell' ? 'Locked INRI' : 'Locked iUSD'}</div>
+                      <div className="mt-1 text-lg font-black text-white">{order.side === 'sell' ? order.remainingInriDisplay : order.remainingIusdDisplay}</div>
+                      <div className="mt-1 text-xs font-semibold text-white/42">{order.lockedLabel}</div>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Locked iUSD</div>
-                      <div className="mt-1 text-lg font-black text-white">{order.remainingIusdDisplay}</div>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Deadline</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Order expires</div>
                       <div className="mt-1 text-lg font-black text-white">{deadlineLabel(order.deadline)}</div>
+                      <div className="mt-1 text-xs font-semibold text-white/42">{fullDeadlineLabel(order.deadline)}</div>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/38">Fill progress</div>
+                      <div className="mt-1 text-lg font-black text-white">{order.progressPercent.toFixed(2)}%</div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-cyan-300" style={{ width: `${order.progressPercent}%` }} /></div>
                     </div>
                   </div>
 
-                  {canFill ? (
-                    <div className="mt-4 rounded-[1.25rem] border border-cyan-300/12 bg-cyan-300/[0.055] p-3">
-                      <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
-                        <Field label={order.side === 'sell' ? 'INRI to buy' : 'INRI to sell'} hint={order.side === 'sell' ? `Needs ${formatIusd(fillGross)} iUSD allowance.` : `You receive about ${formatIusd(fillNet)} iUSD net.`}>
+                  {order.active && view === 'market' ? (
+                    <div className="mt-4 rounded-[1.25rem] border border-cyan-300/14 bg-cyan-300/[0.045] p-4">
+                      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_auto] lg:items-end">
+                        <Field label={order.side === 'sell' ? 'INRI to buy' : 'INRI to sell'} hint={order.side === 'sell' ? 'You pay iUSD and receive native INRI.' : 'You send native INRI and receive iUSD net after fee.'}>
                           <input className={inputClass()} value={amountText} onChange={(event) => setFillAmounts((previous) => ({ ...previous, [order.id]: event.target.value }))} placeholder="Amount" inputMode="decimal" />
                         </Field>
                         <div className="flex flex-wrap gap-2">
@@ -792,10 +855,10 @@ export function InriP2PClient() {
                           </button>
                         </div>
                       </div>
-                      <div className="mt-3 grid gap-2 text-xs font-semibold text-white/50 sm:grid-cols-3">
-                        <span>Gross: <b className="text-white">{formatIusd(fillGross)}</b></span>
-                        <span>Fee: <b className="text-white">{formatIusd(fillFee)}</b></span>
-                        <span>Net: <b className="text-white">{formatIusd(fillNet)}</b></span>
+                      <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/22 p-3 text-xs font-semibold text-white/56 sm:grid-cols-3">
+                        <span>Gross amount: <b className="text-white">{formatIusd(fillGross)} iUSD</b></span>
+                        <span>Fee: <b className="text-white">{formatIusd(fillFee)} iUSD</b></span>
+                        <span>{order.side === 'sell' ? 'Net maker receives' : 'Net you receive'}: <b className="text-white">{formatIusd(fillNet)} iUSD</b></span>
                       </div>
                     </div>
                   ) : null}
@@ -803,7 +866,10 @@ export function InriP2PClient() {
                   {isMaker && order.active ? (
                     <div className="mt-4 grid gap-3 rounded-[1.25rem] border border-amber-300/14 bg-amber-300/[0.045] p-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="text-sm font-black text-white">Manage order</div>
+                        <div>
+                          <div className="text-sm font-black text-white">Manage order</div>
+                          <div className="text-xs font-semibold text-white/45">Edit, add, remove or cancel. Every operation shows a confirmation preview before wallet signing.</div>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => startEdit(order)} className={buttonBase(false)} disabled={busyAction !== null}>
                             <Edit3 className="h-4 w-4" /> Edit
@@ -830,7 +896,7 @@ export function InriP2PClient() {
                       ) : null}
 
                       <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-end">
-                        <Field label={order.side === 'sell' ? 'Resize INRI amount' : 'Resize amount'} hint={order.side === 'buy' ? 'Add uses iUSD amount. Remove/reduce uses INRI amount.' : 'Add/remove native INRI from this SELL order.'}>
+                        <Field label={order.side === 'sell' ? 'Resize INRI amount' : 'Resize amount'} hint={order.side === 'buy' ? 'Add uses iUSD amount. Reduce uses INRI amount.' : 'Add/remove native INRI from this SELL order.'}>
                           <input className={inputClass()} value={resizeAmounts[order.id] || ''} onChange={(event) => setResizeAmounts((previous) => ({ ...previous, [order.id]: event.target.value }))} placeholder={order.side === 'buy' ? 'iUSD for add, INRI for reduce' : 'INRI amount'} inputMode="decimal" />
                         </Field>
                         {order.side === 'buy' ? (
@@ -870,12 +936,13 @@ export function InriP2PClient() {
             <div>
               <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-100/58">Recent events</div>
               <h3 className="mt-2 text-2xl font-black text-white">On-chain P2P activity</h3>
+              <p className="mt-2 text-sm leading-7 text-white/54">Create, fill, cancel, price/deadline edits and resize events from the official P2P contract.</p>
             </div>
             <button type="button" onClick={() => void refreshData(page)} className={buttonBase(false)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Reload events</button>
           </div>
 
           <div className="mt-5 grid gap-3">
-            {events.length === 0 ? <EmptyState title="No recent events loaded" body="The contract may be new or the explorer/RPC event window has no matching logs yet." /> : events.map((event, index) => (
+            {events.length === 0 ? <EmptyState title="No recent events loaded" body="The contract may be new or the RPC event window has no matching logs yet." /> : events.map((event, index) => (
               <div key={`${event.txHash}-${index}`} className="grid gap-3 rounded-[1.25rem] border border-white/10 bg-black/22 p-4 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -897,6 +964,14 @@ export function InriP2PClient() {
           </div>
         </Card>
       ) : null}
+
+      <Card className="p-4">
+        <div className="grid gap-3 text-xs font-semibold leading-6 text-white/48 md:grid-cols-3">
+          <a href={P2P_EXPLORER_ADDRESS_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> P2P contract: {shortAddress(P2P_MARKET_ADDRESS, 6)}</a>
+          <a href={IUSD_EXPLORER_TOKEN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-white"><ExternalLink className="h-4 w-4" /> iUSD token: {shortAddress(P2P_IUSD_ADDRESS, 6)}</a>
+          <span className="inline-flex items-center gap-2"><Info className="h-4 w-4" /> Fee estimate shown before every fill.</span>
+        </div>
+      </Card>
     </div>
   )
 }
