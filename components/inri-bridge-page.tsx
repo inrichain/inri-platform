@@ -344,7 +344,7 @@ function TokenLogo({ token, size = 'md' }: { token: 'USDT' | 'iUSD'; size?: 'sm'
 }
 
 function ChainMark({ chain }: { chain: 'Polygon' | 'INRI Chain' }) {
-  const src = chain === 'Polygon' ? '/polygon-logo.svg' : '/inri-logo.png'
+  const src = chain === 'Polygon' ? '/polygon-logo.png' : '/inri-logo.png'
   return (
     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full">
       <img src={src} alt={`${chain} logo`} className="h-full w-full object-contain" />
