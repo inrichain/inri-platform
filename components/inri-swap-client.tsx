@@ -942,8 +942,8 @@ export function InriSwapClient() {
       <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
         <section className="relative border-b border-cyan-300/12 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
-          <div className="relative mx-auto max-w-[920px] px-4 py-5 sm:px-5 lg:px-5 lg:py-6">
-            <div className="mx-auto max-w-[760px]">
+          <div className="relative mx-auto max-w-[820px] px-4 py-5 sm:px-5 lg:px-5 lg:py-6">
+            <div className="mx-auto max-w-[660px]">
               <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.20em] text-cyan-100">
@@ -980,8 +980,8 @@ export function InriSwapClient() {
         </section>
 
         <section className="relative bg-[#02040a] py-7">
-          <div className="mx-auto max-w-[920px] px-4 sm:px-5 lg:px-5">
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+          <div className="mx-auto max-w-[820px] px-4 sm:px-5 lg:px-5">
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
               {tabItems.map((item) => {
                 const ActiveIcon = item.icon
                 const active = tab === item.key
@@ -1024,21 +1024,12 @@ export function InriSwapClient() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between gap-3 px-1">
-                    <div className="flex rounded-full border border-white/10 bg-black/24 p-1">
-                      {['Swap', 'Buy', 'Sell'].map((label) => (
-                        <button
-                          key={label}
-                          type="button"
-                          disabled={label !== 'Swap'}
-                          className={`h-9 rounded-full px-4 text-sm font-black transition ${label === 'Swap' ? 'bg-white text-black' : 'text-white/40'}`}
-                        >
-                          {label}{label !== 'Swap' ? <span className="ml-1 text-[10px] uppercase">soon</span> : null}
-                        </button>
-                      ))}
+                  <div className="mt-4 flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-[11px] font-black text-cyan-100">
+                      <ArrowRight className="h-3.5 w-3.5" /> Route {routeLabel}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-cyan-100 sm:block">
+                      <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-cyan-100">
                         Slippage {slippage || '1'}%
                       </div>
                       <button type="button" onClick={() => void refreshAll()} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300/10">
@@ -1047,8 +1038,8 @@ export function InriSwapClient() {
                     </div>
                   </div>
 
-                  <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
-                    <FieldLabel label="Sell" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
+                  <div className="mt-4 rounded-[22px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
+                    <FieldLabel label="From" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
                     <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
                       <div>
                         <input
@@ -1066,7 +1057,7 @@ export function InriSwapClient() {
                     </div>
                   </div>
 
-                  <div className="relative z-10 mx-auto -my-1 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
+                  <div className="relative z-10 mx-auto -my-2 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
                     <button
                       type="button"
                       onClick={() => {
@@ -1081,8 +1072,8 @@ export function InriSwapClient() {
                     </button>
                   </div>
 
-                  <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
-                    <FieldLabel label="Buy" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
+                  <div className="rounded-[22px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
+                    <FieldLabel label="To" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
                     <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
                       <div className="flex h-16 items-center rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
                         {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals, 6) : '0'}
