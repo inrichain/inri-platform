@@ -1,0 +1,28 @@
+INRISwap route fix
+
+The /swap page MUST contain only:
+
+import { InriSwapClient } from '@/components/inri-swap-client'
+
+export default function Page() {
+  return <InriSwapClient />
+}
+
+Before deploy, confirm:
+
+grep -R "Future swap hub\|Same standard\|InriPageTemplate" -n src/app/swap/page.tsx
+
+Expected: no result.
+
+Confirm:
+
+grep -R "InriSwapClient" -n src/app/swap/page.tsx components/inri-swap-client.tsx
+
+Expected: results.
+
+Official INRISwap contracts:
+Factory: 0x43F12f9f707840595c45c4f85f2ecC3bc5cCF190
+Router: 0xcd5E469b9f6E3BA80F03B1De7B202EbE5DEB8DcD
+Pair iUSD/WINRI: 0xcaFFACD05499d005d8441337811bAd227Fa24643
+WINRI: 0x8731F1709745173470821eAeEd9BC600EEC9A3D1
+iUSD: 0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC
