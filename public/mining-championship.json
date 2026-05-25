@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-05-25T19:14:01.347Z",
-  "currentBlock": 1288241,
+  "updatedAt": "2026-05-25T19:24:04.432Z",
+  "currentBlock": 1288261,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1288241,
+  "lastScannedBlock": 1288261,
   "backfillComplete": true,
   "participants": [
     {
