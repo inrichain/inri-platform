@@ -926,7 +926,7 @@ export function InriSwapClient() {
     : '—'
 
   const maxFromBalance = fromToken.native && fromBalance > parseUnits('0.02', 18) ? fromBalance - parseUnits('0.02', 18) : fromBalance
-  const swapActionLabel = !connected ? 'Connect wallet' : !networkReady ? 'Switch to INRI Chain' : quoteOut <= 0n ? 'Enter amount / no route' : 'Review swap'
+  const swapActionLabel = !connected ? 'Connect wallet' : !networkReady ? 'Switch to INRI Chain' : quoteOut <= 0n ? 'Enter amount' : 'Swap'
   const poolTvlApprox = pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
   const liqRatioText = liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
     ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
@@ -940,7 +940,7 @@ export function InriSwapClient() {
   return (
     <InriShell>
       <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
-        <section className="relative bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#04101d_100%)]">
+        <section className="relative min-h-screen border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#04101d_100%)] pb-8">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
           <div className="relative mx-auto max-w-[820px] px-4 py-5 sm:px-5 lg:px-5 lg:py-5">
             <div className="mx-auto max-w-[660px]">
@@ -976,13 +976,9 @@ export function InriSwapClient() {
                 </div>
               ) : null}
             </div>
-          </div>
-        </section>
 
-        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.18),transparent_24rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.10),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)] py-7">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
-          <div className="relative mx-auto max-w-[820px] px-4 sm:px-5 lg:px-5">
-            <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
+            <div className="mt-5">
+              <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
               {tabItems.map((item) => {
                 const ActiveIcon = item.icon
                 const active = tab === item.key
@@ -1308,6 +1304,7 @@ export function InriSwapClient() {
                   </div>
                 </Panel>
               </div>
+            </div>
             </div>
           </div>
         </section>
