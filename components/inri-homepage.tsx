@@ -39,7 +39,7 @@ const ecosystemCards = [
   { title: 'Whitepaper', text: 'Read the structure, token model and direction of INRI.', href: '/whitepaper', icon: FileText },
   { title: 'Windows Mining', text: 'Mining setup for Windows users.', href: '/mining-windows', icon: Cpu },
   { title: 'Ubuntu Mining', text: 'Server/VPS mining route for Ubuntu.', href: '/mining-ubuntu', icon: Activity },
-  { title: 'Swap', text: 'Prepared route for the INRI liquidity layer.', href: '/swap', icon: Zap },
+  { title: 'INRISwap', text: 'Swap INRI, iUSD and create liquidity pools on INRI Chain.', href: '/swap', icon: Zap },
 ]
 
 export function InriHomepage() {
@@ -62,7 +62,7 @@ export function InriHomepage() {
               </h1>
 
               <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72 sm:text-xl">
-                Wallet, explorer, mining, staking, token launch, pool, whitepaper and P2P trading in one stronger network interface.
+                Wallet, explorer, mining, staking, token launch, INRISwap, pool, whitepaper and P2P trading in one stronger network interface.
               </p>
 
               <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
