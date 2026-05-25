@@ -21,7 +21,6 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Contract, Interface, JsonRpcProvider, MaxUint256, ZeroAddress, formatUnits, parseUnits } from 'ethers'
-import { ConnectWalletButton } from '@/components/connect-wallet-button'
 import { InriShell } from '@/components/inri-site-shell'
 import {
   getErrorMessage,
@@ -935,43 +934,53 @@ export function InriSwapClient() {
   const liqPairStatus = liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
   const liqBalanceA = balances[tokenKey(liqTokenA)] ?? 0n
   const liqBalanceB = balances[tokenKey(liqTokenB)] ?? 0n
-  const contentWidthClass = tab === 'swap' ? 'max-w-[620px]' : tab === 'liquidity' ? 'max-w-[760px]' : 'max-w-[720px]'
-  const infoWidthClass = tab === 'swap' ? 'max-w-[980px]' : 'max-w-[1120px]'
+  const contentWidthClass = tab === 'swap' ? 'max-w-[660px]' : tab === 'liquidity' ? 'max-w-[760px]' : 'max-w-[720px]'
+  const infoWidthClass = contentWidthClass
 
   return (
     <InriShell>
       <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
-        <section className="relative border-b border-cyan-300/10 bg-[radial-gradient(circle_at_50%_-10%,rgba(42,205,255,0.30),transparent_34rem),radial-gradient(circle_at_10%_20%,rgba(0,110,255,0.14),transparent_28rem),linear-gradient(180deg,#061423_0%,#02040a_42%,#02040a_100%)]">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-70" />
-          <div className="relative mx-auto max-w-[1360px] px-4 py-7 sm:px-8 xl:px-10">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-cyan-100">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Official INRISwap V1
+        <section className="relative border-b border-cyan-300/12 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="relative mx-auto max-w-[920px] px-4 py-5 sm:px-5 lg:px-5 lg:py-6">
+            <div className="mx-auto max-w-[760px]">
+              <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.20em] text-cyan-100">
+                    <img src="/inri-logo.png" alt="INRI logo" className="h-4 w-4 object-contain" /> Official INRISwap V1
+                  </div>
+                  <h1 className="mt-3 text-[26px] font-black tracking-[-0.055em] text-white sm:text-[30px]">INRISwap</h1>
+                  <p className="mt-2 max-w-[580px] text-sm font-semibold leading-6 text-cyan-50/62">
+                    Swap tokens, add liquidity and discover assets on INRI Chain. Native INRI is wrapped into WINRI automatically.
+                  </p>
                 </div>
-                <h1 className="mt-4 text-4xl font-black tracking-[-0.055em] text-white sm:text-5xl">INRISwap</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-cyan-50/64 sm:text-base">
-                  A premium INRI Chain trading interface for swaps, liquidity and token discovery. Native INRI is wrapped into WINRI automatically under the hood.
-                </p>
+                <div className="grid grid-cols-3 gap-2 text-[11px] md:min-w-[228px]">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                    <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Fee</p>
+                    <p className="mt-1 text-[13px] font-black text-white">0.3%</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                    <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Route</p>
+                    <p className="mt-1 text-[13px] font-black text-white">WINRI</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-2.5 py-2.5 text-center">
+                    <p className="whitespace-nowrap text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Chain</p>
+                    <p className="mt-1 text-[13px] font-black text-white">3777</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className={`rounded-[16px] border px-4 py-3 ${connected ? statusClass('ok') : statusClass('warn')}`}>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Wallet</div>
-                  <div className="mt-1 text-sm font-black">{connected ? shortAddress(wallet.account) : 'Not connected'}</div>
+              {!connected ? (
+                <div className="mb-4 rounded-2xl border border-cyan-300/18 bg-cyan-300/[0.08] px-4 py-3 text-sm font-semibold text-cyan-50/88">
+                  Use the <span className="font-black text-white">Connect wallet</span> button in the top navigation to start.
                 </div>
-                <div className={`rounded-[16px] border px-4 py-3 ${networkReady ? statusClass('ok') : statusClass('bad')}`}>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Network</div>
-                  <div className="mt-1 text-sm font-black">{networkReady ? 'INRI Chain 3777' : 'Wrong network'}</div>
-                </div>
-                <ConnectWalletButton compact />
-              </div>
+              ) : null}
             </div>
           </div>
         </section>
 
         <section className="relative bg-[#02040a] py-7">
-          <div className="mx-auto max-w-[1360px] px-4 sm:px-8 xl:px-10">
+          <div className="mx-auto max-w-[920px] px-4 sm:px-5 lg:px-5">
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
               {tabItems.map((item) => {
                 const ActiveIcon = item.icon
@@ -1002,8 +1011,20 @@ export function InriSwapClient() {
 
             <div className={`mx-auto w-full ${contentWidthClass}`}>
               {tab === 'swap' ? (
-                <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-4 sm:p-5">
-                  <div className="mb-4 flex items-center justify-between gap-3 px-1">
+                <Panel className="rounded-[22px] border-cyan-300/16 bg-[#071827]/92 p-3.5 shadow-[0_28px_84px_rgba(0,0,0,0.30)] sm:p-4.5">
+                  <div className="border-b border-white/10 px-3 pb-4 pt-1 sm:px-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">Trade</p>
+                        <h2 className="mt-1 text-[20px] font-black tracking-[-0.045em] text-white sm:text-[22px]">Swap tokens</h2>
+                      </div>
+                      <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-3.5 py-2 text-[11px] font-black text-cyan-100">
+                        {connected ? shortAddress(wallet.account) : 'Connect wallet from top'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3 px-1">
                     <div className="flex rounded-full border border-white/10 bg-black/24 p-1">
                       {['Swap', 'Buy', 'Sell'].map((label) => (
                         <button
@@ -1045,7 +1066,7 @@ export function InriSwapClient() {
                     </div>
                   </div>
 
-                  <div className="relative z-10 mx-auto -my-2 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
+                  <div className="relative z-10 mx-auto -my-1 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
                     <button
                       type="button"
                       onClick={() => {
@@ -1235,8 +1256,8 @@ export function InriSwapClient() {
             </div>
 
             <div className={`mx-auto mt-6 w-full ${infoWidthClass}`}>
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
-                <Panel className="rounded-[32px] border-cyan-300/22 bg-[#06111f]/82">
+              <div className="grid gap-5">
+                <Panel className="rounded-[22px] border-cyan-300/22 bg-[#06111f]/82">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Official market</p>
@@ -1285,7 +1306,7 @@ export function InriSwapClient() {
                   </div>
                 </Panel>
 
-                <Panel className="rounded-[32px] border-cyan-300/18 bg-[#06111f]/72">
+                <Panel className="rounded-[22px] border-cyan-300/18 bg-[#06111f]/72">
                   <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Execution details</p>
                   <div className="mt-4 grid gap-3 text-sm leading-7 text-white/66">
                     <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />Native INRI swaps use WINRI automatically.</p>
