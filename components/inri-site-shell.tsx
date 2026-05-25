@@ -320,7 +320,7 @@ export function InriHeader() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.22em] text-white/78 sm:text-[12px] lg:tracking-[0.28em]"
+            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.22em] text-black/78 sm:text-[12px] lg:tracking-[0.28em]"
           >
             INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
           </p>
