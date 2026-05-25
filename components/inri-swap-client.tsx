@@ -939,10 +939,10 @@ export function InriSwapClient() {
 
   return (
     <InriShell>
-      <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
-        <section className="relative border-b border-cyan-300/12 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)]">
+      <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
+        <section className="relative bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_22rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#04101d_100%)]">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
-          <div className="relative mx-auto max-w-[820px] px-4 py-5 sm:px-5 lg:px-5 lg:py-6">
+          <div className="relative mx-auto max-w-[820px] px-4 py-5 sm:px-5 lg:px-5 lg:py-5">
             <div className="mx-auto max-w-[660px]">
               <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div className="min-w-0">
@@ -979,9 +979,10 @@ export function InriSwapClient() {
           </div>
         </section>
 
-        <section className="relative bg-[#02040a] py-7">
-          <div className="mx-auto max-w-[820px] px-4 sm:px-5 lg:px-5">
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.18),transparent_24rem),radial-gradient(circle_at_88%_8%,rgba(103,212,255,0.10),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#02050a_100%)] py-7">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="relative mx-auto max-w-[820px] px-4 sm:px-5 lg:px-5">
+            <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
               {tabItems.map((item) => {
                 const ActiveIcon = item.icon
                 const active = tab === item.key
@@ -1011,7 +1012,7 @@ export function InriSwapClient() {
 
             <div className={`mx-auto w-full ${contentWidthClass}`}>
               {tab === 'swap' ? (
-                <Panel className="rounded-[22px] border-cyan-300/16 bg-[#071827]/92 p-3.5 shadow-[0_28px_84px_rgba(0,0,0,0.30)] sm:p-4.5">
+                <Panel className="rounded-[22px] border-cyan-300/16 bg-[#071827]/92 p-3.5 shadow-[0_28px_84px_rgba(0,0,0,0.30)] sm:p-4">
                   <div className="border-b border-white/10 px-3 pb-4 pt-1 sm:px-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                       <div className="min-w-0">
