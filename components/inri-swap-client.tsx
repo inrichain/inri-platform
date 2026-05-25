@@ -836,76 +836,45 @@ export function InriSwapClient() {
         .join(' → ')
     : '—'
 
+  const maxFromBalance = fromToken.native && fromBalance > parseUnits('0.02', 18) ? fromBalance - parseUnits('0.02', 18) : fromBalance
+  const swapActionLabel = !connected ? 'Connect wallet' : !networkReady ? 'Switch to INRI Chain' : quoteOut <= 0n ? 'Enter amount / no route' : 'Review swap'
+  const poolTvlApprox = pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
+
   return (
     <InriShell>
       <main className="min-h-screen overflow-hidden bg-[#02040a] text-white">
-        <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_14%,rgba(0,174,255,0.48),transparent_30rem),radial-gradient(circle_at_82%_10%,rgba(64,210,255,0.20),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_42%,#000_100%)]">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
-          <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-12 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] xl:px-12">
-            <div className="flex min-h-[430px] flex-col justify-center">
-              <div className="inline-flex w-fit items-center gap-2 rounded-[10px] border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
-                <ShieldCheck className="h-4 w-4" /> Official INRISwap V1
+        <section className="relative border-b border-cyan-300/10 bg-[radial-gradient(circle_at_50%_-10%,rgba(42,205,255,0.30),transparent_34rem),radial-gradient(circle_at_10%_20%,rgba(0,110,255,0.14),transparent_28rem),linear-gradient(180deg,#061423_0%,#02040a_42%,#02040a_100%)]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-70" />
+          <div className="relative mx-auto max-w-[1360px] px-4 py-7 sm:px-8 xl:px-10">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-cyan-100">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Official INRISwap V1
+                </div>
+                <h1 className="mt-4 text-4xl font-black tracking-[-0.055em] text-white sm:text-5xl">INRISwap</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-cyan-50/64 sm:text-base">
+                  A premium INRI Chain trading interface for swaps, liquidity and token discovery. Native INRI is wrapped into WINRI automatically under the hood.
+                </p>
               </div>
-              <h1 className="mt-8 max-w-5xl text-[3rem] font-black leading-[0.86] tracking-[-0.075em] text-white sm:text-[4.8rem] xl:text-[6.4rem]">
-                Swap, pools and liquidity on INRI Chain.
-              </h1>
-              <p className="mt-8 max-w-3xl text-lg leading-9 text-cyan-50/72">
-                Trade INRI, iUSD, WINRI and imported INRI Chain tokens. Create pools directly from the interface using the official INRISwap Factory and Router.
-              </p>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                {[
-                  ['Router', shortAddress(ROUTER_ADDRESS), ROUTER_ADDRESS],
-                  ['Factory', shortAddress(FACTORY_ADDRESS), FACTORY_ADDRESS],
-                  ['iUSD/INRI Pair', shortAddress(OFFICIAL_PAIR_ADDRESS), OFFICIAL_PAIR_ADDRESS],
-                ].map(([label, text, address]) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => void copy(address, label)}
-                    className="rounded-[16px] border border-white/12 bg-white/[0.045] p-4 text-left transition hover:border-cyan-300/35 hover:bg-cyan-300/10"
-                  >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">{label}</div>
-                    <div className="mt-2 flex items-center gap-2 text-sm font-black text-white">
-                      {text}
-                      <Copy className="h-3.5 w-3.5 text-cyan-300" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Panel className="self-center">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Wallet</p>
-                  <h2 className="mt-2 text-2xl font-black text-white">Trade console</h2>
-                  <p className="mt-2 text-sm leading-6 text-white/58">Uses 6 decimals for iUSD and reads decimals automatically for imported tokens.</p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className={`rounded-[16px] border px-4 py-3 ${connected ? statusClass('ok') : statusClass('warn')}`}>
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Wallet</div>
+                  <div className="mt-1 text-sm font-black">{connected ? shortAddress(wallet.account) : 'Not connected'}</div>
+                </div>
+                <div className={`rounded-[16px] border px-4 py-3 ${networkReady ? statusClass('ok') : statusClass('bad')}`}>
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Network</div>
+                  <div className="mt-1 text-sm font-black">{networkReady ? 'INRI Chain 3777' : 'Wrong network'}</div>
                 </div>
                 <ConnectWalletButton compact />
               </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className={`rounded-[14px] border p-4 ${connected ? statusClass('ok') : statusClass('warn')}`}>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Wallet</div>
-                  <div className="mt-2 text-sm font-black">{connected ? shortAddress(wallet.account) : 'Not connected'}</div>
-                </div>
-                <div className={`rounded-[14px] border p-4 ${networkReady ? statusClass('ok') : statusClass('bad')}`}>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Network</div>
-                  <div className="mt-2 text-sm font-black">{networkReady ? 'INRI 3777' : 'Switch to INRI'}</div>
-                </div>
-                <div className="rounded-[14px] border border-cyan-300/25 bg-cyan-300/10 p-4 text-cyan-100">
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Reference</div>
-                  <div className="mt-2 text-sm font-black">1 INRI ≈ {pool?.price || '0.018'} iUSD</div>
-                </div>
-              </div>
-            </Panel>
+            </div>
           </div>
         </section>
 
-        <section className="border-t border-white/10 bg-[#02040a] py-8">
-          <div className="mx-auto max-w-[1560px] px-4 sm:px-8 xl:px-12">
-            <div className="mb-5 flex flex-wrap gap-2">
+        <section className="relative bg-[#02040a] py-7">
+          <div className="mx-auto max-w-[1360px] px-4 sm:px-8 xl:px-10">
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
               {tabItems.map((item) => {
                 const ActiveIcon = item.icon
                 const active = tab === item.key
@@ -914,8 +883,10 @@ export function InriSwapClient() {
                     key={item.key}
                     type="button"
                     onClick={() => setTab(item.key)}
-                    className={`inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border px-4 text-sm font-black transition ${
-                      active ? 'border-cyan-300/45 bg-cyan-300/14 text-white' : 'border-white/12 bg-white/[0.035] text-white/65 hover:border-cyan-300/35 hover:text-white'
+                    className={`inline-flex h-11 items-center justify-center gap-2 rounded-full border px-4 text-sm font-black transition ${
+                      active
+                        ? 'border-cyan-300/55 bg-cyan-300/14 text-white shadow-[0_0_0_4px_rgba(34,211,238,0.08)]'
+                        : 'border-white/10 bg-white/[0.035] text-white/62 hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-white'
                     }`}
                   >
                     <ActiveIcon className="h-4 w-4" />
@@ -928,247 +899,288 @@ export function InriSwapClient() {
               </MiniButton>
             </div>
 
-            {message ? (
-              <div className={`mb-5 rounded-[18px] border p-4 text-sm font-bold leading-6 ${statusClass(message.kind)}`}>
-                {message.text}
-              </div>
-            ) : null}
+            {message ? <div className={`mb-5 rounded-[18px] border p-4 text-sm font-bold leading-6 ${statusClass(message.kind)}`}>{message.text}</div> : null}
+            {copied ? <div className="mb-5 rounded-[18px] border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm font-bold text-emerald-100">{copied} copied.</div> : null}
 
-            {copied ? (
-              <div className="mb-5 rounded-[18px] border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm font-bold text-emerald-100">
-                {copied} copied.
-              </div>
-            ) : null}
-
-            <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-              {tab === 'swap' ? (
-                <Panel>
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Swap</p>
-                      <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Trade assets</h2>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFromToken(toToken)
-                        setToToken(fromToken)
-                        setSwapAmount('')
-                      }}
-                      className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/12 bg-white/[0.045] text-cyan-200 transition hover:border-cyan-300/35 hover:bg-cyan-300/10"
-                    >
-                      <ArrowDownUp className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="mt-6 rounded-[20px] border border-white/12 bg-black/25 p-4">
-                    <FieldLabel label="From" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
-                    <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
-                      <input
-                        value={swapAmount}
-                        onChange={(event) => setSwapAmount(cleanDecimalInput(event.target.value))}
-                        placeholder="0.0"
-                        inputMode="decimal"
-                        className="h-14 rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-xl font-black text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
-                      />
-                      <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} onOpenImport={() => setTab('tokens')} />
-                    </div>
-                  </div>
-
-                  <div className="mx-auto -my-1 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/25 bg-[#071525] text-cyan-200">
-                    <ArrowRight className="h-4 w-4 rotate-90" />
-                  </div>
-
-                  <div className="rounded-[20px] border border-white/12 bg-black/25 p-4">
-                    <FieldLabel label="To" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
-                    <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
-                      <div className="flex h-14 items-center rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-xl font-black text-white/88">
-                        {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals) : '—'}
+            <div className="grid gap-6 xl:grid-cols-[minmax(480px,590px)_1fr] xl:items-start">
+              <div className="mx-auto w-full max-w-[590px] xl:mx-0">
+                {tab === 'swap' ? (
+                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-4 sm:p-5">
+                    <div className="mb-4 flex items-center justify-between gap-3 px-1">
+                      <div className="flex rounded-full border border-white/10 bg-black/24 p-1">
+                        {['Swap', 'Buy', 'Sell'].map((label) => (
+                          <button
+                            key={label}
+                            type="button"
+                            disabled={label !== 'Swap'}
+                            className={`h-9 rounded-full px-4 text-sm font-black transition ${label === 'Swap' ? 'bg-white text-black' : 'text-white/40'}`}
+                          >
+                            {label}{label !== 'Swap' ? <span className="ml-1 text-[10px] uppercase">soon</span> : null}
+                          </button>
+                        ))}
                       </div>
-                      <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
-                    </div>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-[16px] border border-white/12 bg-white/[0.035] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Route</div>
-                      <div className="mt-2 text-sm font-black text-white">{routeLabel}</div>
-                    </div>
-                    <div className="rounded-[16px] border border-white/12 bg-white/[0.035] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Minimum received</div>
-                      <div className="mt-2 text-sm font-black text-white">{quoteOut > 0n ? formatTokenAmount(minReceived, toToken.decimals) : '—'}</div>
-                    </div>
-                    <div className="rounded-[16px] border border-white/12 bg-white/[0.035] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Slippage</div>
-                      <input
-                        value={slippage}
-                        onChange={(event) => setSlippage(cleanDecimalInput(event.target.value))}
-                        className="mt-2 h-8 w-full rounded-[10px] border border-white/12 bg-black/30 px-2 text-sm font-black text-white outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady}>
-                      Swap now
-                    </ActionButton>
-                  </div>
-                </Panel>
-              ) : null}
-
-              {tab === 'liquidity' ? (
-                <Panel>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Pools</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Create or add liquidity</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/60">If the pair does not exist, the official Factory creates it automatically. INRI is wrapped into WINRI by the Router.</p>
-
-                  <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-[20px] border border-white/12 bg-black/25 p-4">
-                      <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenA)] ?? 0n, liqTokenA.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_150px]">
-                        <input value={liqAmountA} onChange={(event) => setLiqAmountA(cleanDecimalInput(event.target.value))} className="h-[3.25rem] rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-lg font-black text-white outline-none" />
-                        <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} />
-                      </div>
-                    </div>
-                    <div className="rounded-[20px] border border-white/12 bg-black/25 p-4">
-                      <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenB)] ?? 0n, liqTokenB.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_150px]">
-                        <input value={liqAmountB} onChange={(event) => setLiqAmountB(cleanDecimalInput(event.target.value))} className="h-[3.25rem] rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-lg font-black text-white outline-none" />
-                        <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
-                    <AlertTriangle className="mr-2 inline h-4 w-4" /> For tokens with transfer fees, the Router measures the real amount received by the pair. The final received amount can be lower than the typed amount.
-                  </div>
-
-                  <div className="mt-5">
-                    <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
-                      Add liquidity / create pool
-                    </ActionButton>
-                  </div>
-                </Panel>
-              ) : null}
-
-              {tab === 'remove' ? (
-                <Panel>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP position</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD / INRI liquidity</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/60">Remove liquidity from the official iUSD/WINRI pair and receive iUSD plus native INRI.</p>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[18px] border border-white/12 bg-black/25 p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
-                      <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18) : '0'}</div>
-                    </div>
-                    <div className="rounded-[18px] border border-white/12 bg-black/25 p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Remove percent</div>
-                      <input value={removePercent} onChange={(event) => setRemovePercent(cleanDecimalInput(event.target.value))} className="mt-2 h-11 w-full rounded-[14px] border border-white/12 bg-[#050d18] px-3 text-lg font-black text-white outline-none" />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {['25', '50', '75', '100'].map((percent) => <MiniButton key={percent} onClick={() => setRemovePercent(percent)}>{percent}%</MiniButton>)}
-                  </div>
-
-                  <div className="mt-5">
-                    <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !pool || pool.lpBalance <= 0n}>
-                      Remove liquidity
-                    </ActionButton>
-                  </div>
-                </Panel>
-              ) : null}
-
-              {tab === 'tokens' ? (
-                <Panel>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Tokens</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Import any INRI token</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/60">Paste a token contract. The interface reads symbol, name and decimals automatically.</p>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-                    <input
-                      value={importAddress}
-                      onChange={(event) => setImportAddress(event.target.value)}
-                      placeholder="0x token contract"
-                      className="h-[3.25rem] rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
-                    />
-                    <button type="button" onClick={() => void handleImportToken()} disabled={busy} className="inline-flex h-[3.25rem] items-center justify-center gap-2 rounded-[16px] border border-cyan-300/35 bg-cyan-300/10 px-5 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/16 disabled:opacity-50">
-                      <Plus className="h-4 w-4" /> Import
-                    </button>
-                  </div>
-
-                  <div className="mt-6 grid gap-3">
-                    {tokens.map((token) => (
-                      <div key={tokenKey(token)} className="flex flex-col gap-3 rounded-[18px] border border-white/12 bg-black/25 p-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <TokenBadge token={token} />
-                            {token.verified ? <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">Verified</span> : <span className="rounded-full border border-amber-300/20 bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100">Imported</span>}
-                          </div>
-                          <p className="mt-2 text-sm text-white/60">{token.name} · decimals {token.decimals}</p>
-                          {!token.native ? <p className="mt-1 text-xs font-bold text-cyan-200/70">{shortAddress(token.address, 10, 8)}</p> : null}
+                      <div className="flex items-center gap-2">
+                        <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-cyan-100 sm:block">
+                          Slippage {slippage || '1'}%
                         </div>
-                        {!token.native ? (
-                          <Link href={`${EXPLORER_URL}/address/${token.address}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-cyan-300 hover:text-white">
-                            Explorer <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        ) : null}
+                        <button type="button" onClick={() => void refreshAll()} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300/10">
+                          <RefreshCw className="h-4 w-4" />
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                </Panel>
-              ) : null}
+                    </div>
 
-              <div className="grid gap-5">
-                <Panel>
+                    <div className="rounded-[24px] border border-white/10 bg-[#0a1727] p-4 transition focus-within:border-cyan-300/40">
+                      <FieldLabel label="Sell" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
+                      <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                        <div>
+                          <input
+                            value={swapAmount}
+                            onChange={(event) => setSwapAmount(cleanDecimalInput(event.target.value))}
+                            placeholder="0"
+                            inputMode="decimal"
+                            className="h-16 w-full rounded-[20px] border border-white/10 bg-[#050d18] px-4 text-3xl font-black tracking-[-0.04em] text-white outline-none transition placeholder:text-white/24 focus:border-cyan-300/50"
+                          />
+                          <button type="button" onClick={() => setSwapAmount(formatTokenAmount(maxFromBalance, fromToken.decimals, fromToken.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">
+                            MAX
+                          </button>
+                        </div>
+                        <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} onOpenImport={() => setTab('tokens')} />
+                      </div>
+                    </div>
+
+                    <div className="relative z-10 mx-auto -my-2 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFromToken(toToken)
+                          setToToken(fromToken)
+                          setSwapAmount('')
+                        }}
+                        className="flex h-full w-full items-center justify-center rounded-[18px] transition hover:bg-cyan-300/10"
+                        aria-label="Invert tokens"
+                      >
+                        <ArrowDownUp className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="rounded-[24px] border border-white/10 bg-[#0a1727] p-4 transition focus-within:border-cyan-300/40">
+                      <FieldLabel label="Buy" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
+                      <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                        <div className="flex h-16 items-center rounded-[20px] border border-white/10 bg-[#050d18] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
+                          {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals, 6) : '0'}
+                        </div>
+                        <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/24">
+                      <div className="grid gap-px bg-white/10 sm:grid-cols-3">
+                        <div className="bg-[#06111f] p-4">
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Route</div>
+                          <div className="mt-2 truncate text-sm font-black text-white">{routeLabel}</div>
+                        </div>
+                        <div className="bg-[#06111f] p-4">
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Minimum received</div>
+                          <div className="mt-2 truncate text-sm font-black text-white">{quoteOut > 0n ? `${formatTokenAmount(minReceived, toToken.decimals, 6)} ${toToken.symbol}` : '—'}</div>
+                        </div>
+                        <div className="bg-[#06111f] p-4">
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Slippage</div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <input
+                              value={slippage}
+                              onChange={(event) => setSlippage(cleanDecimalInput(event.target.value))}
+                              className="h-8 w-20 rounded-[10px] border border-white/10 bg-black/30 px-2 text-sm font-black text-white outline-none focus:border-cyan-300/45"
+                            />
+                            <span className="text-sm font-black text-white/70">%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                      <MiniButton onClick={() => setSlippage('0.5')}>0.5%</MiniButton>
+                      <MiniButton onClick={() => setSlippage('1')}>1%</MiniButton>
+                      <MiniButton onClick={() => setSlippage('2')}>2%</MiniButton>
+                    </div>
+
+                    <div className="mt-5">
+                      <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady || quoteOut <= 0n}>
+                        {swapActionLabel}
+                      </ActionButton>
+                    </div>
+                  </Panel>
+                ) : null}
+
+                {tab === 'liquidity' ? (
+                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Pools</p>
+                        <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Create or add liquidity</h2>
+                        <p className="mt-3 text-sm leading-7 text-white/60">Create any INRI Chain pair. Native INRI is wrapped into WINRI by the Router.</p>
+                      </div>
+                      <Droplets className="h-7 w-7 text-cyan-300" />
+                    </div>
+
+                    <div className="mt-6 grid gap-4">
+                      <div className="rounded-[22px] border border-white/10 bg-[#0a1727] p-4">
+                        <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenA)] ?? 0n, liqTokenA.decimals)}`} />
+                        <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                          <input value={liqAmountA} onChange={(event) => setLiqAmountA(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                          <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} />
+                        </div>
+                      </div>
+                      <div className="rounded-[22px] border border-white/10 bg-[#0a1727] p-4">
+                        <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenB)] ?? 0n, liqTokenB.decimals)}`} />
+                        <div className="grid gap-3 sm:grid-cols-[1fr_168px]">
+                          <input value={liqAmountB} onChange={(event) => setLiqAmountB(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                          <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Tokens with transfer fees may deposit less than typed. INRISwap measures the real amount received by the pair.
+                    </div>
+
+                    <div className="mt-5">
+                      <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
+                        Add liquidity / create pool
+                      </ActionButton>
+                    </div>
+                  </Panel>
+                ) : null}
+
+                {tab === 'remove' ? (
+                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP position</p>
+                    <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD / INRI liquidity</h2>
+                    <p className="mt-3 text-sm leading-7 text-white/60">Remove liquidity from the official iUSD/WINRI pair and receive iUSD plus native INRI.</p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
+                        <div className="mt-2 text-2xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18) : '0'}</div>
+                      </div>
+                      <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Remove percent</div>
+                        <input value={removePercent} onChange={(event) => setRemovePercent(cleanDecimalInput(event.target.value))} className="mt-2 h-12 w-full rounded-[16px] border border-white/10 bg-[#050d18] px-3 text-xl font-black text-white outline-none focus:border-cyan-300/45" />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-4 gap-2">
+                      {['25', '50', '75', '100'].map((percent) => <MiniButton key={percent} onClick={() => setRemovePercent(percent)}>{percent}%</MiniButton>)}
+                    </div>
+
+                    <div className="mt-5">
+                      <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !pool || pool.lpBalance <= 0n}>
+                        Remove liquidity
+                      </ActionButton>
+                    </div>
+                  </Panel>
+                ) : null}
+
+                {tab === 'tokens' ? (
+                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Tokens</p>
+                    <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Import any INRI token</h2>
+                    <p className="mt-3 text-sm leading-7 text-white/60">Paste a contract. The interface reads symbol, name and decimals automatically.</p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+                      <input
+                        value={importAddress}
+                        onChange={(event) => setImportAddress(event.target.value)}
+                        placeholder="0x token contract"
+                        className="h-[3.25rem] rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
+                      />
+                      <button type="button" onClick={() => void handleImportToken()} disabled={busy} className="inline-flex h-[3.25rem] items-center justify-center gap-2 rounded-[18px] border border-cyan-300/35 bg-cyan-300/10 px-5 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/16 disabled:opacity-50">
+                        <Plus className="h-4 w-4" /> Import
+                      </button>
+                    </div>
+
+                    <div className="mt-6 grid gap-3">
+                      {tokens.map((token) => (
+                        <div key={tokenKey(token)} className="flex flex-col gap-3 rounded-[20px] border border-white/10 bg-[#0a1727] p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <TokenBadge token={token} />
+                              {token.verified ? <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">Verified</span> : <span className="rounded-full border border-amber-300/20 bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100">Imported</span>}
+                            </div>
+                            <p className="mt-2 text-sm text-white/60">{token.name} · decimals {token.decimals}</p>
+                            {!token.native ? <p className="mt-1 text-xs font-bold text-cyan-200/70">{shortAddress(token.address, 10, 8)}</p> : null}
+                          </div>
+                          {!token.native ? (
+                            <Link href={`${EXPLORER_URL}/address/${token.address}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-cyan-300 hover:text-white">
+                              Explorer <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
+                ) : null}
+              </div>
+
+              <aside className="grid gap-5">
+                <Panel className="rounded-[32px] border-cyan-300/22 bg-[#06111f]/82">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Official pool</p>
+                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Official market</p>
                       <h2 className="mt-2 text-2xl font-black text-white">iUSD / INRI</h2>
+                      <p className="mt-2 text-sm text-white/50">Primary liquidity pair on INRISwap V1</p>
                     </div>
                     {poolLoading ? <RefreshCw className="h-5 w-5 animate-spin text-cyan-300" /> : <CheckCircle2 className="h-5 w-5 text-emerald-300" />}
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[16px] border border-white/12 bg-black/25 p-4">
+                    <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Price</div>
+                      <div className="mt-2 text-2xl font-black text-white">{pool?.price || '—'} <span className="text-sm text-white/45">iUSD</span></div>
+                    </div>
+                    <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">TVL est.</div>
+                      <div className="mt-2 text-2xl font-black text-white">{poolTvlApprox ? `$${formatDisplayNumber(poolTvlApprox, 4)}` : '—'}</div>
+                    </div>
+                    <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Reserve INRI</div>
                       <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.reserveInri, 18, 4) : '—'}</div>
                     </div>
-                    <div className="rounded-[16px] border border-white/12 bg-black/25 p-4">
+                    <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Reserve iUSD</div>
                       <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.reserveIusd, 6, 6) : '—'}</div>
                     </div>
-                    <div className="rounded-[16px] border border-white/12 bg-black/25 p-4">
-                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Price</div>
-                      <div className="mt-2 text-xl font-black text-white">{pool?.price || '—'} iUSD</div>
-                    </div>
-                    <div className="rounded-[16px] border border-white/12 bg-black/25 p-4">
+                    <div className="rounded-[18px] border border-white/10 bg-black/25 p-4 sm:col-span-2">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
                       <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18, 6) : '—'}</div>
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-2 text-sm font-bold text-white/60">
-                    <Link href={`${EXPLORER_URL}/address/${OFFICIAL_PAIR_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-cyan-300 hover:text-white">
-                      View LP contract <ExternalLink className="h-4 w-4" />
+                  <div className="mt-5 grid gap-2 text-sm font-bold text-white/60 sm:grid-cols-2">
+                    <Link href={`${EXPLORER_URL}/address/${OFFICIAL_PAIR_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-[14px] border border-white/10 bg-white/[0.035] px-3 py-3 text-cyan-300 transition hover:border-cyan-300/35 hover:text-white">
+                      LP contract <ExternalLink className="h-4 w-4" />
                     </Link>
-                    <Link href={`${EXPLORER_URL}/address/${ROUTER_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-cyan-300 hover:text-white">
-                      View Router <ExternalLink className="h-4 w-4" />
+                    <Link href={`${EXPLORER_URL}/address/${ROUTER_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-[14px] border border-white/10 bg-white/[0.035] px-3 py-3 text-cyan-300 transition hover:border-cyan-300/35 hover:text-white">
+                      Router <ExternalLink className="h-4 w-4" />
                     </Link>
+                    <button type="button" onClick={() => void copy(FACTORY_ADDRESS, 'Factory')} className="inline-flex items-center gap-2 rounded-[14px] border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-cyan-300 transition hover:border-cyan-300/35 hover:text-white">
+                      Factory <Copy className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => void copy(ROUTER_ADDRESS, 'Router')} className="inline-flex items-center gap-2 rounded-[14px] border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-cyan-300 transition hover:border-cyan-300/35 hover:text-white">
+                      Copy Router <Copy className="h-4 w-4" />
+                    </button>
                   </div>
                 </Panel>
 
-                <Panel>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Security notes</p>
+                <Panel className="rounded-[32px] border-cyan-300/18 bg-[#06111f]/72">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Execution details</p>
                   <div className="mt-4 grid gap-3 text-sm leading-7 text-white/66">
-                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />INRI native swaps use WINRI automatically under the hood.</p>
-                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />Imported tokens can have custom taxes or transfer rules. Always verify the contract.</p>
-                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />The interface reads token decimals automatically, including iUSD with 6 decimals.</p>
-                    <p><AlertTriangle className="mr-2 inline h-4 w-4 text-amber-300" />Low liquidity can cause high price impact. Add more liquidity before public use.</p>
+                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />Native INRI swaps use WINRI automatically.</p>
+                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />Token decimals are read automatically, including iUSD with 6 decimals.</p>
+                    <p><ShieldCheck className="mr-2 inline h-4 w-4 text-emerald-300" />Imported tokens can be searched by name, symbol or contract.</p>
+                    <p><AlertTriangle className="mr-2 inline h-4 w-4 text-amber-300" />Low liquidity can cause high price impact. Add liquidity before public use.</p>
                   </div>
                 </Panel>
-              </div>
+              </aside>
             </div>
           </div>
         </section>
