@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowDownUp,
   ArrowRight,
+  ChevronDown,
   CheckCircle2,
   Copy,
   Droplets,
@@ -15,6 +16,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
+  X,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
@@ -159,6 +161,18 @@ function tokenKey(token: TokenInfo) {
   return token.native ? NATIVE_INRI : token.address.toLowerCase()
 }
 
+function tokenLogo(token: TokenInfo) {
+  if (token.native || sameAddress(token.address, WINRI_ADDRESS)) return '/inri-logo.png'
+  if (sameAddress(token.address, IUSD_ADDRESS)) return '/iusd-logo.png'
+  return ''
+}
+
+function tokenAccent(token: TokenInfo) {
+  if (token.native || sameAddress(token.address, WINRI_ADDRESS)) return 'from-cyan-300/30 to-blue-500/10 text-cyan-100 border-cyan-300/30'
+  if (sameAddress(token.address, IUSD_ADDRESS)) return 'from-emerald-300/25 to-cyan-400/10 text-emerald-100 border-emerald-300/25'
+  return 'from-white/12 to-cyan-300/10 text-white border-white/14'
+}
+
 function shortAddress(value?: string | null, left = 6, right = 4) {
   if (!value) return '—'
   return value.length <= left + right + 2 ? value : `${value.slice(0, left)}…${value.slice(-right)}`
@@ -240,13 +254,22 @@ function statusClass(kind: 'ok' | 'warn' | 'info' | 'bad') {
   return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
 }
 
+function TokenAvatar({ token, size = 'md' }: { token: TokenInfo; size?: 'sm' | 'md' | 'lg' }) {
+  const logo = tokenLogo(token)
+  const sizeClass = size === 'lg' ? 'h-10 w-10' : size === 'sm' ? 'h-7 w-7' : 'h-8 w-8'
+  return (
+    <span className={`${sizeClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-gradient-to-br ${tokenAccent(token)}`}>
+      {logo ? <img src={logo} alt={token.symbol} className="h-full w-full object-cover" /> : <span className="text-[10px] font-black">{token.symbol.slice(0, 2).toUpperCase()}</span>}
+    </span>
+  )
+}
+
 function TokenBadge({ token }: { token: TokenInfo }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-xs font-black text-white">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-300/25 bg-cyan-300/10 text-[10px] text-cyan-200">
-        {token.symbol.slice(0, 2).toUpperCase()}
-      </span>
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-3 py-1.5 text-xs font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <TokenAvatar token={token} size="sm" />
       {token.symbol}
+      {token.verified ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" /> : null}
     </span>
   )
 }
@@ -265,30 +288,128 @@ function TokenSelect({
   tokens,
   onChange,
   disabledToken,
+  onOpenImport,
 }: {
   value: TokenInfo
   tokens: TokenInfo[]
   onChange: (token: TokenInfo) => void
   disabledToken?: TokenInfo
+  onOpenImport?: () => void
 }) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const query = search.trim().toLowerCase()
+  const filtered = useMemo(() => {
+    if (!query) return tokens
+    return tokens.filter((token) => {
+      const haystack = `${token.symbol} ${token.name} ${token.address}`.toLowerCase()
+      return haystack.includes(query)
+    })
+  }, [query, tokens])
+
   return (
-    <select
-      value={tokenKey(value)}
-      onChange={(event) => {
-        const next = tokens.find((token) => tokenKey(token) === event.target.value)
-        if (next) onChange(next)
-      }}
-      className="h-12 rounded-[14px] border border-white/12 bg-[#050d18] px-3 text-sm font-black text-white outline-none transition focus:border-cyan-300/50"
-    >
-      {tokens.map((token) => {
-        const disabled = disabledToken ? tokenKey(disabledToken) === tokenKey(token) : false
-        return (
-          <option key={tokenKey(token)} value={tokenKey(token)} disabled={disabled}>
-            {token.symbol} {token.verified ? '✓' : ''}
-          </option>
-        )
-      })}
-    </select>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="group flex h-14 items-center justify-between gap-3 rounded-[16px] border border-white/12 bg-[#071321] px-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-cyan-300/40 hover:bg-cyan-300/10 focus:border-cyan-300/55 focus:outline-none"
+      >
+        <span className="flex min-w-0 items-center gap-3">
+          <TokenAvatar token={value} />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-black text-white">{value.symbol}</span>
+            <span className="block truncate text-[10px] font-bold uppercase tracking-[0.12em] text-white/38">{value.native ? 'Native' : value.verified ? 'Verified' : 'Imported'}</span>
+          </span>
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-cyan-200/70 transition group-hover:text-white" />
+      </button>
+
+      {open ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/72 p-4 backdrop-blur-xl" onMouseDown={() => setOpen(false)}>
+          <div className="w-full max-w-[460px] overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#06111f] shadow-[0_40px_140px_rgba(0,0,0,0.70),inset_0_1px_0_rgba(255,255,255,0.08)]" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="border-b border-white/10 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Select token</p>
+                  <h3 className="mt-1 text-xl font-black tracking-[-0.03em] text-white">Search assets</h3>
+                </div>
+                <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70 transition hover:border-cyan-300/35 hover:text-white">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="mt-4 flex h-12 items-center gap-3 rounded-[16px] border border-white/12 bg-black/30 px-4 focus-within:border-cyan-300/50">
+                <Search className="h-4 w-4 text-cyan-200/65" />
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search name, symbol or paste address"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/32"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="max-h-[390px] overflow-y-auto p-3">
+              {filtered.map((token) => {
+                const disabled = disabledToken ? tokenKey(disabledToken) === tokenKey(token) : false
+                const selected = tokenKey(value) === tokenKey(token)
+                return (
+                  <button
+                    key={tokenKey(token)}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => {
+                      if (disabled) return
+                      onChange(token)
+                      setOpen(false)
+                      setSearch('')
+                    }}
+                    className={`flex w-full items-center justify-between gap-3 rounded-[18px] border p-3 text-left transition ${
+                      selected
+                        ? 'border-cyan-300/40 bg-cyan-300/12'
+                        : 'border-transparent bg-transparent hover:border-white/12 hover:bg-white/[0.045]'
+                    } ${disabled ? 'cursor-not-allowed opacity-35' : ''}`}
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <TokenAvatar token={token} size="lg" />
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-2 text-base font-black text-white">
+                          {token.symbol}
+                          {token.verified ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : null}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs font-bold text-white/50">{token.name}</span>
+                        {!token.native ? <span className="mt-0.5 block truncate text-[11px] font-bold text-cyan-200/58">{shortAddress(token.address, 10, 8)}</span> : null}
+                      </span>
+                    </span>
+                    {selected ? <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">Selected</span> : null}
+                  </button>
+                )
+              })}
+
+              {filtered.length === 0 ? (
+                <div className="rounded-[18px] border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/85">
+                  Token not found. Use Import Token and paste the contract address to add any INRI Chain token.
+                </div>
+              ) : null}
+            </div>
+
+            <div className="border-t border-white/10 p-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  setSearch('')
+                  onOpenImport?.()
+                }}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-cyan-300/25 bg-cyan-300/10 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/16"
+              >
+                <Plus className="h-4 w-4" /> Import custom token
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -850,7 +971,7 @@ export function InriSwapClient() {
                         inputMode="decimal"
                         className="h-14 rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-xl font-black text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
                       />
-                      <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} />
+                      <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} onOpenImport={() => setTab('tokens')} />
                     </div>
                   </div>
 
@@ -864,7 +985,7 @@ export function InriSwapClient() {
                       <div className="flex h-14 items-center rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-xl font-black text-white/88">
                         {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals) : '—'}
                       </div>
-                      <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} />
+                      <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
                     </div>
                   </div>
 
@@ -906,14 +1027,14 @@ export function InriSwapClient() {
                       <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenA)] ?? 0n, liqTokenA.decimals)}`} />
                       <div className="grid gap-3 sm:grid-cols-[1fr_150px]">
                         <input value={liqAmountA} onChange={(event) => setLiqAmountA(cleanDecimalInput(event.target.value))} className="h-[3.25rem] rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-lg font-black text-white outline-none" />
-                        <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} />
+                        <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} />
                       </div>
                     </div>
                     <div className="rounded-[20px] border border-white/12 bg-black/25 p-4">
                       <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenB)] ?? 0n, liqTokenB.decimals)}`} />
                       <div className="grid gap-3 sm:grid-cols-[1fr_150px]">
                         <input value={liqAmountB} onChange={(event) => setLiqAmountB(cleanDecimalInput(event.target.value))} className="h-[3.25rem] rounded-[16px] border border-white/12 bg-[#050d18] px-4 text-lg font-black text-white outline-none" />
-                        <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} />
+                        <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} />
                       </div>
                     </div>
                   </div>
