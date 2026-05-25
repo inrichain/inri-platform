@@ -168,7 +168,8 @@ function tokenKey(token: TokenInfo) {
 }
 
 function tokenLogo(token: TokenInfo) {
-  if (token.native || sameAddress(token.address, WINRI_ADDRESS)) return '/inri-logo.png'
+  if (token.native) return '/inri-logo.png'
+  if (sameAddress(token.address, WINRI_ADDRESS)) return '/wINRI.png'
   if (sameAddress(token.address, IUSD_ADDRESS)) return '/iusd-logo.png'
   return ''
 }
