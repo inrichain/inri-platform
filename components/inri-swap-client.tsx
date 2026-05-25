@@ -935,6 +935,8 @@ export function InriSwapClient() {
   const liqPairStatus = liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
   const liqBalanceA = balances[tokenKey(liqTokenA)] ?? 0n
   const liqBalanceB = balances[tokenKey(liqTokenB)] ?? 0n
+  const contentWidthClass = tab === 'swap' ? 'max-w-[620px]' : tab === 'liquidity' ? 'max-w-[760px]' : 'max-w-[720px]'
+  const infoWidthClass = tab === 'swap' ? 'max-w-[980px]' : 'max-w-[1120px]'
 
   return (
     <InriShell>
@@ -998,242 +1000,242 @@ export function InriSwapClient() {
             {message ? <div className={`mb-5 rounded-[18px] border p-4 text-sm font-bold leading-6 ${statusClass(message.kind)}`}>{message.text}</div> : null}
             {copied ? <div className="mb-5 rounded-[18px] border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm font-bold text-emerald-100">{copied} copied.</div> : null}
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(480px,590px)_1fr] xl:items-start">
-              <div className="mx-auto w-full max-w-[590px] xl:mx-0">
-                {tab === 'swap' ? (
-                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-4 sm:p-5">
-                    <div className="mb-4 flex items-center justify-between gap-3 px-1">
-                      <div className="flex rounded-full border border-white/10 bg-black/24 p-1">
-                        {['Swap', 'Buy', 'Sell'].map((label) => (
-                          <button
-                            key={label}
-                            type="button"
-                            disabled={label !== 'Swap'}
-                            className={`h-9 rounded-full px-4 text-sm font-black transition ${label === 'Swap' ? 'bg-white text-black' : 'text-white/40'}`}
-                          >
-                            {label}{label !== 'Swap' ? <span className="ml-1 text-[10px] uppercase">soon</span> : null}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-cyan-100 sm:block">
-                          Slippage {slippage || '1'}%
-                        </div>
-                        <button type="button" onClick={() => void refreshAll()} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300/10">
-                          <RefreshCw className="h-4 w-4" />
+            <div className={`mx-auto w-full ${contentWidthClass}`}>
+              {tab === 'swap' ? (
+                <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-4 sm:p-5">
+                  <div className="mb-4 flex items-center justify-between gap-3 px-1">
+                    <div className="flex rounded-full border border-white/10 bg-black/24 p-1">
+                      {['Swap', 'Buy', 'Sell'].map((label) => (
+                        <button
+                          key={label}
+                          type="button"
+                          disabled={label !== 'Swap'}
+                          className={`h-9 rounded-full px-4 text-sm font-black transition ${label === 'Swap' ? 'bg-white text-black' : 'text-white/40'}`}
+                        >
+                          {label}{label !== 'Swap' ? <span className="ml-1 text-[10px] uppercase">soon</span> : null}
                         </button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
-                      <FieldLabel label="Sell" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
-                        <div>
-                          <input
-                            value={swapAmount}
-                            onChange={(event) => setSwapAmount(cleanDecimalInput(event.target.value))}
-                            placeholder="0"
-                            inputMode="decimal"
-                            className="h-16 w-full rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white outline-none transition placeholder:text-white/24 focus:border-cyan-300/50"
-                          />
-                          <button type="button" onClick={() => setSwapAmount(formatTokenAmount(maxFromBalance, fromToken.decimals, fromToken.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">
-                            MAX
-                          </button>
-                        </div>
-                        <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} onOpenImport={() => setTab('tokens')} />
-                      </div>
-                    </div>
-
-                    <div className="relative z-10 mx-auto -my-2 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFromToken(toToken)
-                          setToToken(fromToken)
-                          setSwapAmount('')
-                        }}
-                        className="flex h-full w-full items-center justify-center rounded-[18px] transition hover:bg-cyan-300/10"
-                        aria-label="Invert tokens"
-                      >
-                        <ArrowDownUp className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
-                      <FieldLabel label="Buy" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
-                      <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
-                        <div className="flex h-16 items-center rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
-                          {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals, 6) : '0'}
-                        </div>
-                        <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
-                      </div>
-                    </div>
-
-                    <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/24">
-                      <div className="grid gap-px bg-white/10 sm:grid-cols-3">
-                        <div className="bg-[#06111f] p-4">
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Route</div>
-                          <div className="mt-2 truncate text-sm font-black text-white">{routeLabel}</div>
-                        </div>
-                        <div className="bg-[#06111f] p-4">
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Minimum received</div>
-                          <div className="mt-2 truncate text-sm font-black text-white">{quoteOut > 0n ? `${formatTokenAmount(minReceived, toToken.decimals, 6)} ${toToken.symbol}` : '—'}</div>
-                        </div>
-                        <div className="bg-[#06111f] p-4">
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Slippage</div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <input
-                              value={slippage}
-                              onChange={(event) => setSlippage(cleanDecimalInput(event.target.value))}
-                              className="h-8 w-20 rounded-[10px] border border-white/10 bg-black/30 px-2 text-sm font-black text-white outline-none focus:border-cyan-300/45"
-                            />
-                            <span className="text-sm font-black text-white/70">%</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                      <MiniButton onClick={() => setSlippage('0.5')}>0.5%</MiniButton>
-                      <MiniButton onClick={() => setSlippage('1')}>1%</MiniButton>
-                      <MiniButton onClick={() => setSlippage('2')}>2%</MiniButton>
-                    </div>
-
-                    <div className="mt-5">
-                      <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady || quoteOut <= 0n}>
-                        {swapActionLabel}
-                      </ActionButton>
-                    </div>
-                  </Panel>
-                ) : null}
-
-                {tab === 'liquidity' ? (
-                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Pools</p>
-                        <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Supply liquidity</h2>
-                        <p className="mt-3 text-sm leading-7 text-white/60">Add liquidity to an existing pair or create a new INRI Chain pool. Native INRI is wrapped into WINRI automatically.</p>
-                      </div>
-                      <Droplets className="h-7 w-7 text-cyan-300" />
-                    </div>
-
-                    <div className="mt-6 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.05] p-4">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Pair status</div>
-                          <div className="mt-1 text-sm font-bold text-white/82">{liqPairStatus}</div>
-                        </div>
-                        <div className="rounded-full border border-cyan-300/16 bg-black/24 px-3 py-1.5 text-xs font-black text-cyan-100">{liqRatioText}</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-4">
-                      <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
-                        <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(liqBalanceA, liqTokenA.decimals)}`} />
-                        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
-                          <div className="min-w-0">
-                            <input value={liqAmountA} onChange={(event) => handleLiquidityAmountAChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
-                            <button type="button" onClick={() => handleLiquidityAmountAChange(formatTokenAmount(liqBalanceA, liqTokenA.decimals, liqTokenA.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
-                          </div>
-                          <TokenSelect value={liqTokenA} tokens={tokens} onChange={handleLiquidityTokenAChange} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} compact />
-                        </div>
-                      </div>
-                      <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
-                        <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(liqBalanceB, liqTokenB.decimals)}`} />
-                        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
-                          <div className="min-w-0">
-                            <input value={liqAmountB} onChange={(event) => handleLiquidityAmountBChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
-                            <button type="button" onClick={() => handleLiquidityAmountBChange(formatTokenAmount(liqBalanceB, liqTokenB.decimals, liqTokenB.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
-                          </div>
-                          <TokenSelect value={liqTokenB} tokens={tokens} onChange={handleLiquidityTokenBChange} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} compact />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
-                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Tokens with transfer fees may deposit less than typed. INRISwap measures the real amount received by the pair.
-                    </div>
-
-                    <div className="mt-5">
-                      <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
-                        Supply liquidity
-                      </ActionButton>
-                    </div>
-                  </Panel>
-                ) : null}
-
-                {tab === 'remove' ? (
-                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
-                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP position</p>
-                    <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD / INRI liquidity</h2>
-                    <p className="mt-3 text-sm leading-7 text-white/60">Remove liquidity from the official iUSD/WINRI pair and receive iUSD plus native INRI.</p>
-
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
-                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
-                        <div className="mt-2 text-2xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18) : '0'}</div>
-                      </div>
-                      <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
-                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Remove percent</div>
-                        <input value={removePercent} onChange={(event) => setRemovePercent(cleanDecimalInput(event.target.value))} className="mt-2 h-12 w-full rounded-[16px] border border-white/10 bg-[#050d18] px-3 text-xl font-black text-white outline-none focus:border-cyan-300/45" />
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-4 gap-2">
-                      {['25', '50', '75', '100'].map((percent) => <MiniButton key={percent} onClick={() => setRemovePercent(percent)}>{percent}%</MiniButton>)}
-                    </div>
-
-                    <div className="mt-5">
-                      <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !pool || pool.lpBalance <= 0n}>
-                        Remove liquidity
-                      </ActionButton>
-                    </div>
-                  </Panel>
-                ) : null}
-
-                {tab === 'tokens' ? (
-                  <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
-                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Tokens</p>
-                    <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Import any INRI token</h2>
-                    <p className="mt-3 text-sm leading-7 text-white/60">Paste a contract. The interface reads symbol, name and decimals automatically.</p>
-
-                    <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-                      <input
-                        value={importAddress}
-                        onChange={(event) => setImportAddress(event.target.value)}
-                        placeholder="0x token contract"
-                        className="h-[3.25rem] rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
-                      />
-                      <button type="button" onClick={() => void handleImportToken()} disabled={busy} className="inline-flex h-[3.25rem] items-center justify-center gap-2 rounded-[18px] border border-cyan-300/35 bg-cyan-300/10 px-5 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/16 disabled:opacity-50">
-                        <Plus className="h-4 w-4" /> Import
-                      </button>
-                    </div>
-
-                    <div className="mt-6 grid gap-3">
-                      {tokens.map((token) => (
-                        <div key={tokenKey(token)} className="flex flex-col gap-3 rounded-[20px] border border-white/10 bg-[#0a1727] p-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <TokenBadge token={token} />
-                              {token.verified ? <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">Verified</span> : <span className="rounded-full border border-amber-300/20 bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100">Imported</span>}
-                            </div>
-                            <p className="mt-2 text-sm text-white/60">{token.name} · decimals {token.decimals}</p>
-                            {!token.native ? <p className="mt-1 text-xs font-bold text-cyan-200/70">{shortAddress(token.address, 10, 8)}</p> : null}
-                          </div>
-                          {!token.native ? (
-                            <Link href={`${EXPLORER_URL}/address/${token.address}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-cyan-300 hover:text-white">
-                              Explorer <ExternalLink className="h-4 w-4" />
-                            </Link>
-                          ) : null}
-                        </div>
                       ))}
                     </div>
-                  </Panel>
-                ) : null}
-              </div>
+                    <div className="flex items-center gap-2">
+                      <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-black text-cyan-100 sm:block">
+                        Slippage {slippage || '1'}%
+                      </div>
+                      <button type="button" onClick={() => void refreshAll()} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-cyan-100 transition hover:border-cyan-300/35 hover:bg-cyan-300/10">
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
 
-              <aside className="grid gap-5">
+                  <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
+                    <FieldLabel label="Sell" hint={`Balance ${formatTokenAmount(fromBalance, fromToken.decimals)}`} />
+                    <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
+                      <div>
+                        <input
+                          value={swapAmount}
+                          onChange={(event) => setSwapAmount(cleanDecimalInput(event.target.value))}
+                          placeholder="0"
+                          inputMode="decimal"
+                          className="h-16 w-full rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white outline-none transition placeholder:text-white/24 focus:border-cyan-300/50"
+                        />
+                        <button type="button" onClick={() => setSwapAmount(formatTokenAmount(maxFromBalance, fromToken.decimals, fromToken.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">
+                          MAX
+                        </button>
+                      </div>
+                      <TokenSelect value={fromToken} tokens={tokens} onChange={setFromToken} disabledToken={toToken} onOpenImport={() => setTab('tokens')} />
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 mx-auto -my-2 flex h-12 w-12 items-center justify-center rounded-[18px] border border-cyan-300/30 bg-[#071525] text-cyan-100 shadow-[0_14px_45px_rgba(0,0,0,0.35)]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFromToken(toToken)
+                        setToToken(fromToken)
+                        setSwapAmount('')
+                      }}
+                      className="flex h-full w-full items-center justify-center rounded-[18px] transition hover:bg-cyan-300/10"
+                      aria-label="Invert tokens"
+                    >
+                      <ArrowDownUp className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="rounded-[26px] border border-white/10 bg-[#091727] p-4 transition focus-within:border-cyan-300/35">
+                    <FieldLabel label="Buy" hint={`Balance ${formatTokenAmount(toBalance, toToken.decimals)}`} />
+                    <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
+                      <div className="flex h-16 items-center rounded-[22px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black tracking-[-0.04em] text-white/92">
+                        {quoteOut > 0n ? formatTokenAmount(quoteOut, toToken.decimals, 6) : '0'}
+                      </div>
+                      <TokenSelect value={toToken} tokens={tokens} onChange={setToToken} disabledToken={fromToken} onOpenImport={() => setTab('tokens')} />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/24">
+                    <div className="grid gap-px bg-white/10 sm:grid-cols-3">
+                      <div className="bg-[#06111f] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Route</div>
+                        <div className="mt-2 truncate text-sm font-black text-white">{routeLabel}</div>
+                      </div>
+                      <div className="bg-[#06111f] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Minimum received</div>
+                        <div className="mt-2 truncate text-sm font-black text-white">{quoteOut > 0n ? `${formatTokenAmount(minReceived, toToken.decimals, 6)} ${toToken.symbol}` : '—'}</div>
+                      </div>
+                      <div className="bg-[#06111f] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Slippage</div>
+                        <div className="mt-2 flex items-center gap-2">
+                          <input
+                            value={slippage}
+                            onChange={(event) => setSlippage(cleanDecimalInput(event.target.value))}
+                            className="h-8 w-20 rounded-[10px] border border-white/10 bg-black/30 px-2 text-sm font-black text-white outline-none focus:border-cyan-300/45"
+                          />
+                          <span className="text-sm font-black text-white/70">%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    <MiniButton onClick={() => setSlippage('0.5')}>0.5%</MiniButton>
+                    <MiniButton onClick={() => setSlippage('1')}>1%</MiniButton>
+                    <MiniButton onClick={() => setSlippage('2')}>2%</MiniButton>
+                  </div>
+
+                  <div className="mt-5">
+                    <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady || quoteOut <= 0n}>
+                      {swapActionLabel}
+                    </ActionButton>
+                  </div>
+                </Panel>
+              ) : null}
+
+              {tab === 'liquidity' ? (
+                <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Pools</p>
+                      <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Supply liquidity</h2>
+                      <p className="mt-3 text-sm leading-7 text-white/60">Add liquidity to an existing pair or create a new INRI Chain pool. Native INRI is wrapped into WINRI automatically.</p>
+                    </div>
+                    <Droplets className="h-7 w-7 text-cyan-300" />
+                  </div>
+
+                  <div className="mt-6 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.05] p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Pair status</div>
+                        <div className="mt-1 text-sm font-bold text-white/82">{liqPairStatus}</div>
+                      </div>
+                      <div className="rounded-full border border-cyan-300/16 bg-black/24 px-3 py-1.5 text-xs font-black text-cyan-100">{liqRatioText}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-4">
+                    <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
+                      <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(liqBalanceA, liqTokenA.decimals)}`} />
+                      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
+                        <div className="min-w-0">
+                          <input value={liqAmountA} onChange={(event) => handleLiquidityAmountAChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                          <button type="button" onClick={() => handleLiquidityAmountAChange(formatTokenAmount(liqBalanceA, liqTokenA.decimals, liqTokenA.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
+                        </div>
+                        <TokenSelect value={liqTokenA} tokens={tokens} onChange={handleLiquidityTokenAChange} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} compact />
+                      </div>
+                    </div>
+                    <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
+                      <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(liqBalanceB, liqTokenB.decimals)}`} />
+                      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
+                        <div className="min-w-0">
+                          <input value={liqAmountB} onChange={(event) => handleLiquidityAmountBChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                          <button type="button" onClick={() => handleLiquidityAmountBChange(formatTokenAmount(liqBalanceB, liqTokenB.decimals, liqTokenB.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
+                        </div>
+                        <TokenSelect value={liqTokenB} tokens={tokens} onChange={handleLiquidityTokenBChange} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} compact />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                    <AlertTriangle className="mr-2 inline h-4 w-4" /> Tokens with transfer fees may deposit less than typed. INRISwap measures the real amount received by the pair.
+                  </div>
+
+                  <div className="mt-5">
+                    <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
+                      Supply liquidity
+                    </ActionButton>
+                  </div>
+                </Panel>
+              ) : null}
+
+              {tab === 'remove' ? (
+                <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP position</p>
+                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD / INRI liquidity</h2>
+                  <p className="mt-3 text-sm leading-7 text-white/60">Remove liquidity from the official iUSD/WINRI pair and receive iUSD plus native INRI.</p>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
+                      <div className="mt-2 text-2xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18) : '0'}</div>
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Remove percent</div>
+                      <input value={removePercent} onChange={(event) => setRemovePercent(cleanDecimalInput(event.target.value))} className="mt-2 h-12 w-full rounded-[16px] border border-white/10 bg-[#050d18] px-3 text-xl font-black text-white outline-none focus:border-cyan-300/45" />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-4 gap-2">
+                    {['25', '50', '75', '100'].map((percent) => <MiniButton key={percent} onClick={() => setRemovePercent(percent)}>{percent}%</MiniButton>)}
+                  </div>
+
+                  <div className="mt-5">
+                    <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !pool || pool.lpBalance <= 0n}>
+                      Remove liquidity
+                    </ActionButton>
+                  </div>
+                </Panel>
+              ) : null}
+
+              {tab === 'tokens' ? (
+                <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Tokens</p>
+                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Import any INRI token</h2>
+                  <p className="mt-3 text-sm leading-7 text-white/60">Paste a contract. The interface reads symbol, name and decimals automatically.</p>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+                    <input
+                      value={importAddress}
+                      onChange={(event) => setImportAddress(event.target.value)}
+                      placeholder="0x token contract"
+                      className="h-[3.25rem] rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-sm font-bold text-white outline-none transition placeholder:text-white/28 focus:border-cyan-300/50"
+                    />
+                    <button type="button" onClick={() => void handleImportToken()} disabled={busy} className="inline-flex h-[3.25rem] items-center justify-center gap-2 rounded-[18px] border border-cyan-300/35 bg-cyan-300/10 px-5 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/16 disabled:opacity-50">
+                      <Plus className="h-4 w-4" /> Import
+                    </button>
+                  </div>
+
+                  <div className="mt-6 grid gap-3">
+                    {tokens.map((token) => (
+                      <div key={tokenKey(token)} className="flex flex-col gap-3 rounded-[20px] border border-white/10 bg-[#0a1727] p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <TokenBadge token={token} />
+                            {token.verified ? <span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">Verified</span> : <span className="rounded-full border border-amber-300/20 bg-amber-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100">Imported</span>}
+                          </div>
+                          <p className="mt-2 text-sm text-white/60">{token.name} · decimals {token.decimals}</p>
+                          {!token.native ? <p className="mt-1 text-xs font-bold text-cyan-200/70">{shortAddress(token.address, 10, 8)}</p> : null}
+                        </div>
+                        {!token.native ? (
+                          <Link href={`${EXPLORER_URL}/address/${token.address}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-cyan-300 hover:text-white">
+                            Explorer <ExternalLink className="h-4 w-4" />
+                          </Link>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
+              ) : null}
+            </div>
+
+            <div className={`mx-auto mt-6 w-full ${infoWidthClass}`}>
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
                 <Panel className="rounded-[32px] border-cyan-300/22 bg-[#06111f]/82">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -1292,7 +1294,7 @@ export function InriSwapClient() {
                     <p><AlertTriangle className="mr-2 inline h-4 w-4 text-amber-300" />Low liquidity can cause high price impact. Add liquidity before public use.</p>
                   </div>
                 </Panel>
-              </aside>
+              </div>
             </div>
           </div>
         </section>
