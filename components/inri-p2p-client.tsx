@@ -472,6 +472,7 @@ export function InriP2PClient() {
     }
 
     if (!snap.account) throw new Error('Wallet connected, but no account was returned.')
+    const account = snap.account
 
     if (!isInriChain(snap.chainId || '')) {
       const nextChainId = await switchProviderToInri(provider)
@@ -479,7 +480,7 @@ export function InriP2PClient() {
       setWallet(snap)
     }
 
-    return { provider, account: snap.account }
+    return { provider, account }
   }, [syncWallet])
 
   const waitForReceipt = useCallback(async (hash: string) => {
@@ -499,7 +500,8 @@ export function InriP2PClient() {
     value = 0n,
     fallbackGas = 520000n,
   ) => {
-    const { provider, account: from } = await ensureWriteReady()
+    const { provider, account } = await ensureWriteReady()
+    const from = account
     const isToken = target === 'iusd'
     const to = isToken ? P2P_IUSD_ADDRESS : P2P_MARKET_ADDRESS
     const data = isToken
