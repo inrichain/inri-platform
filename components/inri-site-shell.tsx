@@ -316,11 +316,11 @@ function MobileMenu() {
 export function InriHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/82 shadow-[0_12px_40px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
-      <div className="border-b border-cyan-300/12 bg-[#061b2b] shadow-[inset_0_-1px_0_rgba(19,164,255,0.10)]">
+      <div className="border-b border-cyan-100/15 bg-[#13a4ff]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.24em] text-[#13A4FF] drop-shadow-[0_0_10px_rgba(19,164,255,0.20)] sm:text-[12px] lg:tracking-[0.30em]"
+            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.22em] text-white/78 sm:text-[12px] lg:tracking-[0.28em]"
           >
             INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
           </p>
