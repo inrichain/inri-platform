@@ -122,9 +122,9 @@ type LiquidityPairInfo = {
 
 const tabItems: { key: SwapTab; label: string; icon: LucideIcon }[] = [
   { key: 'swap', label: 'Swap', icon: Zap },
-  { key: 'liquidity', label: 'Create / Add Pool', icon: Droplets },
-  { key: 'remove', label: 'My LP', icon: Gauge },
-  { key: 'tokens', label: 'Import Token', icon: Search },
+  { key: 'liquidity', label: 'Pool', icon: Droplets },
+  { key: 'remove', label: 'Positions', icon: Gauge },
+  { key: 'tokens', label: 'Tokens', icon: Search },
 ]
 
 const baseTokens: TokenInfo[] = [
@@ -1112,8 +1112,8 @@ export function InriSwapClient() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Pools</p>
-                        <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Create or add liquidity</h2>
-                        <p className="mt-3 text-sm leading-7 text-white/60">Create any INRI Chain pair. Native INRI is wrapped into WINRI by the Router.</p>
+                        <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Supply liquidity</h2>
+                        <p className="mt-3 text-sm leading-7 text-white/60">Add liquidity to an existing pair or create a new INRI Chain pool. Native INRI is wrapped into WINRI automatically.</p>
                       </div>
                       <Droplets className="h-7 w-7 text-cyan-300" />
                     </div>
@@ -1157,7 +1157,7 @@ export function InriSwapClient() {
 
                     <div className="mt-5">
                       <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
-                        Add liquidity / create pool
+                        Supply liquidity
                       </ActionButton>
                     </div>
                   </Panel>
