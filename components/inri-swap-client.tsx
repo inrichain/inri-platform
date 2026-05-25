@@ -113,6 +113,13 @@ type PoolSnapshot = {
   price: string
 }
 
+type LiquidityPairInfo = {
+  pair: string | null
+  exists: boolean
+  reserveA: bigint
+  reserveB: bigint
+}
+
 const tabItems: { key: SwapTab; label: string; icon: LucideIcon }[] = [
   { key: 'swap', label: 'Swap', icon: Zap },
   { key: 'liquidity', label: 'Create / Add Pool', icon: Droplets },
@@ -208,6 +215,22 @@ function getTokenAddressForPath(token: TokenInfo) {
   return token.native ? WINRI_ADDRESS : token.address
 }
 
+async function readPairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo): Promise<LiquidityPairInfo> {
+  const addressA = getTokenAddressForPath(tokenA)
+  const addressB = getTokenAddressForPath(tokenB)
+  const pairAddress = await getPair(addressA, addressB)
+  if (!pairAddress || pairAddress === ZeroAddress) {
+    return { pair: null, exists: false, reserveA: 0n, reserveB: 0n }
+  }
+
+  const pair = new Contract(pairAddress, pairAbi, rpc)
+  const [token0, reserves] = (await Promise.all([pair.token0(), pair.getReserves()])) as [string, [bigint, bigint, number]]
+  const [reserve0, reserve1] = reserves
+  const reserveA = sameAddress(token0, addressA) ? reserve0 : reserve1
+  const reserveB = sameAddress(token0, addressA) ? reserve1 : reserve0
+  return { pair: pairAddress, exists: true, reserveA, reserveB }
+}
+
 function dedupeTokens(tokens: TokenInfo[]) {
   const seen = new Set<string>()
   return tokens.filter((token) => {
@@ -295,12 +318,14 @@ function TokenSelect({
   onChange,
   disabledToken,
   onOpenImport,
+  compact = false,
 }: {
   value: TokenInfo
   tokens: TokenInfo[]
   onChange: (token: TokenInfo) => void
   disabledToken?: TokenInfo
   onOpenImport?: () => void
+  compact?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -318,13 +343,13 @@ function TokenSelect({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex h-[60px] min-w-0 items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-[#081727] px-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-cyan-300/30 hover:bg-cyan-300/6 focus:border-cyan-300/45 focus:outline-none"
+        className={`group flex min-w-0 items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-[#081727] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition hover:border-cyan-300/30 hover:bg-cyan-300/6 focus:border-cyan-300/45 focus:outline-none ${compact ? 'h-[54px] px-3' : 'h-[60px] px-3.5'}`}
       >
         <span className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden pr-1">
-          <TokenAvatar token={value} />
+          <TokenAvatar token={value} size={compact ? 'sm' : 'md'} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[15px] font-black text-white">{value.symbol}</span>
-            <span className="block truncate text-[10px] font-bold uppercase tracking-[0.16em] text-white/42">{value.native ? 'Native' : value.verified ? 'Verified' : 'Imported'}</span>
+            <span className={`block truncate font-black text-white ${compact ? 'text-[14px]' : 'text-[15px]'}`}>{value.symbol}</span>
+            <span className={`block truncate font-bold uppercase tracking-[0.16em] text-white/42 ${compact ? 'text-[9px]' : 'text-[10px]'}`}>{value.native ? 'Native' : value.verified ? 'Verified' : 'Imported'}</span>
           </span>
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-cyan-200/70 transition group-hover:text-white" />
@@ -480,6 +505,8 @@ export function InriSwapClient() {
   const [liqTokenB, setLiqTokenB] = useState<TokenInfo>(baseTokens[1])
   const [liqAmountA, setLiqAmountA] = useState('10')
   const [liqAmountB, setLiqAmountB] = useState('0.18')
+  const [liqPairInfo, setLiqPairInfo] = useState<LiquidityPairInfo>({ pair: null, exists: false, reserveA: 0n, reserveB: 0n })
+  const [liqEditedSide, setLiqEditedSide] = useState<'A' | 'B'>('A')
   const [removePercent, setRemovePercent] = useState('25')
   const [importAddress, setImportAddress] = useState('')
   const [message, setMessage] = useState<{ kind: 'ok' | 'warn' | 'info' | 'bad'; text: string } | null>(null)
@@ -595,6 +622,43 @@ export function InriSwapClient() {
     void refreshBalances(wallet.account, tokens)
     void refreshPool(wallet.account)
   }, [wallet.account, tokens, refreshBalances, refreshPool])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadLiquidityPairInfo() {
+      try {
+        const next = await readPairInfoForTokens(liqTokenA, liqTokenB)
+        if (!cancelled) setLiqPairInfo(next)
+      } catch {
+        if (!cancelled) setLiqPairInfo({ pair: null, exists: false, reserveA: 0n, reserveB: 0n })
+      }
+    }
+
+    void loadLiquidityPairInfo()
+    return () => {
+      cancelled = true
+    }
+  }, [liqTokenA, liqTokenB])
+
+  useEffect(() => {
+    if (!liqPairInfo.exists || liqPairInfo.reserveA <= 0n || liqPairInfo.reserveB <= 0n) return
+
+    if (liqEditedSide === 'A') {
+      const amountA = safeParseUnits(liqAmountA, liqTokenA.decimals)
+      if (amountA <= 0n) return
+      const amountB = (amountA * liqPairInfo.reserveB) / liqPairInfo.reserveA
+      const next = formatTokenAmount(amountB, liqTokenB.decimals, 6)
+      if (next !== liqAmountB) setLiqAmountB(next)
+      return
+    }
+
+    const amountB = safeParseUnits(liqAmountB, liqTokenB.decimals)
+    if (amountB <= 0n) return
+    const amountA = (amountB * liqPairInfo.reserveA) / liqPairInfo.reserveB
+    const next = formatTokenAmount(amountA, liqTokenA.decimals, 6)
+    if (next !== liqAmountA) setLiqAmountA(next)
+  }, [liqPairInfo, liqEditedSide, liqAmountA, liqAmountB, liqTokenA, liqTokenB])
 
   useEffect(() => {
     let cancelled = false
@@ -721,6 +785,26 @@ export function InriSwapClient() {
     }
   }
 
+  function handleLiquidityAmountAChange(value: string) {
+    setLiqEditedSide('A')
+    setLiqAmountA(cleanDecimalInput(value))
+  }
+
+  function handleLiquidityAmountBChange(value: string) {
+    setLiqEditedSide('B')
+    setLiqAmountB(cleanDecimalInput(value))
+  }
+
+  function handleLiquidityTokenAChange(token: TokenInfo) {
+    setLiqEditedSide('A')
+    setLiqTokenA(token)
+  }
+
+  function handleLiquidityTokenBChange(token: TokenInfo) {
+    setLiqEditedSide('B')
+    setLiqTokenB(token)
+  }
+
   async function handleAddLiquidity() {
     try {
       setBusy(true)
@@ -845,6 +929,12 @@ export function InriSwapClient() {
   const maxFromBalance = fromToken.native && fromBalance > parseUnits('0.02', 18) ? fromBalance - parseUnits('0.02', 18) : fromBalance
   const swapActionLabel = !connected ? 'Connect wallet' : !networkReady ? 'Switch to INRI Chain' : quoteOut <= 0n ? 'Enter amount / no route' : 'Review swap'
   const poolTvlApprox = pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
+  const liqRatioText = liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
+    ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
+    : 'This pair does not exist yet. Your first deposit sets the starting price.'
+  const liqPairStatus = liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
+  const liqBalanceA = balances[tokenKey(liqTokenA)] ?? 0n
+  const liqBalanceB = balances[tokenKey(liqTokenB)] ?? 0n
 
   return (
     <InriShell>
@@ -1028,19 +1118,35 @@ export function InriSwapClient() {
                       <Droplets className="h-7 w-7 text-cyan-300" />
                     </div>
 
-                    <div className="mt-6 grid gap-4">
+                    <div className="mt-6 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.05] p-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Pair status</div>
+                          <div className="mt-1 text-sm font-bold text-white/82">{liqPairStatus}</div>
+                        </div>
+                        <div className="rounded-full border border-cyan-300/16 bg-black/24 px-3 py-1.5 text-xs font-black text-cyan-100">{liqRatioText}</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4">
                       <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
-                        <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenA)] ?? 0n, liqTokenA.decimals)}`} />
-                        <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
-                          <input value={liqAmountA} onChange={(event) => setLiqAmountA(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
-                          <TokenSelect value={liqTokenA} tokens={tokens} onChange={setLiqTokenA} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} />
+                        <FieldLabel label="Asset A" hint={`Balance ${formatTokenAmount(liqBalanceA, liqTokenA.decimals)}`} />
+                        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
+                          <div className="min-w-0">
+                            <input value={liqAmountA} onChange={(event) => handleLiquidityAmountAChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                            <button type="button" onClick={() => handleLiquidityAmountAChange(formatTokenAmount(liqBalanceA, liqTokenA.decimals, liqTokenA.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
+                          </div>
+                          <TokenSelect value={liqTokenA} tokens={tokens} onChange={handleLiquidityTokenAChange} disabledToken={liqTokenB} onOpenImport={() => setTab('tokens')} compact />
                         </div>
                       </div>
                       <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
-                        <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(balances[tokenKey(liqTokenB)] ?? 0n, liqTokenB.decimals)}`} />
-                        <div className="grid gap-3 sm:grid-cols-[1fr_190px] lg:grid-cols-[1fr_205px]">
-                          <input value={liqAmountB} onChange={(event) => setLiqAmountB(cleanDecimalInput(event.target.value))} className="h-14 rounded-[18px] border border-white/10 bg-[#050d18] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
-                          <TokenSelect value={liqTokenB} tokens={tokens} onChange={setLiqTokenB} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} />
+                        <FieldLabel label="Asset B" hint={`Balance ${formatTokenAmount(liqBalanceB, liqTokenB.decimals)}`} />
+                        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_170px]">
+                          <div className="min-w-0">
+                            <input value={liqAmountB} onChange={(event) => handleLiquidityAmountBChange(event.target.value)} className="h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                            <button type="button" onClick={() => handleLiquidityAmountBChange(formatTokenAmount(liqBalanceB, liqTokenB.decimals, liqTokenB.decimals))} className="mt-2 text-xs font-black text-cyan-300 transition hover:text-white">MAX</button>
+                          </div>
+                          <TokenSelect value={liqTokenB} tokens={tokens} onChange={handleLiquidityTokenBChange} disabledToken={liqTokenA} onOpenImport={() => setTab('tokens')} compact />
                         </div>
                       </div>
                     </div>
