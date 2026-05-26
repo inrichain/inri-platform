@@ -119,6 +119,11 @@ type LiquidityPairInfo = {
   reserveB: bigint
 }
 
+type RemovePairInfo = LiquidityPairInfo & {
+  lpBalance: bigint
+  lpTotalSupply: bigint
+}
+
 const tabItems: { key: SwapTab; label: string; icon: LucideIcon }[] = [
   { key: 'swap', label: 'Swap', icon: Zap },
   { key: 'liquidity', label: 'Pool', icon: Droplets },
@@ -229,6 +234,21 @@ async function readPairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo): Prom
   const reserveA = sameAddress(token0, addressA) ? reserve0 : reserve1
   const reserveB = sameAddress(token0, addressA) ? reserve1 : reserve0
   return { pair: pairAddress, exists: true, reserveA, reserveB }
+}
+
+async function readRemovePairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo, account?: string | null): Promise<RemovePairInfo> {
+  const base = await readPairInfoForTokens(tokenA, tokenB)
+  if (!base.exists || !base.pair) {
+    return { ...base, lpBalance: 0n, lpTotalSupply: 0n }
+  }
+
+  const pair = new Contract(base.pair, pairAbi, rpc)
+  const [lpBalance, lpTotalSupply] = (await Promise.all([
+    account ? pair.balanceOf(account) : 0n,
+    pair.totalSupply(),
+  ])) as [bigint, bigint]
+
+  return { ...base, lpBalance, lpTotalSupply }
 }
 
 function dedupeTokens(tokens: TokenInfo[]) {
@@ -507,6 +527,9 @@ export function InriSwapClient() {
   const [liqAmountB, setLiqAmountB] = useState('0.18')
   const [liqPairInfo, setLiqPairInfo] = useState<LiquidityPairInfo>({ pair: null, exists: false, reserveA: 0n, reserveB: 0n })
   const [liqEditedSide, setLiqEditedSide] = useState<'A' | 'B'>('A')
+  const [removeTokenA, setRemoveTokenA] = useState<TokenInfo>(baseTokens[0])
+  const [removeTokenB, setRemoveTokenB] = useState<TokenInfo>(baseTokens[1])
+  const [removePairInfo, setRemovePairInfo] = useState<RemovePairInfo>({ pair: null, exists: false, reserveA: 0n, reserveB: 0n, lpBalance: 0n, lpTotalSupply: 0n })
   const [removePercent, setRemovePercent] = useState('25')
   const [importAddress, setImportAddress] = useState('')
   const [message, setMessage] = useState<{ kind: 'ok' | 'warn' | 'info' | 'bad'; text: string } | null>(null)
@@ -597,8 +620,17 @@ export function InriSwapClient() {
   const refreshAll = useCallback(async () => {
     await syncWallet()
     const snapshot = await readActiveWalletSnapshot()
-    await Promise.all([refreshBalances(snapshot.account, tokens), refreshPool(snapshot.account)])
-  }, [refreshBalances, refreshPool, syncWallet, tokens])
+    await Promise.all([
+      refreshBalances(snapshot.account, tokens),
+      refreshPool(snapshot.account),
+      readPairInfoForTokens(liqTokenA, liqTokenB)
+        .then(setLiqPairInfo)
+        .catch(() => setLiqPairInfo({ pair: null, exists: false, reserveA: 0n, reserveB: 0n })),
+      readRemovePairInfoForTokens(removeTokenA, removeTokenB, snapshot.account)
+        .then(setRemovePairInfo)
+        .catch(() => setRemovePairInfo({ pair: null, exists: false, reserveA: 0n, reserveB: 0n, lpBalance: 0n, lpTotalSupply: 0n })),
+    ])
+  }, [liqTokenA, liqTokenB, refreshBalances, refreshPool, removeTokenA, removeTokenB, syncWallet, tokens])
 
   useEffect(() => {
     void syncWallet()
@@ -640,6 +672,28 @@ export function InriSwapClient() {
       cancelled = true
     }
   }, [liqTokenA, liqTokenB])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadRemovePairInfo() {
+      try {
+        if (tokenKey(removeTokenA) === tokenKey(removeTokenB)) {
+          if (!cancelled) setRemovePairInfo({ pair: null, exists: false, reserveA: 0n, reserveB: 0n, lpBalance: 0n, lpTotalSupply: 0n })
+          return
+        }
+        const next = await readRemovePairInfoForTokens(removeTokenA, removeTokenB, wallet.account)
+        if (!cancelled) setRemovePairInfo(next)
+      } catch {
+        if (!cancelled) setRemovePairInfo({ pair: null, exists: false, reserveA: 0n, reserveB: 0n, lpBalance: 0n, lpTotalSupply: 0n })
+      }
+    }
+
+    void loadRemovePairInfo()
+    return () => {
+      cancelled = true
+    }
+  }, [removeTokenA, removeTokenB, wallet.account])
 
   useEffect(() => {
     if (!liqPairInfo.exists || liqPairInfo.reserveA <= 0n || liqPairInfo.reserveB <= 0n) return
@@ -851,17 +905,34 @@ export function InriSwapClient() {
       setBusy(true)
       setMessage({ kind: 'info', text: 'Preparing remove liquidity transaction...' })
       const { provider, account } = await ensureWallet()
-      if (!pool || pool.lpBalance <= 0n) throw new Error('No iUSD/INRI LP balance found in this wallet.')
+      if (tokenKey(removeTokenA) === tokenKey(removeTokenB)) throw new Error('Select two different assets.')
+      if (!removePairInfo.exists || !removePairInfo.pair) throw new Error('This pair does not exist yet.')
+      if (removePairInfo.lpBalance <= 0n) throw new Error('No LP balance found in this wallet for the selected pair.')
 
       const percent = Math.max(1, Math.min(100, Number(cleanDecimalInput(removePercent || '0')) || 0))
-      const liquidity = (pool.lpBalance * BigInt(Math.round(percent * 100))) / 10000n
+      const liquidity = (removePairInfo.lpBalance * BigInt(Math.round(percent * 100))) / 10000n
       if (liquidity <= 0n) throw new Error('Liquidity amount is too small.')
 
-      await ensureApproval(pool.pair, account, ROUTER_ADDRESS, liquidity, provider)
-      const data = routerIface.encodeFunctionData('removeLiquidityINRI', [IUSD_ADDRESS, liquidity, 0n, 0n, account, deadlineFromNow()])
-      await sendTx(provider, account, ROUTER_ADDRESS, data)
+      const aNative = Boolean(removeTokenA.native)
+      const bNative = Boolean(removeTokenB.native)
+      if (aNative && bNative) throw new Error('A pool cannot be INRI against INRI.')
+
+      await ensureApproval(removePairInfo.pair, account, ROUTER_ADDRESS, liquidity, provider)
+
+      if (aNative || bNative) {
+        const token = aNative ? removeTokenB : removeTokenA
+        if (sameAddress(token.address, WINRI_ADDRESS)) throw new Error('Use WINRI as a token pair or unwrap WINRI separately.')
+        const data = routerIface.encodeFunctionData('removeLiquidityINRI', [token.address, liquidity, 0n, 0n, account, deadlineFromNow()])
+        await sendTx(provider, account, ROUTER_ADDRESS, data)
+      } else {
+        const data = routerIface.encodeFunctionData('removeLiquidity', [removeTokenA.address, removeTokenB.address, liquidity, 0n, 0n, account, deadlineFromNow()])
+        await sendTx(provider, account, ROUTER_ADDRESS, data)
+      }
+
       setMessage({ kind: 'ok', text: 'Remove liquidity transaction sent.' })
       await refreshAll()
+      const next = await readRemovePairInfoForTokens(removeTokenA, removeTokenB, account)
+      setRemovePairInfo(next)
     } catch (cause) {
       setMessage({ kind: 'bad', text: getErrorMessage(cause, 'Remove liquidity failed.') })
     } finally {
@@ -935,6 +1006,17 @@ export function InriSwapClient() {
   const liqPairStatus = liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
   const liqBalanceA = balances[tokenKey(liqTokenA)] ?? 0n
   const liqBalanceB = balances[tokenKey(liqTokenB)] ?? 0n
+  const removePercentNumber = Math.max(0, Math.min(100, Number(cleanDecimalInput(removePercent || '0')) || 0))
+  const removeLiquidityAmount = removePairInfo.lpBalance > 0n
+    ? (removePairInfo.lpBalance * BigInt(Math.round(removePercentNumber * 100))) / 10000n
+    : 0n
+  const removeAmountA = removePairInfo.lpTotalSupply > 0n ? (removePairInfo.reserveA * removeLiquidityAmount) / removePairInfo.lpTotalSupply : 0n
+  const removeAmountB = removePairInfo.lpTotalSupply > 0n ? (removePairInfo.reserveB * removeLiquidityAmount) / removePairInfo.lpTotalSupply : 0n
+  const removePairStatus = removePairInfo.exists
+    ? removePairInfo.lpBalance > 0n
+      ? 'LP position found in this wallet.'
+      : 'Pair exists, but this wallet has no LP tokens for it.'
+    : 'Pair not found. Import the tokens and select the exact pool you created.'
   const contentWidthClass = tab === 'swap' ? 'max-w-[660px]' : tab === 'liquidity' ? 'max-w-[760px]' : 'max-w-[720px]'
   const infoWidthClass = contentWidthClass
 
@@ -1176,14 +1258,40 @@ export function InriSwapClient() {
 
               {tab === 'remove' ? (
                 <Panel className="rounded-[32px] border-cyan-300/24 bg-[#06111f]/92 p-5">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP position</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">iUSD / INRI liquidity</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/60">Remove liquidity from the official iUSD/WINRI pair and receive iUSD plus native INRI.</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">LP positions</p>
+                  <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-white">Remove liquidity</h2>
+                  <p className="mt-3 text-sm leading-7 text-white/60">Select any INRISwap pair created by the Factory. If the pair uses native INRI, choose INRI here to receive native INRI back.</p>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div className="mt-6 grid gap-4">
+                    <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
+                      <FieldLabel label="Asset A" hint="Choose one side of the pool" />
+                      <TokenSelect value={removeTokenA} tokens={tokens} onChange={setRemoveTokenA} disabledToken={removeTokenB} onOpenImport={() => setTab('tokens')} compact />
+                    </div>
+                    <div className="rounded-[24px] border border-white/10 bg-[#091727] p-4">
+                      <FieldLabel label="Asset B" hint="Choose the other side" />
+                      <TokenSelect value={removeTokenB} tokens={tokens} onChange={setRemoveTokenB} disabledToken={removeTokenA} onOpenImport={() => setTab('tokens')} compact />
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.05] p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">Selected pair</div>
+                        <div className="mt-1 text-sm font-bold text-white/82">{removeTokenA.symbol} / {removeTokenB.symbol}</div>
+                        <div className="mt-1 text-xs font-bold text-white/52">{removePairStatus}</div>
+                      </div>
+                      {removePairInfo.pair ? (
+                        <Link href={`${EXPLORER_URL}/address/${removePairInfo.pair}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-cyan-300/18 bg-black/20 px-3 py-2 text-xs font-black text-cyan-200 hover:text-white">
+                          LP contract <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
-                      <div className="mt-2 text-2xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18) : '0'}</div>
+                      <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(removePairInfo.lpBalance, 18, 6)}</div>
                     </div>
                     <div className="rounded-[20px] border border-white/10 bg-[#0a1727] p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Remove percent</div>
@@ -1195,8 +1303,23 @@ export function InriSwapClient() {
                     {['25', '50', '75', '100'].map((percent) => <MiniButton key={percent} onClick={() => setRemovePercent(percent)}>{percent}%</MiniButton>)}
                   </div>
 
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Estimated {removeTokenA.symbol}</div>
+                      <div className="mt-2 text-xl font-black text-white">{formatTokenAmount(removeAmountA, removeTokenA.decimals, 6)}</div>
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-black/20 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Estimated {removeTokenB.symbol}</div>
+                      <div className="mt-2 text-xl font-black text-white">{formatTokenAmount(removeAmountB, removeTokenB.decimals, 6)}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                    <AlertTriangle className="mr-2 inline h-4 w-4" /> For TOKEN/WINRI pools, select INRI instead of WINRI if you want to receive native INRI back. Select WINRI if you prefer wrapped INRI tokens.
+                  </div>
+
                   <div className="mt-5">
-                    <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !pool || pool.lpBalance <= 0n}>
+                    <ActionButton onClick={handleRemoveLiquidity} busy={busy} disabled={!connected || !networkReady || !removePairInfo.exists || removePairInfo.lpBalance <= 0n}>
                       Remove liquidity
                     </ActionButton>
                   </div>
