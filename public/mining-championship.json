@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-05-26T16:51:18.911Z",
-  "currentBlock": 1292728,
+  "updatedAt": "2026-05-26T17:41:38.713Z",
+  "currentBlock": 1293038,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1292728,
+  "lastScannedBlock": 1293038,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,10 +17,10 @@
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 28007,
-      "lastBlock": 1292705,
+      "blocks": 28126,
+      "lastBlock": 1293019,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 27974
+      "poolSoloBlocks": 28093
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
@@ -59,10 +59,10 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 4934,
-      "lastBlock": 1292691,
+      "blocks": 4936,
+      "lastBlock": 1292952,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 4934
+      "poolSoloBlocks": 4936
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -100,6 +100,13 @@
       "poolSoloBlocks": 314
     },
     {
+      "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
+      "blocks": 225,
+      "lastBlock": 1293036,
+      "chainSoloBlocks": 225,
+      "poolSoloBlocks": 0
+    },
+    {
       "address": "0x80771087d3183bf7144330daadb34011492d3956",
       "blocks": 79,
       "lastBlock": 1207337,
@@ -107,17 +114,17 @@
       "poolSoloBlocks": 79
     },
     {
-      "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 77,
-      "lastBlock": 1292657,
-      "chainSoloBlocks": 77,
-      "poolSoloBlocks": 0
-    },
-    {
       "address": "0xa6771ece6c906745181b6a1955f514babcd33488",
       "blocks": 36,
       "lastBlock": 1133446,
       "chainSoloBlocks": 36,
+      "poolSoloBlocks": 0
+    },
+    {
+      "address": "0x465c26d6ea37ef62ef1cd2ba8b54e3ccdace47fb",
+      "blocks": 22,
+      "lastBlock": 1293003,
+      "chainSoloBlocks": 22,
       "poolSoloBlocks": 0
     },
     {
