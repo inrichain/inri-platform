@@ -198,7 +198,7 @@ async function approveIfNeeded(account: string, amount: bigint, provider: Ethere
 }
 
 function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-[28px] border border-cyan-300/16 bg-[#06111f]/82 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ${className}`}>{children}</div>
+  return <div className={`rounded-[28px] border border-cyan-300/16 bg-[#06111f]/92 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)] ${className}`}>{children}</div>
 }
 
 function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
@@ -409,10 +409,10 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_12%,rgba(0,174,255,0.45),transparent_28rem),radial-gradient(circle_at_84%_18%,rgba(122,232,255,0.22),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_45%,#000_100%)] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
-      <section className="relative">
-        <div className="relative mx-auto max-w-[1180px] px-4 pb-7 pt-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
+      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_0%,rgba(19,164,255,0.26),transparent_24rem),radial-gradient(circle_at_86%_6%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#04101d_100%)]">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
+        <div className="relative mx-auto max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.20em] text-cyan-100">
@@ -441,7 +441,7 @@ export function InriLiquidityCampaignClient() {
         </div>
       </section>
 
-      <section className="relative pb-12 pt-6">
+      <section className="relative bg-[linear-gradient(180deg,#061523_0%,#02040a_48%,#02040a_100%)] py-8">
         <div className="mx-auto max-w-[1180px] px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">

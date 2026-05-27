@@ -27,11 +27,12 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Bridge', href: '/bridge/' },
-  { label: 'Swap', href: '/swap' },
   { label: 'Liquidity', href: '/liquidity/' },
+  { label: 'P2P', href: '/p2p' },
+  { label: 'Swap', href: '/swap' },
+  { label: 'Staking', href: '/staking' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
-  { label: 'Staking', href: '/staking' },
   { label: 'Championship', href: '/mining-championship/' },
 ]
 
@@ -43,8 +44,6 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Explorer', href: EXPLORER_URL, external: true },
   { label: 'Whitepaper', href: '/whitepaper' },
   { label: 'Token Factory', href: '/token-factory' },
-  { label: 'P2P', href: '/p2p' },
-  { label: 'Liquidity Campaign', href: '/liquidity/' },
   { label: 'Mining Windows', href: '/mining-windows' },
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
 ]
@@ -64,13 +63,13 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
     title: 'Ecosystem',
     links: [
       { label: 'iUSD Bridge', href: '/bridge/' },
-      { label: 'Mining', href: '/mining' },
-      { label: 'Pool', href: '/pool' },
-      { label: 'Staking', href: '/staking' },
-      { label: 'Token Factory', href: '/token-factory' },
-      { label: 'Swap', href: '/swap' },
       { label: 'Liquidity Campaign', href: '/liquidity/' },
       { label: 'P2P', href: '/p2p' },
+      { label: 'Swap', href: '/swap' },
+      { label: 'Staking', href: '/staking' },
+      { label: 'Mining', href: '/mining' },
+      { label: 'Pool', href: '/pool' },
+      { label: 'Token Factory', href: '/token-factory' },
     ],
   },
   {
@@ -386,7 +385,7 @@ function BackToTopButton() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="inri-shell-standard min-h-screen text-white">
+    <div className="inri-shell-unified min-h-screen text-white">
       <InriHeader />
       {children}
       <InriFooter />
