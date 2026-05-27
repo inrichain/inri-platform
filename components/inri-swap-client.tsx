@@ -40,7 +40,7 @@ const IUSD_ADDRESS = '0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC'
 const OFFICIAL_PAIR_ADDRESS = '0xcaFFACD05499d005d8441337811bAd227Fa24643'
 const LIQUIDITY_SEEDER_ADDRESS = '0x34583A7080d47Af38d76Bae78c51Ecd0C64442cF'
 const OFFICIAL_REFERENCE_PRICE_LABEL = '0.018'
-const MIN_OFFICIAL_IUSD_RESERVE_FOR_MARKET = 1_000_000n // 1 iUSD. Dust below this is ignored for price display.
+const OFFICIAL_REFERENCE_PRICE_UNITS = 18_000n // iUSD smallest units per 1 INRI
 const NATIVE_INRI = 'NATIVE_INRI'
 const IMPORTED_TOKENS_KEY = 'inri_swap_imported_tokens_v1'
 
@@ -231,6 +231,25 @@ function routeUsesOfficialIusdInriMarket(path: string[]) {
 
 function tokensUseOfficialIusdInriMarket(tokenA: TokenInfo, tokenB: TokenInfo) {
   return routeUsesOfficialIusdInriMarket([getTokenAddressForPath(tokenA), getTokenAddressForPath(tokenB)])
+}
+
+function isOfficialIusdToken(token: TokenInfo) {
+  return !token.native && sameAddress(token.address, IUSD_ADDRESS)
+}
+
+function isInriLikeToken(token: TokenInfo) {
+  return Boolean(token.native) || sameAddress(token.address, WINRI_ADDRESS)
+}
+
+function quoteOfficialCampaignAmount(amountIn: bigint, from: TokenInfo, to: TokenInfo) {
+  if (amountIn <= 0n) return 0n
+  if (isInriLikeToken(from) && isOfficialIusdToken(to)) {
+    return (amountIn * OFFICIAL_REFERENCE_PRICE_UNITS) / 10n ** 18n
+  }
+  if (isOfficialIusdToken(from) && isInriLikeToken(to)) {
+    return (amountIn * 10n ** 18n + OFFICIAL_REFERENCE_PRICE_UNITS - 1n) / OFFICIAL_REFERENCE_PRICE_UNITS
+  }
+  return 0n
 }
 
 async function readPairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo): Promise<LiquidityPairInfo> {
@@ -709,6 +728,22 @@ export function InriSwapClient() {
   }, [removeTokenA, removeTokenB, wallet.account])
 
   useEffect(() => {
+    if (tokensUseOfficialIusdInriMarket(liqTokenA, liqTokenB)) {
+      if (liqEditedSide === 'A') {
+        const amountA = safeParseUnits(liqAmountA, liqTokenA.decimals)
+        const amountB = quoteOfficialCampaignAmount(amountA, liqTokenA, liqTokenB)
+        const next = amountB > 0n ? formatTokenAmount(amountB, liqTokenB.decimals, 6) : ''
+        if (next && next !== liqAmountB) setLiqAmountB(next)
+        return
+      }
+
+      const amountB = safeParseUnits(liqAmountB, liqTokenB.decimals)
+      const amountA = quoteOfficialCampaignAmount(amountB, liqTokenB, liqTokenA)
+      const next = amountA > 0n ? formatTokenAmount(amountA, liqTokenA.decimals, 6) : ''
+      if (next && next !== liqAmountA) setLiqAmountA(next)
+      return
+    }
+
     if (!liqPairInfo.exists || liqPairInfo.reserveA <= 0n || liqPairInfo.reserveB <= 0n) return
 
     if (liqEditedSide === 'A') {
@@ -890,7 +925,7 @@ export function InriSwapClient() {
       if (tokenKey(liqTokenA) === tokenKey(liqTokenB)) throw new Error('Select two different assets.')
 
       if (tokensUseOfficialIusdInriMarket(liqTokenA, liqTokenB)) {
-        throw new Error('Official iUSD/INRI liquidity is handled by the Liquidity Campaign. Use the Join Liquidity Campaign button instead.')
+        throw new Error('Official iUSD/INRI liquidity is handled by the Liquidity Campaign. Use the Open Liquidity Campaign button instead.')
       }
 
       const amountA = safeParseUnits(liqAmountA, liqTokenA.decimals)
@@ -1037,15 +1072,15 @@ export function InriSwapClient() {
         : quoteOut <= 0n
           ? 'Enter amount'
           : 'Swap'
-  const officialPoolHasUsableLiquidity = Boolean(pool && pool.reserveIusd >= MIN_OFFICIAL_IUSD_RESERVE_FOR_MARKET && pool.reserveInri > 0n)
-  const poolTvlApprox = officialPoolHasUsableLiquidity && pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
-  const officialDisplayPrice = officialPoolHasUsableLiquidity && pool?.price ? pool.price : OFFICIAL_REFERENCE_PRICE_LABEL
-  const officialTvlLabel = officialPoolHasUsableLiquidity ? `$${formatDisplayNumber(poolTvlApprox, 4)}` : 'Seeding campaign'
-  const officialReserveInriLabel = pool && officialPoolHasUsableLiquidity ? formatTokenAmount(pool.reserveInri, 18, 4) : 'Protected outside pool'
-  const officialReserveIusdLabel = pool && officialPoolHasUsableLiquidity ? formatTokenAmount(pool.reserveIusd, 6, 6) : 'Protected outside pool'
-  const liqRatioText = liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
-    ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
-    : 'This pair does not exist yet. Your first deposit sets the starting price.'
+  const officialDisplayPrice = OFFICIAL_REFERENCE_PRICE_LABEL
+  const officialTvlLabel = 'Liquidity Campaign'
+  const officialReserveInriLabel = 'Protected in Seeder'
+  const officialReserveIusdLabel = 'Protected in Seeder'
+  const liqRatioText = officialLiquidityLocked
+    ? `Campaign reference: 1 INRI = ${OFFICIAL_REFERENCE_PRICE_LABEL} iUSD`
+    : liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
+      ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
+      : 'This pair does not exist yet. Your first deposit sets the starting price.'
   const liqPairStatus = officialLiquidityLocked
     ? 'Official iUSD/INRI liquidity is protected by the Liquidity Campaign. Direct pool deposits are paused.'
     : liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
@@ -1297,7 +1332,7 @@ export function InriSwapClient() {
 
                   {officialLiquidityLocked ? (
                     <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
-                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Direct iUSD/INRI liquidity is paused while the official market is in seeding mode. Join the campaign so iUSD stays outside the Pair until the target is reached.
+                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Direct iUSD/INRI liquidity is disabled during seeding. Use the Liquidity Campaign page so iUSD stays protected outside the live Pair until the target is reached.
                     </div>
                   ) : (
                     <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
@@ -1308,7 +1343,7 @@ export function InriSwapClient() {
                   <div className="mt-5">
                     {officialLiquidityLocked ? (
                       <Link href="/liquidity-campaign" className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-cyan-300 px-5 text-sm font-black text-black shadow-[0_18px_52px_rgba(46,216,255,0.24)] transition hover:bg-cyan-200">
-                        Join Liquidity Campaign
+                        Open Liquidity Campaign
                       </Link>
                     ) : (
                       <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
