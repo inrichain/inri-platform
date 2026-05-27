@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-05-27T18:38:52.050Z",
-  "currentBlock": 1300902,
+  "updatedAt": "2026-05-27T18:57:33.333Z",
+  "currentBlock": 1300970,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1300902,
+  "lastScannedBlock": 1300970,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,10 +17,10 @@
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 29823,
-      "lastBlock": 1300880,
+      "blocks": 29841,
+      "lastBlock": 1300951,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 29790
+      "poolSoloBlocks": 29808
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
@@ -59,9 +59,9 @@
     },
     {
       "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 5426,
-      "lastBlock": 1300902,
-      "chainSoloBlocks": 5426,
+      "blocks": 5469,
+      "lastBlock": 1300970,
+      "chainSoloBlocks": 5469,
       "poolSoloBlocks": 0
     },
     {
