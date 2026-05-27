@@ -626,28 +626,56 @@ export function InriLiquidityCampaignClient() {
                 <p className="mt-3 text-[11px] font-bold leading-5 text-amber-100/80">Example: if you type 0.1 iUSD, a 2 INRI / 1 iUSD rate shows 0.2 INRI. That is correct because it is your estimate for 0.1 iUSD, not the rate itself.</p>
               </div>
 
-              <div className="mt-4 rounded-[22px] border border-white/12 bg-black/24 p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your current position</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Withdrawable iUSD</p>
-                    <p className="mt-1 text-lg font-black">{formatNumber(user.contributionIusd, IUSD_DECIMALS, 6)}</p>
+              <div className="mt-4 rounded-[22px] border border-cyan-300/20 bg-cyan-300/[0.055] p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/70">Your current position</p>
+                    <p className="mt-1 text-xs font-bold leading-5 text-white/50">This is what you can withdraw before launch.</p>
                   </div>
-                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Withdrawable INRI</p>
-                    <p className="mt-1 text-lg font-black">{formatNumber(user.contributionInri, INRI_DECIMALS, 6)}</p>
+                  <span className="w-fit rounded-full border border-cyan-300/20 bg-black/25 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-cyan-100">Protected</span>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[15px] border border-white/10 bg-black/24 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Your iUSD deposit</p>
+                    <p className="mt-1 break-words text-lg font-black tabular-nums">{formatNumber(user.contributionIusd, IUSD_DECIMALS, 6)}</p>
+                  </div>
+                  <div className="rounded-[15px] border border-white/10 bg-black/24 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Your INRI deposit</p>
+                    <p className="mt-1 break-words text-lg font-black tabular-nums">{formatNumber(user.contributionInri, INRI_DECIMALS, 6)}</p>
                   </div>
                 </div>
-                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Before launch, you can withdraw exactly your deposited iUSD + INRI. Rewards are claimable only after launch + LP lock.</p>
+                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Before launch, you can withdraw exactly your deposited iUSD + INRI. Rewards are calculated separately and become claimable only after launch + LP lock.</p>
+              </div>
+
+              <div className="mt-4 rounded-[22px] border border-emerald-300/18 bg-emerald-400/[0.055] p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100/75">Your estimated rewards from current deposit</p>
+                <p className="mt-1 text-xs font-bold leading-5 text-white/52">Based on your current position: {formatNumber(user.contributionIusd, IUSD_DECIMALS, 6)} iUSD. Final rewards depend on the total iUSD at launch and the funded reward pool.</p>
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <div className="min-w-0 rounded-[15px] border border-emerald-300/14 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">If launched at 50k</p>
+                    <p className="mt-1 break-words text-lg font-black leading-tight tabular-nums">{formatRewardEstimate(userRewardAtTarget)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">funded rate {formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)} / iUSD</p>
+                  </div>
+                  <div className="min-w-0 rounded-[15px] border border-white/10 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k bonus plan</p>
+                    <p className="mt-1 break-words text-lg font-black leading-tight tabular-nums">{formatRewardEstimate(userRewardAt75kPlan)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">planned rate {formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)} / iUSD</p>
+                  </div>
+                  <div className="min-w-0 rounded-[15px] border border-white/10 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k max plan</p>
+                    <p className="mt-1 break-words text-lg font-black leading-tight tabular-nums">{formatRewardEstimate(userRewardAtHardCapPlan)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">planned rate {formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)} / iUSD</p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 rounded-[22px] border border-white/12 bg-black/24 p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Future claim after launch</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Claim after launch + unlock</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">LP tokens</p><p className="mt-1 text-lg font-black">{formatNumber(user.pendingLp, INRI_DECIMALS, 6)}</p></div>
-                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">INRI rewards</p><p className="mt-1 text-lg font-black">{formatNumber(user.pendingReward, INRI_DECIMALS, 6)}</p></div>
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">LP tokens</p><p className="mt-1 break-words text-lg font-black tabular-nums">{formatNumber(user.pendingLp, INRI_DECIMALS, 6)}</p></div>
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Confirmed rewards</p><p className="mt-1 break-words text-lg font-black tabular-nums">{formatNumber(user.pendingReward, INRI_DECIMALS, 6)}</p></div>
                 </div>
-                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Unlock: {unlockDateText(campaign.lpUnlockTime)}</p>
+                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Unlock: {unlockDateText(campaign.lpUnlockTime)}. These confirmed values appear after the campaign launches.</p>
               </div>
 
               {!connected ? <div className="mt-4"><MessageBox kind="info">Connect your wallet using the top button before depositing.</MessageBox></div> : null}
@@ -658,7 +686,7 @@ export function InriLiquidityCampaignClient() {
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />} Deposit iUSD + INRI
                 </button>
                 <button type="button" onClick={() => void handleWithdraw()} disabled={!connected || !networkReady || busy || campaign.status === 1 || !userHasContribution} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.045] px-5 text-sm font-black text-white/82 transition hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-45"><Unlock className="h-4 w-4" /> Withdraw before launch</button>
-                <button type="button" onClick={() => void handleClaim()} disabled={!connected || !networkReady || busy || campaign.status !== 1} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/20 bg-emerald-400/10 px-5 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/16 disabled:cursor-not-allowed disabled:opacity-45"><Gift className="h-4 w-4" /> Claim after LP unlock</button>
+                <button type="button" onClick={() => void handleClaim()} disabled={!connected || !networkReady || busy || !claimReady} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/20 bg-emerald-400/10 px-5 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/16 disabled:cursor-not-allowed disabled:opacity-45"><Gift className="h-4 w-4" /> Claim after LP unlock</button>
               </div>
             </div>
           </div>
