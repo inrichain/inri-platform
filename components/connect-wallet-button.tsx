@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   CheckCircle2,
   ChevronDown,
@@ -10,6 +11,7 @@ import {
   QrCode,
   ShieldCheck,
   Wallet,
+  X,
 } from 'lucide-react'
 import {
   connectWalletConnect,
@@ -75,10 +77,10 @@ function chainLabel(chainId?: string | null) {
 }
 
 function walletLabelFromProvider(provider: ProviderLike, index: number) {
-  if (provider.isRabby) return { key: 'rabby', label: 'Rabby / Browser wallet' }
-  if (provider.isCoinbaseWallet) return { key: 'coinbase', label: 'Coinbase / Browser wallet' }
-  if (provider.isTrust) return { key: 'trust', label: 'Trust / Browser wallet' }
-  if (provider.isOkxWallet) return { key: 'okx', label: 'OKX / Browser wallet' }
+  if (provider.isRabby) return { key: 'rabby', label: 'Rabby wallet' }
+  if (provider.isCoinbaseWallet) return { key: 'coinbase', label: 'Coinbase wallet' }
+  if (provider.isTrust) return { key: 'trust', label: 'Trust wallet' }
+  if (provider.isOkxWallet) return { key: 'okx', label: 'OKX wallet' }
   if (provider.isMetaMask) return { key: 'metamask', label: 'MetaMask / Browser wallet' }
   return { key: `browser-${index}`, label: 'Browser wallet' }
 }
@@ -112,6 +114,7 @@ function setInjectedDismissed(value: boolean) {
 }
 
 export function ConnectWalletButton({ compact = false }: { compact?: boolean }) {
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
 
   const [injectedAddress, setInjectedAddress] = useState('')
@@ -139,6 +142,28 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   const networkReady = normalizeChainId(chainId) === INRI_CHAIN_ID_HEX
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('keydown', handleKeydown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeydown)
+    }
+  }, [open])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return
 
     setInjectedDismissedState(getInjectedDismissed())
@@ -155,11 +180,6 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
         return { key: meta.key, label: meta.label, provider }
       })
       setWallets(uniqueWallets(next))
-    }
-
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!rootRef.current) return
-      if (!rootRef.current.contains(event.target as Node)) setOpen(false)
     }
 
     const syncInjectedState = async () => {
@@ -219,8 +239,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           if (state.connected) {
             setConnector('walletconnect')
             setError('')
-          } else {
-            setConnector((current) => (current === 'walletconnect' ? '' : current))
+          } else if (connector === 'walletconnect') {
+            setConnector(injectedAddress ? 'injected' : '')
           }
         })
 
@@ -233,7 +253,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           }
         }
       } catch {
-        // no-op
+        // WalletConnect can fail to initialize when the relay blocks the domain.
+        // Keep the rest of the site and browser wallet connection working.
       }
     }
 
@@ -241,17 +262,15 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
     void syncInjectedState()
     void bootWalletConnect()
 
-    document.addEventListener('mousedown', closeOnOutsideClick)
     window.ethereum?.on?.('accountsChanged', handleAccountsChanged)
     window.ethereum?.on?.('chainChanged', handleChainChanged)
 
     return () => {
-      document.removeEventListener('mousedown', closeOnOutsideClick)
       window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged)
       window.ethereum?.removeListener?.('chainChanged', handleChainChanged)
       unsubscribeWalletConnect?.()
     }
-  }, [])
+  }, [connector, injectedAddress, wcAddress])
 
   const providerChoices = useMemo(() => {
     if (wallets.length > 0) return wallets
@@ -399,7 +418,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
         })
         setOpen(false)
       } else {
-        setError('WalletConnect was opened, but no wallet approved the connection yet.')
+        setError('WalletConnect opened, but no wallet approved the connection yet.')
       }
     } catch (e: any) {
       setError(e?.message || 'Failed to connect with WalletConnect.')
@@ -493,14 +512,191 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18] md:w-[238px]'
+    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18] md:w-[230px]'
     : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18]'
 
-  const panelClass =
-    'fixed left-3 right-3 top-[86px] max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain md:absolute md:left-auto md:right-0 md:top-full md:mt-3 md:w-[390px] md:max-h-[calc(100dvh-138px)]'
+  const modal = open ? (
+    <div className="fixed inset-0 z-[120] flex items-start justify-center px-3 pt-[calc(env(safe-area-inset-top)+92px)] pb-6 sm:px-5 lg:items-center lg:pt-6">
+      <button
+        type="button"
+        aria-label="Close wallet modal"
+        onClick={() => setOpen(false)}
+        className="absolute inset-0 bg-black/72 backdrop-blur-[2px]"
+      />
+
+      <div className="relative w-full max-w-[440px] overflow-hidden rounded-[1.6rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.18),transparent_34%),linear-gradient(180deg,#04101b,#01050a)] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.62),0_0_0_1px_rgba(19,164,255,0.10)] backdrop-blur-xl sm:p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">
+              Wallet access
+            </p>
+            <h3 className="mt-2 text-xl font-black text-white">
+              Connect wallet
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-white/62">
+              Use WalletConnect QR on mobile, or connect directly with a browser wallet on desktop.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.13] bg-white/[0.04] text-white/70 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div
+          className={`mt-4 inline-flex rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${
+            networkReady
+              ? 'border-primary/30 bg-primary/[0.12] text-primary'
+              : 'border-white/12 bg-white/[0.04] text-white/56'
+          }`}
+        >
+          {networkReady ? 'INRI ready' : 'Custom network · Chain 3777'}
+        </div>
+
+        {!address ? (
+          <div className="mt-5 grid gap-3">
+            <button
+              onClick={connectViaWalletConnect}
+              disabled={busy}
+              type="button"
+              className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 py-3 text-left text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-black">
+                  {busy ? 'Opening WalletConnect...' : 'WalletConnect'}
+                </div>
+                <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-black/70">
+                  QR code / mobile wallet
+                </div>
+              </div>
+              <QrCode className="h-4 w-4 shrink-0" />
+            </button>
+
+            {providerChoices.length > 0 ? (
+              providerChoices.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => connectInjected(item)}
+                  disabled={busy}
+                  type="button"
+                  className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-black text-white">
+                      {busy ? 'Connecting...' : item.label}
+                    </div>
+                    <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
+                      Direct desktop connection
+                    </div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+                </button>
+              ))
+            ) : (
+              <div className="rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] p-4">
+                <p className="text-sm font-black text-white">No browser wallet detected</p>
+                <p className="mt-2 text-sm leading-6 text-white/56">
+                  Use WalletConnect above to scan the QR code with a mobile wallet, or open this site inside your wallet browser.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 rounded-[1.2rem] border border-white/[0.14] bg-white/[0.04] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                    Connected address
+                  </p>
+                  <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
+                </div>
+                <button
+                  onClick={copyAddress}
+                  type="button"
+                  className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[0.95rem] border border-white/12 bg-black/30 px-3 text-sm font-bold text-white transition hover:border-primary/50 hover:bg-primary/[0.10]"
+                >
+                  <Copy className="h-4 w-4" />
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                  Current network
+                </p>
+                <div className="mt-2 flex items-center gap-2 text-base font-black text-white">
+                  {networkReady ? (
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4 text-white/56" />
+                  )}
+                  <span className="truncate">{chainLabel(chainId)}</span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-white/56">
+                  {networkReady
+                    ? 'Ready to use the official INRI routes.'
+                    : 'Switch or add INRI CHAIN so the site works in the correct network.'}
+                </p>
+              </div>
+
+              <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
+                  Connection type
+                </p>
+                <div className="mt-2 text-base font-black text-white">
+                  {effectiveConnector === 'walletconnect'
+                    ? 'WalletConnect'
+                    : 'Browser wallet'}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-white/56">
+                  {effectiveConnector === 'walletconnect'
+                    ? 'This session was approved through WalletConnect.'
+                    : 'This connection uses the wallet installed in this browser.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={switchToInriChain}
+                disabled={busy}
+                type="button"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 text-sm font-black text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
+              >
+                {busy ? 'Updating...' : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
+              </button>
+
+              <button
+                onClick={disconnect}
+                type="button"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
+              >
+                <LogOut className="h-4 w-4" />
+                {effectiveConnector === 'walletconnect' ? 'Disconnect wallet' : 'Forget this site'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {error ? (
+          <div className="mt-4 rounded-[1rem] border border-rose-300/20 bg-rose-400/[0.08] p-3 text-sm leading-6 text-rose-200">
+            {error}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  ) : null
 
   return (
-    <div ref={rootRef} className={compact ? 'relative w-full min-w-0 md:w-[238px]' : 'relative'}>
+    <div ref={rootRef} className={compact ? 'relative w-full min-w-0 md:w-[230px]' : 'relative'}>
       <button
         onClick={() => setOpen((v) => !v)}
         className={`${baseButton} notranslate`}
@@ -530,168 +726,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
         <ChevronDown className="h-4 w-4 shrink-0 text-white/60" />
       </button>
 
-      {open ? (
-        <div
-          className={`z-[80] rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${panelClass}`}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary">
-                Wallet access
-              </p>
-              <h3 className="mt-2 text-lg font-black text-white">
-                Connect wallet
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-white/62">
-                Connect on desktop with a browser wallet, or use the official WalletConnect QR for mobile wallets.
-              </p>
-            </div>
-            <div
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] ${
-                networkReady
-                  ? 'border-primary/30 bg-primary/[0.12] text-primary'
-                  : 'border-white/12 bg-white/[0.04] text-white/56'
-              }`}
-            >
-              {networkReady ? 'INRI ready' : 'Custom network'}
-            </div>
-          </div>
-
-          {!address ? (
-            <div className="mt-5 grid gap-3">
-              <button
-                onClick={connectViaWalletConnect}
-                disabled={busy}
-                type="button"
-                className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 py-3 text-left text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-black">
-                    {busy ? 'Opening WalletConnect...' : 'WalletConnect'}
-                  </div>
-                  <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-black/70">
-                    QR code / mobile wallet
-                  </div>
-                </div>
-                <QrCode className="h-4 w-4 shrink-0" />
-              </button>
-
-              {providerChoices.length > 0 ? (
-                providerChoices.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => connectInjected(item)}
-                    disabled={busy}
-                    type="button"
-                    className="inline-flex min-h-14 items-center justify-between gap-3 rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/[0.10] disabled:opacity-50"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-black text-white">
-                        {busy ? 'Connecting...' : item.label}
-                      </div>
-                      <div className="mt-1 truncate text-xs uppercase tracking-[0.16em] text-white/42">
-                        Direct desktop connection
-                      </div>
-                    </div>
-                    <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-[1.1rem] border border-white/[0.14] bg-white/[0.04] p-4">
-                  <p className="text-sm font-black text-white">No browser wallet detected</p>
-                  <p className="mt-2 text-sm leading-6 text-white/56">
-                    Use WalletConnect above to scan the QR code with a mobile wallet, or open this site inside a wallet browser.
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="mt-5 rounded-[1.2rem] border border-white/[0.14] bg-white/[0.04] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
-                      Connected address
-                    </p>
-                    <p className="mt-2 break-all text-sm font-semibold text-white">{address}</p>
-                  </div>
-                  <button
-                    onClick={copyAddress}
-                    type="button"
-                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[0.95rem] border border-white/12 bg-black/30 px-3 text-sm font-bold text-white transition hover:border-primary/50 hover:bg-primary/[0.10]"
-                  >
-                    <Copy className="h-4 w-4" />
-                    {copied ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
-                    Current network
-                  </p>
-                  <div className="mt-2 flex items-center gap-2 text-base font-black text-white">
-                    {networkReady ? (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                    ) : (
-                      <ShieldCheck className="h-4 w-4 text-white/56" />
-                    )}
-                    <span className="truncate">{chainLabel(chainId)}</span>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/56">
-                    {networkReady
-                      ? 'Ready to use staking, pool, swap and the official INRI routes.'
-                      : 'Switch or add INRI CHAIN so the site works in the correct network.'}
-                  </p>
-                </div>
-
-                <div className="rounded-[1.1rem] border border-white/[0.12] bg-black/28 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">
-                    Connection type
-                  </p>
-                  <div className="mt-2 text-base font-black text-white">
-                    {effectiveConnector === 'walletconnect'
-                      ? 'WalletConnect'
-                      : 'Browser wallet'}
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/56">
-                    {effectiveConnector === 'walletconnect'
-                      ? 'This session was approved through WalletConnect.'
-                      : 'This session is shown as disconnected locally. To fully revoke access, disconnect the dApp inside your browser wallet.'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <button
-                  onClick={switchToInriChain}
-                  disabled={busy}
-                  type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-[#7ed4ff]/90 bg-[linear-gradient(135deg,#0b9fff_0%,#37bbff_60%,#91e4ff_100%)] px-4 text-sm font-black text-black shadow-[0_18px_44px_rgba(19,164,255,0.26)] transition hover:-translate-y-px hover:brightness-105 disabled:opacity-50"
-                >
-                  {busy ? 'Updating...' : networkReady ? 'INRI CHAIN ready' : 'Add / switch INRI'}
-                </button>
-
-                <button
-                  onClick={disconnect}
-                  type="button"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-[1rem] border border-white/[0.14] bg-white/[0.04] px-4 text-sm font-black text-white transition hover:-translate-y-px hover:border-primary/55 hover:bg-primary/[0.10]"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {effectiveConnector === 'walletconnect' ? 'Disconnect wallet' : 'Forget this site'}
-                </button>
-              </div>
-            </>
-          )}
-
-          {error ? (
-            <div className="mt-4 rounded-[1rem] border border-rose-300/20 bg-rose-400/[0.08] p-3 text-sm leading-6 text-rose-200">
-              {error}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+      {mounted ? createPortal(modal, document.body) : null}
     </div>
   )
 }
