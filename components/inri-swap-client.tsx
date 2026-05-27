@@ -220,6 +220,12 @@ function getTokenAddressForPath(token: TokenInfo) {
   return token.native ? WINRI_ADDRESS : token.address
 }
 
+function routeUsesOfficialIusdInriMarket(path: string[]) {
+  const hasIusd = path.some((address) => sameAddress(address, IUSD_ADDRESS))
+  const hasWinri = path.some((address) => sameAddress(address, WINRI_ADDRESS))
+  return hasIusd && hasWinri
+}
+
 async function readPairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo): Promise<LiquidityPairInfo> {
   const addressA = getTokenAddressForPath(tokenA)
   const addressB = getTokenAddressForPath(tokenB)
@@ -811,6 +817,9 @@ export function InriSwapClient() {
       }
 
       const path = quotePath.length >= 2 ? quotePath : await resolveSwapPath(fromToken, toToken)
+      if (routeUsesOfficialIusdInriMarket(path)) {
+        throw new Error('iUSD/INRI swaps are temporarily paused during the liquidity seeding phase. Pool, Positions and Tokens remain available.')
+      }
       const router = new Contract(ROUTER_ADDRESS, routerAbi, rpc)
       const amounts = (await router.getAmountsOut(amountIn, path)) as bigint[]
       const expectedOut = amounts[amounts.length - 1] || 0n
@@ -998,7 +1007,17 @@ export function InriSwapClient() {
     : '—'
 
   const maxFromBalance = fromToken.native && fromBalance > parseUnits('0.02', 18) ? fromBalance - parseUnits('0.02', 18) : fromBalance
-  const swapActionLabel = !connected ? 'Connect wallet' : !networkReady ? 'Switch to INRI Chain' : quoteOut <= 0n ? 'Enter amount' : 'Swap'
+  const directOfficialMarketSelection = routeUsesOfficialIusdInriMarket([getTokenAddressForPath(fromToken), getTokenAddressForPath(toToken)])
+  const officialMarketSwapLocked = directOfficialMarketSelection || routeUsesOfficialIusdInriMarket(quotePath)
+  const swapActionLabel = !connected
+    ? 'Connect wallet'
+    : !networkReady
+      ? 'Switch to INRI Chain'
+      : officialMarketSwapLocked
+        ? 'Liquidity seeding phase'
+        : quoteOut <= 0n
+          ? 'Enter amount'
+          : 'Swap'
   const poolTvlApprox = pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
   const liqRatioText = liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
     ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
@@ -1192,8 +1211,14 @@ export function InriSwapClient() {
                     <MiniButton onClick={() => setSlippage('2')}>2%</MiniButton>
                   </div>
 
+                  {officialMarketSwapLocked ? (
+                    <div className="mt-4 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                      <AlertTriangle className="mr-2 inline h-4 w-4" /> iUSD/INRI swaps are temporarily paused while liquidity grows. You can still create pools, add liquidity, remove liquidity and import tokens.
+                    </div>
+                  ) : null}
+
                   <div className="mt-5">
-                    <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady || quoteOut <= 0n}>
+                    <ActionButton onClick={handleSwap} busy={busy} disabled={!connected || !networkReady || quoteOut <= 0n || officialMarketSwapLocked}>
                       {swapActionLabel}
                     </ActionButton>
                   </div>
