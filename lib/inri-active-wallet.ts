@@ -20,7 +20,20 @@ export type EthereumProvider = {
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
+type WalletConnectClientLike = {
+  request?: (args: {
+    topic: string
+    chainId: string
+    request: {
+      method: string
+      params?: unknown[] | Record<string, unknown>
+    }
+  }) => Promise<unknown>
+}
+
 type WalletConnectLike = EthereumProvider & {
+  client?: WalletConnectClientLike
+  signer?: { client?: WalletConnectClientLike }
   session?: { topic?: string; namespaces?: unknown } | null
   setDefaultChain?: (chainId: number | string) => Promise<void> | void
   chainId?: number | string
@@ -72,7 +85,7 @@ export function getActiveWalletBridge(): ActiveWalletBridge {
 export function getActiveWalletProvider(): EthereumProvider | undefined {
   const bridge = getActiveWalletBridge()
 
-  // Important: when the top header says WalletConnect is active,
+  // Important: when the top header says INRI Wallet / WalletConnect is active,
   // never silently fall back to window.ethereum. That fallback opens MetaMask.
   if (bridge?.connector === 'walletconnect') {
     return bridge.provider
@@ -86,11 +99,7 @@ export function getErrorMessage(cause: unknown, fallback = 'Request failed') {
   const raw = String(error?.shortMessage || error?.reason || error?.message || fallback)
 
   if (raw.includes('Cannot read properties of undefined') && raw.includes('includes')) {
-    return 'WalletConnect did not route the request to INRI CHAIN. Disconnect the wallet in the top button, reconnect it, and try once more.'
-  }
-
-  if (raw.includes('Failed to publish') || raw.includes('custom payload')) {
-    return 'WalletConnect relay rejected this request. Confirm https://platform.inri.life is allowlisted in Reown, refresh the page, and reconnect.'
+    return 'WalletConnect did not route the request to INRI CHAIN. Disconnect INRI Wallet in the top button, reconnect it, and try once more.'
   }
 
   return raw
@@ -106,7 +115,7 @@ function buildRequestArgs(method: string, params?: unknown[] | Record<string, un
 
 function looksLikeWalletConnect(provider: EthereumProvider) {
   const candidate = provider as WalletConnectLike
-  return Boolean(candidate.session || candidate.setDefaultChain)
+  return Boolean(candidate.session || candidate.client || candidate.signer?.client || candidate.setDefaultChain)
 }
 
 async function forceWalletConnectInriChain(provider: WalletConnectLike) {
@@ -127,6 +136,28 @@ async function forceWalletConnectInriChain(provider: WalletConnectLike) {
   }
 }
 
+async function requestViaWalletConnectClient(
+  provider: WalletConnectLike,
+  method: string,
+  params?: unknown[] | Record<string, unknown>,
+) {
+  const client = provider.client || provider.signer?.client
+  const topic = provider.session?.topic
+
+  if (!client?.request || !topic) {
+    throw new Error('WalletConnect client is not ready yet.')
+  }
+
+  return client.request({
+    topic,
+    chainId: INRI_WALLETCONNECT_CHAIN_ID,
+    request: {
+      method,
+      ...(params !== undefined ? { params } : {}),
+    },
+  })
+}
+
 export async function requestFromActiveWallet(
   provider: EthereumProvider,
   method: string,
@@ -142,19 +173,24 @@ export async function requestFromActiveWallet(
   const wcProvider = provider as WalletConnectLike
   await forceWalletConnectInriChain(wcProvider)
 
-  // Keep WalletConnect requests on the official EIP-1193 provider path.
-  // Calling the low-level SignClient directly can create relay publish errors
-  // such as "Failed to publish custom payload" on some sessions.
+  // Best route for WalletConnect v2: send directly to the approved session topic
+  // and explicit eip155:3777 chain. This avoids MetaMask and avoids undefined
+  // routing errors from some EthereumProvider wrappers.
   try {
-    return await provider.request(buildRequestArgs(method, params, INRI_WALLETCONNECT_CHAIN_ID))
+    return await requestViaWalletConnectClient(wcProvider, method, params)
   } catch (firstCause) {
+    // Fallbacks for provider builds that do not expose client.request.
     try {
       return await provider.request(buildRequestArgs(method, params), INRI_WALLETCONNECT_CHAIN_ID)
     } catch {
       try {
-        return await provider.request(buildRequestArgs(method, params))
+        return await provider.request(buildRequestArgs(method, params, INRI_WALLETCONNECT_CHAIN_ID))
       } catch {
-        throw firstCause
+        try {
+          return await provider.request(buildRequestArgs(method, params))
+        } catch {
+          throw firstCause
+        }
       }
     }
   }

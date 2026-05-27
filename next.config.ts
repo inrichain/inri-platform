@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   turbopack: {},
+  webpack: (config) => {
+    config.externals.push('pino-pretty', 'lokijs', 'encoding')
+    return config
+  },
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
