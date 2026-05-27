@@ -409,9 +409,8 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#04101d] text-white">
-      <section className="relative border-b border-cyan-300/15 bg-[radial-gradient(circle_at_18%_0%,rgba(19,164,255,0.26),transparent_24rem),radial-gradient(circle_at_86%_6%,rgba(103,212,255,0.12),transparent_24rem),linear-gradient(135deg,#071b2f_0%,#06111f_48%,#04101d_100%)]">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
+    <main className="min-h-screen overflow-hidden text-white">
+      <section className="relative">
         <div className="relative mx-auto max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
@@ -441,7 +440,7 @@ export function InriLiquidityCampaignClient() {
         </div>
       </section>
 
-      <section className="relative bg-[linear-gradient(180deg,#061523_0%,#02040a_48%,#02040a_100%)] py-8">
+      <section className="relative py-8">
         <div className="mx-auto max-w-[1180px] px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
