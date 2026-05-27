@@ -166,6 +166,13 @@ function formatNumber(value: bigint, decimals: number, digits = 2) {
   return n.toLocaleString('en-US', { maximumFractionDigits: digits })
 }
 
+function formatRewardEstimate(value: bigint) {
+  const n = Number(formatUnits(value, INRI_DECIMALS))
+  if (!Number.isFinite(n)) return '—'
+  const digits = n >= 1000 ? 2 : n >= 10 ? 4 : 6
+  return n.toLocaleString('en-US', { maximumFractionDigits: digits })
+}
+
 function shortAddress(value?: string | null, left = 6, right = 4) {
   if (!value) return '—'
   return value.length <= left + right + 2 ? value : `${value.slice(0, left)}…${value.slice(-right)}`
@@ -445,8 +452,10 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#061827] text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,#082a42_0%,#061827_42%,#04101d_100%)]" />
+    <main
+      className="relative isolate min-h-screen overflow-hidden text-white"
+      style={{ background: 'linear-gradient(135deg, #082a42 0%, #061827 44%, #04101d 100%)' }}
+    >
 
       <section className="relative">
         <div className="mx-auto max-w-[1280px] px-4 py-10 sm:px-8 lg:py-14">
@@ -582,7 +591,7 @@ export function InriLiquidityCampaignClient() {
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">iUSD amount</p>
                     <p className="text-xs font-black text-cyan-100">Balance {formatNumber(user.iusdBalance, IUSD_DECIMALS, 6)}</p>
                   </div>
-                  <input value={depositIusd} onChange={(event) => setDepositIusd(cleanDecimalInput(event.target.value))} className="mt-3 h-16 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black text-white outline-none focus:border-cyan-300/45" />
+                  <input value={depositIusd} onChange={(event) => setDepositIusd(cleanDecimalInput(event.target.value))} className="mt-3 h-16 w-full min-w-0 rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45 sm:text-3xl" />
                 </div>
 
                 <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
@@ -590,27 +599,27 @@ export function InriLiquidityCampaignClient() {
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Required INRI</p>
                     <p className="text-xs font-black text-cyan-100">Balance {formatNumber(user.inriBalance, INRI_DECIMALS, 6)}</p>
                   </div>
-                  <div className="mt-3 rounded-[18px] border border-white/10 bg-[#06111d] px-4 py-4 text-3xl font-black text-white">{formatTokenAmount(quoteInri, INRI_DECIMALS, 6)}</div>
+                  <div className="mt-3 min-w-0 break-words rounded-[18px] border border-white/10 bg-[#06111d] px-4 py-4 text-2xl font-black leading-tight text-white tabular-nums sm:text-3xl">{formatTokenAmount(quoteInri, INRI_DECIMALS, 6)}</div>
                 </div>
               </div>
 
               <div className="mt-4 rounded-[22px] border border-cyan-300/18 bg-cyan-300/[0.07] p-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">Your reward estimate</p>
                 <p className="mt-1 text-xs font-bold leading-5 text-white/52">Based on the amount typed above: {formatNumber(depositIusdAmount, IUSD_DECIMALS, 6)} iUSD. The numbers below are estimated rewards for this exact deposit amount.</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                  <div className="rounded-[15px] border border-cyan-300/14 bg-black/22 p-3">
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <div className="min-w-0 rounded-[15px] border border-cyan-300/14 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">50k target</p>
-                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 break-words text-[1.05rem] font-black leading-tight tracking-[-0.03em] tabular-nums sm:text-lg">{formatRewardEstimate(depositRewardAtTarget)} INRI</p>
                     <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
-                  <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
+                  <div className="min-w-0 rounded-[15px] border border-white/10 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k bonus plan</p>
-                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 break-words text-[1.05rem] font-black leading-tight tracking-[-0.03em] tabular-nums sm:text-lg">{formatRewardEstimate(depositRewardAt75kPlan)} INRI</p>
                     <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
-                  <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
+                  <div className="min-w-0 rounded-[15px] border border-white/10 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k max plan</p>
-                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 break-words text-[1.05rem] font-black leading-tight tracking-[-0.03em] tabular-nums sm:text-lg">{formatRewardEstimate(depositRewardAtHardCapPlan)} INRI</p>
                     <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
                 </div>
