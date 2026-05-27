@@ -445,227 +445,196 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden text-white">
-      <section className="relative">
-        <div className="relative mx-auto max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+    <main className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(0,174,255,0.34),transparent_28rem),radial-gradient(circle_at_82%_8%,rgba(122,232,255,0.18),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_44%,#000_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
+
+      <section className="relative border-b border-cyan-300/15">
+        <div className="mx-auto max-w-[1280px] px-4 py-10 sm:px-8 lg:py-14">
+          <div className="grid gap-7 lg:grid-cols-[1fr_420px] lg:items-end">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.20em] text-cyan-100">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">
                 <ShieldCheck className="h-3.5 w-3.5" /> Official liquidity campaign
               </div>
-              <h1 className="mt-4 text-4xl font-black tracking-[-0.055em] text-white sm:text-5xl">INRISwap Liquidity Campaign</h1>
-              <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-cyan-50/68 sm:text-base">
-                Deposit iUSD + native INRI into the protected Seeder. The panel shows deposits, withdrawable balance, estimated rewards and final claim status.
+              <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.9] tracking-[-0.07em] text-white sm:text-6xl">
+                INRISwap Liquidity Campaign
+              </h1>
+              <p className="mt-5 max-w-3xl text-base font-semibold leading-8 text-cyan-50/72">
+                Deposit iUSD + INRI safely into the protected Seeder. Funds stay outside the live Pair until the target is reached.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-[11px] sm:min-w-[330px]">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3">
-                <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Reference</p>
-                <p className="mt-1 text-sm font-black text-white">{referencePrice}</p>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-[20px] border border-cyan-300/18 bg-white/[0.055] px-3 py-4 backdrop-blur-xl">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/70">Reference</p>
+                <p className="mt-1 text-lg font-black">{referencePrice}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3">
-                <p className="text-[8px] font-black uppercase tracking-[0.12em] text-white/40">Target</p>
-                <p className="mt-1 text-sm font-black text-white">{formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD</p>
+              <div className="rounded-[20px] border border-cyan-300/18 bg-white/[0.055] px-3 py-4 backdrop-blur-xl">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-cyan-200/70">Target</p>
+                <p className="mt-1 text-lg font-black">{formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD</p>
               </div>
-              <div className="rounded-2xl border border-cyan-300/25 bg-cyan-300/[0.08] px-3 py-3 text-cyan-100">
-                <p className="text-[8px] font-black uppercase tracking-[0.12em] opacity-70">Status</p>
-                <p className="mt-1 text-sm font-black">{statusLabel(campaign.status)}</p>
+              <div className="rounded-[20px] border border-cyan-300/25 bg-cyan-300/[0.10] px-3 py-4 text-cyan-100 backdrop-blur-xl">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] opacity-75">Status</p>
+                <p className="mt-1 text-lg font-black">{statusLabel(campaign.status)}</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative py-8">
-        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 lg:px-8">
+      <section className="relative py-8 sm:py-10">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
-              <Link href="/swap" className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.04] px-4 text-sm font-black text-white/80 transition hover:border-cyan-300/35 hover:text-white"><ArrowLeft className="h-4 w-4" /> Back to Swap</Link>
-              <Link href={`${EXPLORER_URL}/address/${SEEDER_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-cyan-300/20 bg-cyan-300/[0.08] px-4 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/12">Seeder contract <ExternalLink className="h-4 w-4" /></Link>
+              <Link href="/swap" className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.045] px-4 text-sm font-black text-white/80 transition hover:border-cyan-300/35 hover:text-white"><ArrowLeft className="h-4 w-4" /> Back to Swap</Link>
+              <Link href={`${EXPLORER_URL}/address/${SEEDER_ADDRESS}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-cyan-300/24 bg-cyan-300/[0.08] px-4 text-sm font-black text-cyan-100 transition hover:bg-cyan-300/12">Seeder contract <ExternalLink className="h-4 w-4" /></Link>
             </div>
-            <button type="button" onClick={() => void refreshAll()} className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.04] px-4 text-sm font-black text-white/80 transition hover:border-cyan-300/35 hover:text-white">
+            <button type="button" onClick={() => void refreshAll()} className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-white/12 bg-white/[0.045] px-4 text-sm font-black text-white/80 transition hover:border-cyan-300/35 hover:text-white">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </button>
           </div>
 
           {message ? <div className="mb-5"><MessageBox kind={message.kind}>{message.text}</MessageBox></div> : null}
 
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-start">
-            <Card>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Campaign progress</p>
-                  <h2 className="mt-2 text-3xl font-black tracking-[-0.045em] text-white">Build protected iUSD / INRI liquidity</h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-7 text-white/62">The official iUSD/INRI swap remains paused until enough liquidity is formed. Other community pools and tokens can continue operating normally.</p>
-                </div>
-                <div className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2 text-xs font-black text-cyan-100">{campaign.campaignActive ? 'Campaign open' : statusLabel(campaign.status)}</div>
-              </div>
-
-              <div className="mt-6 rounded-[22px] border border-white/10 bg-black/24 p-4">
-                <div className="mb-3 flex items-center justify-between gap-4 text-xs font-black text-white/60">
-                  <span>{formatNumber(campaign.totalIusdDeposited, IUSD_DECIMALS, 2)} iUSD deposited</span>
-                  <span>{progressPct.toLocaleString('en-US', { maximumFractionDigits: 2 })}%</span>
-                </div>
-                <div className="h-4 overflow-hidden rounded-full border border-cyan-300/14 bg-black/35">
-                  <div className="h-full rounded-full bg-cyan-300 transition-all" style={{ width: `${progressPct}%` }} />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-white/45">
-                  <span>Launch target: {formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD</span>
-                  <span>{campaign.hardCapIusd > 0n ? `Hard cap: ${formatNumber(campaign.hardCapIusd, IUSD_DECIMALS, 0)} iUSD · ${hardCapPct.toLocaleString('en-US', { maximumFractionDigits: 2 })}% filled` : 'No hard cap'}</span>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <Stat label="iUSD deposited" value={<>{formatNumber(campaign.totalIusdDeposited, IUSD_DECIMALS, 2)} <span className="text-sm text-white/45">iUSD</span></>} sub={`target ${formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD`} />
-                <Stat label="INRI deposited" value={<>{formatNumber(campaign.totalInriDeposited, INRI_DECIMALS, 2)} <span className="text-sm text-white/45">INRI</span></>} sub="native INRI held by Seeder" />
-                <Stat label="Reward pool" value={<>{formatNumber(campaign.rewardPool, INRI_DECIMALS, 2)} <span className="text-sm text-white/45">INRI</span></>} sub="funded by Community Reserve" />
-                <Stat label="Reference price" value={<>{referencePrice} <span className="text-sm text-white/45">iUSD</span></>} sub="per 1 INRI" />
-                <Stat label="INRI at target" value={formatNumber(targetInri, INRI_DECIMALS, 0)} sub="needed for 50,000 iUSD target" />
-                <Stat label="INRI at hard cap" value={formatNumber(hardCapInri, INRI_DECIMALS, 0)} sub="needed for 100,000 iUSD cap" />
-              </div>
-
-              <div className="mt-5 rounded-[24px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_430px] lg:items-start">
+            <div className="grid gap-5">
+              <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.060] p-5 shadow-[0_40px_130px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">Controlled reward plan</p>
-                    <h3 className="mt-1 text-xl font-black text-white">Gradual rewards, not excessive circulation</h3>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Campaign progress</p>
+                    <h2 className="mt-2 text-3xl font-black tracking-[-0.045em]">Protected iUSD / INRI liquidity</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-7 text-white/62">The official iUSD/INRI swap stays paused until enough liquidity is formed. Other community tokens and pools continue normally.</p>
                   </div>
-                  <p className="text-xs font-bold leading-5 text-white/50 sm:max-w-[360px]">Only the funded reward pool is guaranteed on-chain. Extra bonuses are added later with fundRewards() only if the campaign reaches each milestone before launch.</p>
+                  <div className="rounded-[18px] border border-cyan-300/25 bg-cyan-300/[0.09] px-5 py-3 text-center text-cyan-100">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] opacity-75">Funded rewards</p>
+                    <p className="mt-1 text-2xl font-black">{formatNumber(campaign.rewardPool, INRI_DECIMALS, 0)} INRI</p>
+                  </div>
                 </div>
-                <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                  <div className="rounded-[18px] border border-cyan-300/16 bg-black/22 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80">50,000 iUSD target</p>
-                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
-                    <p className="mt-1 text-xs font-bold text-white/50">current funded pool: {formatNumber(campaign.rewardPool, INRI_DECIMALS, 2)} INRI</p>
+
+                <div className="mt-6 rounded-[22px] border border-white/12 bg-black/24 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-4 text-xs font-black text-white/64">
+                    <span>{formatNumber(campaign.totalIusdDeposited, IUSD_DECIMALS, 2)} iUSD deposited</span>
+                    <span>{progressPct.toLocaleString('en-US', { maximumFractionDigits: 2 })}% of target</span>
                   </div>
-                  <div className="rounded-[18px] border border-white/10 bg-black/22 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">75,000 iUSD milestone</p>
-                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
-                    <p className="mt-1 text-xs font-bold text-white/50">planned total: 125,000 INRI (+25,000 bonus)</p>
+                  <div className="h-4 overflow-hidden rounded-full border border-cyan-300/16 bg-black/35">
+                    <div className="h-full rounded-full bg-cyan-300 transition-all" style={{ width: `${progressPct}%` }} />
                   </div>
-                  <div className="rounded-[18px] border border-white/10 bg-black/22 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">100,000 iUSD hard cap</p>
-                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
-                    <p className="mt-1 text-xs font-bold text-white/50">planned max for this round: 150,000 INRI</p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-white/48">
+                    <span>Launch target: {formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD</span>
+                    <span>Hard cap: {formatNumber(campaign.hardCapIusd, IUSD_DECIMALS, 0)} iUSD</span>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <Stat label="iUSD total" value={<>{formatNumber(campaign.totalIusdDeposited, IUSD_DECIMALS, 2)} <span className="text-sm text-white/45">iUSD</span></>} sub="protected in Seeder" />
+                  <Stat label="INRI total" value={<>{formatNumber(campaign.totalInriDeposited, INRI_DECIMALS, 2)} <span className="text-sm text-white/45">INRI</span></>} sub="native INRI" />
+                  <Stat label="Contributors" value={campaign.contributorCount.toString()} sub="wallets with deposits" />
+                  <Stat label="LP lock" value={<span className="text-lg">{lockText(campaign.lpLockSeconds)}</span>} sub="after launch" />
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Simple reward plan</p>
+                <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Rewards grow only if liquidity grows</h3>
+                <p className="mt-2 text-sm leading-7 text-white/58">Only funded INRI is guaranteed on-chain. Extra bonuses are deposited later only if the campaign reaches the milestone before launch.</p>
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-[22px] border border-cyan-300/20 bg-cyan-300/[0.075] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">At 50,000 iUSD</p>
+                    <p className="mt-2 text-3xl font-black">{formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)}</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">INRI reward / 1 iUSD</p>
+                  </div>
+                  <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 75,000 iUSD</p>
+                    <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)}</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned with +25k INRI</p>
+                  </div>
+                  <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 100,000 iUSD</p>
+                    <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)}</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned max 150k INRI</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <Stat label="Contributors" value={campaign.contributorCount.toString()} sub="wallets with deposits" />
-                <Stat label="Campaign end" value={<span className="text-lg">{endText(campaign.campaignEnd)}</span>} sub="0 means open until cancelled/launched" />
-                <Stat label="LP lock" value={<span className="text-lg">{lockText(campaign.lpLockSeconds)}</span>} sub="after launch" />
+              <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">What you can withdraw</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <Stat label="Before launch" value="iUSD + INRI" sub="your deposit can be withdrawn" />
+                  <Stat label="After launch + lock" value="LP + rewards" sub="claim opens after LP unlock" />
+                  <Stat label="Campaign end" value={<span className="text-lg">{endText(campaign.campaignEnd)}</span>} sub="0 means no automatic expiry" />
+                </div>
+                <div className="mt-5"><MessageBox kind="warn"><AlertTriangle className="mr-2 inline h-4 w-4" /> Do not add iUSD/INRI directly to the Pair during seeding. Use this campaign so iUSD stays outside the live Pair until the target is reached.</MessageBox></div>
               </div>
+            </div>
 
-              <div className="mt-5"><MessageBox kind="warn"><AlertTriangle className="mr-2 inline h-4 w-4" /> Do not add iUSD/INRI directly to the Pair during seeding. Use this campaign so iUSD stays outside the Pair until the target is reached.</MessageBox></div>
-            </Card>
-
-            <Card>
+            <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.065] p-5 shadow-[0_40px_130px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-6 lg:sticky lg:top-24">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Deposit</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-white">Join seeding</h2>
-                  <p className="mt-2 text-sm leading-6 text-white/55">Enter iUSD. Required INRI is calculated automatically.</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Deposit</p>
+                  <h2 className="mt-2 text-3xl font-black tracking-[-0.045em]">Join seeding</h2>
+                  <p className="mt-2 text-sm leading-6 text-white/58">Enter iUSD. The page calculates required INRI and estimated rewards.</p>
                 </div>
                 <Wallet className="h-7 w-7 text-cyan-300" />
               </div>
 
               <div className="mt-5 grid gap-3">
-                <div className="rounded-[20px] border border-white/10 bg-[#091727] p-4">
+                <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">iUSD amount</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">iUSD amount</p>
                     <p className="text-xs font-black text-cyan-100">Balance {formatNumber(user.iusdBalance, IUSD_DECIMALS, 6)}</p>
                   </div>
-                  <input value={depositIusd} onChange={(event) => setDepositIusd(cleanDecimalInput(event.target.value))} className="mt-3 h-14 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-2xl font-black text-white outline-none focus:border-cyan-300/45" />
+                  <input value={depositIusd} onChange={(event) => setDepositIusd(cleanDecimalInput(event.target.value))} className="mt-3 h-16 w-full rounded-[18px] border border-white/10 bg-[#06111d] px-4 text-3xl font-black text-white outline-none focus:border-cyan-300/45" />
                 </div>
 
-                <div className="rounded-[20px] border border-white/10 bg-[#091727] p-4">
+                <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">Required INRI</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Required INRI</p>
                     <p className="text-xs font-black text-cyan-100">Balance {formatNumber(user.inriBalance, INRI_DECIMALS, 6)}</p>
                   </div>
-                  <div className="mt-3 rounded-[18px] border border-white/10 bg-black/24 px-4 py-4 text-2xl font-black text-white">{formatTokenAmount(quoteInri, INRI_DECIMALS, 6)}</div>
+                  <div className="mt-3 rounded-[18px] border border-white/10 bg-[#06111d] px-4 py-4 text-3xl font-black text-white">{formatTokenAmount(quoteInri, INRI_DECIMALS, 6)}</div>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[18px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80"><Coins className="h-4 w-4" /> This deposit estimate</div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-[14px] border border-cyan-300/10 bg-black/20 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 50k funded</div>
-                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</div>
+              <div className="mt-4 rounded-[22px] border border-cyan-300/18 bg-cyan-300/[0.07] p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">Your estimate</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                  <div className="rounded-[15px] border border-cyan-300/14 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">50k target</p>
+                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</p>
                   </div>
-                  <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 75k plan</div>
-                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</div>
+                  <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k plan</p>
+                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</p>
                   </div>
-                  <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 100k plan</div>
-                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</div>
+                  <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k plan</p>
+                    <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</p>
                   </div>
                 </div>
-                <p className="mt-2 text-xs font-bold leading-5 text-white/48">75k/100k estimates include planned bonus funding. They become guaranteed only after the extra INRI is deposited into the Seeder.</p>
               </div>
 
-              <div className="mt-4 grid gap-3 text-sm">
-                <div className="rounded-[18px] border border-white/10 bg-white/[0.035] p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/40">Your deposited balance</div>
-                    <span className="rounded-full border border-cyan-300/18 bg-cyan-300/[0.06] px-2.5 py-1 text-[10px] font-black text-cyan-100">withdrawable before launch</span>
+              <div className="mt-4 rounded-[22px] border border-white/12 bg-black/24 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your current position</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Withdrawable iUSD</p>
+                    <p className="mt-1 text-lg font-black">{formatNumber(user.contributionIusd, IUSD_DECIMALS, 6)}</p>
                   </div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">iUSD</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.contributionIusd, IUSD_DECIMALS, 6)}</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">INRI</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.contributionInri, INRI_DECIMALS, 6)}</div>
-                    </div>
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">Withdrawable INRI</p>
+                    <p className="mt-1 text-lg font-black">{formatNumber(user.contributionInri, INRI_DECIMALS, 6)}</p>
                   </div>
                 </div>
+                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Before launch, you can withdraw exactly your deposited iUSD + INRI. Rewards are claimable only after launch + LP lock.</p>
+              </div>
 
-                <div className="rounded-[18px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
-                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80">Estimated rewards for your current deposit</div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-[14px] border border-cyan-300/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">50k funded</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAtTarget, INRI_DECIMALS, 6)} INRI</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">75k plan</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">100k plan</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs font-bold leading-5 text-white/48">Rewards are proportional to each user&apos;s iUSD deposit at launch. Planned milestone bonuses are controlled and added only if the campaign reaches those levels before launch.</p>
+              <div className="mt-4 rounded-[22px] border border-white/12 bg-black/24 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Future claim after launch</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">LP tokens</p><p className="mt-1 text-lg font-black">{formatNumber(user.pendingLp, INRI_DECIMALS, 6)}</p></div>
+                  <div className="rounded-[15px] border border-white/10 bg-white/[0.035] p-3"><p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35">INRI rewards</p><p className="mt-1 text-lg font-black">{formatNumber(user.pendingReward, INRI_DECIMALS, 6)}</p></div>
                 </div>
-
-                <div className="rounded-[18px] border border-white/10 bg-white/[0.035] p-4">
-                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/40">Claimable after launch + unlock</div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">LP tokens</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.pendingLp, INRI_DECIMALS, 6)}</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">INRI rewards</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.pendingReward, INRI_DECIMALS, 6)}</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">Unused iUSD</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.pendingUnusedIusd, IUSD_DECIMALS, 6)}</div>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">Unused INRI</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(user.pendingUnusedInri, INRI_DECIMALS, 6)}</div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs font-bold leading-5 text-white/48">Unlock: {unlockDateText(campaign.lpUnlockTime)} · {claimReady ? 'claim is available' : 'not claimable yet'}</p>
-                </div>
+                <p className="mt-2 text-xs font-bold leading-5 text-white/45">Unlock: {unlockDateText(campaign.lpUnlockTime)}</p>
               </div>
 
               {!connected ? <div className="mt-4"><MessageBox kind="info">Connect your wallet using the top button before depositing.</MessageBox></div> : null}
@@ -675,27 +644,25 @@ export function InriLiquidityCampaignClient() {
                 <button type="button" onClick={() => void handleDeposit()} disabled={!connected || !networkReady || busy || campaign.status !== 0} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-cyan-300 px-5 text-sm font-black text-black shadow-[0_18px_52px_rgba(46,216,255,0.24)] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/40 disabled:shadow-none">
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />} Deposit iUSD + INRI
                 </button>
-                <button type="button" onClick={() => void handleWithdraw()} disabled={!connected || !networkReady || busy || campaign.status === 1 || !userHasContribution} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.045] px-5 text-sm font-black text-white/82 transition hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-45"><Unlock className="h-4 w-4" /> Withdraw your iUSD + INRI</button>
+                <button type="button" onClick={() => void handleWithdraw()} disabled={!connected || !networkReady || busy || campaign.status === 1 || !userHasContribution} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.045] px-5 text-sm font-black text-white/82 transition hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-45"><Unlock className="h-4 w-4" /> Withdraw before launch</button>
                 <button type="button" onClick={() => void handleClaim()} disabled={!connected || !networkReady || busy || campaign.status !== 1} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-emerald-300/20 bg-emerald-400/10 px-5 text-sm font-black text-emerald-100 transition hover:bg-emerald-400/16 disabled:cursor-not-allowed disabled:opacity-45"><Gift className="h-4 w-4" /> Claim after LP unlock</button>
               </div>
-            </Card>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            <Card>
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Safety and reward rules</p>
+            <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Safety rules</p>
               <div className="mt-4 grid gap-3 text-sm leading-7 text-white/66">
                 <p><CheckCircle2 className="mr-2 inline h-4 w-4 text-emerald-300" /> iUSD/INRI swaps are paused during seeding.</p>
                 <p><CheckCircle2 className="mr-2 inline h-4 w-4 text-emerald-300" /> Deposits stay outside the Pair until the liquidity target is reached.</p>
                 <p><Gift className="mr-2 inline h-4 w-4 text-cyan-300" /> Rewards are proportional to each user&apos;s iUSD contribution at launch.</p>
-                <p><Clock3 className="mr-2 inline h-4 w-4 text-cyan-300" /> Rewards are not released immediately. Claim opens only after launch + LP lock.</p>
                 <p><Lock className="mr-2 inline h-4 w-4 text-cyan-300" /> If the campaign is cancelled before launch, users withdraw deposits and rewards return to the community vault.</p>
-                <p><AlertTriangle className="mr-2 inline h-4 w-4 text-amber-300" /> Other community pools remain available normally.</p>
               </div>
-            </Card>
+            </div>
 
-            <Card>
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Contracts</p>
+            <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Contracts</p>
               <div className="mt-4 grid gap-2 text-sm font-bold text-white/70">
                 {[
                   ['Seeder', SEEDER_ADDRESS],
@@ -703,14 +670,14 @@ export function InriLiquidityCampaignClient() {
                   ['Router', ROUTER_ADDRESS],
                   ['Reward vault', REWARD_VAULT_ADDRESS],
                 ].map(([label, address]) => (
-                  <div key={label} className="grid gap-2 rounded-[16px] border border-white/10 bg-white/[0.035] p-3 sm:grid-cols-[110px_1fr_auto] sm:items-center">
+                  <div key={label} className="grid gap-2 rounded-[16px] border border-white/10 bg-black/24 p-3 sm:grid-cols-[110px_1fr_auto] sm:items-center">
                     <span className="text-cyan-300">{label}</span>
                     <span className="break-all text-white/70">{address}</span>
                     <button type="button" onClick={() => void copy(address, label)} className="inline-flex items-center gap-2 text-cyan-300 hover:text-white">{copied === label ? 'Copied' : 'Copy'} <Copy className="h-4 w-4" /></button>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </section>
