@@ -219,8 +219,8 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
           if (state.connected) {
             setConnector('walletconnect')
             setError('')
-          } else if (connector === 'walletconnect') {
-            setConnector(injectedAddress ? 'injected' : '')
+          } else {
+            setConnector((current) => (current === 'walletconnect' ? '' : current))
           }
         })
 
@@ -251,7 +251,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
       window.ethereum?.removeListener?.('chainChanged', handleChainChanged)
       unsubscribeWalletConnect?.()
     }
-  }, [connector, injectedAddress, wcAddress])
+  }, [])
 
   const providerChoices = useMemo(() => {
     if (wallets.length > 0) return wallets
@@ -493,15 +493,14 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   }
 
   const baseButton = compact
-    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18]'
+    ? 'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-3 text-[13px] font-black text-white shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18] md:w-[238px]'
     : 'inline-flex h-12 min-w-0 items-center gap-2.5 rounded-[12px] border border-primary/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(18,168,255,0.055))] px-5 text-[14px] font-black text-white shadow-[0_16px_40px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.10)] transition-all hover:-translate-y-px hover:border-primary/60 hover:bg-primary/[0.18]'
 
-  const panelClass = compact
-    ? 'left-0 right-0 w-auto min-[520px]:left-auto min-[520px]:right-0 min-[520px]:w-[390px]'
-    : 'right-0 w-[min(94vw,390px)]'
+  const panelClass =
+    'fixed left-3 right-3 top-[86px] max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain md:absolute md:left-auto md:right-0 md:top-full md:mt-3 md:w-[390px] md:max-h-[calc(100dvh-138px)]'
 
   return (
-    <div ref={rootRef} className={compact ? 'relative w-full' : 'relative'}>
+    <div ref={rootRef} className={compact ? 'relative w-full min-w-0 md:w-[238px]' : 'relative'}>
       <button
         onClick={() => setOpen((v) => !v)}
         className={`${baseButton} notranslate`}
@@ -533,7 +532,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
       {open ? (
         <div
-          className={`absolute z-50 mt-3 overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${panelClass}`}
+          className={`z-[80] rounded-[1.5rem] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(19,164,255,0.16),transparent_30%),linear-gradient(180deg,#04101b,#01050a)] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.55),0_0_0_1px_rgba(19,164,255,0.08)] backdrop-blur-xl ${panelClass}`}
         >
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -544,7 +543,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
                 Connect wallet
               </h3>
               <p className="mt-2 text-sm leading-6 text-white/62">
-                Connect on desktop with a browser wallet, or use WalletConnect QR code for mobile wallets.
+                Connect on desktop with a browser wallet, or use the official WalletConnect QR for mobile wallets.
               </p>
             </div>
             <div
@@ -686,7 +685,11 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
             </>
           )}
 
-          {error ? <p className="mt-4 text-sm leading-6 text-rose-300">{error}</p> : null}
+          {error ? (
+            <div className="mt-4 rounded-[1rem] border border-rose-300/20 bg-rose-400/[0.08] p-3 text-sm leading-6 text-rose-200">
+              {error}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
