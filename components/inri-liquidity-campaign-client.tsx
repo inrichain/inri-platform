@@ -445,8 +445,8 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(0,174,255,0.22),transparent_30rem),radial-gradient(circle_at_82%_6%,rgba(122,232,255,0.10),transparent_34rem),linear-gradient(135deg,#06192f_0%,#020711_48%,#000_100%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-[#061827] text-white">
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,#082a42_0%,#061827_42%,#04101d_100%)]" />
 
       <section className="relative">
         <div className="mx-auto max-w-[1280px] px-4 py-10 sm:px-8 lg:py-14">
@@ -534,23 +534,23 @@ export function InriLiquidityCampaignClient() {
 
               <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Milestone reward plan</p>
-                <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Bigger liquidity unlocks stronger rewards</h3>
-                <p className="mt-2 text-sm leading-7 text-white/58">100,000 INRI is already funded on-chain. Extra milestone bonuses are deposited later only if the campaign grows before launch.</p>
+                <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Rewards grow with liquidity, with a capped plan</h3>
+                <p className="mt-2 text-sm leading-7 text-white/58">Only funded INRI is guaranteed on-chain. Extra milestone bonuses are added later with fundRewards() only if the campaign reaches each milestone before launch.</p>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[22px] border border-cyan-300/20 bg-cyan-300/[0.075] p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">At 50,000 iUSD</p>
                     <p className="mt-2 text-3xl font-black">{formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)}</p>
-                    <p className="mt-1 text-sm font-bold text-white/55">INRI reward / 1 iUSD</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">INRI / 1 iUSD · funded now</p>
                   </div>
                   <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 75,000 iUSD</p>
                     <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)}</p>
-                    <p className="mt-1 text-sm font-bold text-white/55">planned total 175k INRI</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned +75k = 175k total</p>
                   </div>
                   <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 100,000 iUSD</p>
                     <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)}</p>
-                    <p className="mt-1 text-sm font-bold text-white/55">planned max 250k INRI</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned +75k more = 250k max</p>
                   </div>
                 </div>
               </div>
@@ -595,21 +595,26 @@ export function InriLiquidityCampaignClient() {
               </div>
 
               <div className="mt-4 rounded-[22px] border border-cyan-300/18 bg-cyan-300/[0.07] p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">Your estimate</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">Your reward estimate</p>
+                <p className="mt-1 text-xs font-bold leading-5 text-white/52">Based on the amount typed above: {formatNumber(depositIusdAmount, IUSD_DECIMALS, 6)} iUSD. The numbers below are estimated rewards for this exact deposit amount.</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                   <div className="rounded-[15px] border border-cyan-300/14 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">50k target</p>
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
                   <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k bonus plan</p>
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
                   <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k max plan</p>
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</p>
+                    <p className="mt-1 text-[10px] font-bold text-white/38">rate {formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)} / iUSD</p>
                   </div>
                 </div>
+                <p className="mt-3 text-[11px] font-bold leading-5 text-amber-100/80">Example: if you type 0.1 iUSD, a 2 INRI / 1 iUSD rate shows 0.2 INRI. That is correct because it is your estimate for 0.1 iUSD, not the rate itself.</p>
               </div>
 
               <div className="mt-4 rounded-[22px] border border-white/12 bg-black/24 p-4">
