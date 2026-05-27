@@ -409,9 +409,8 @@ export function InriLiquidityCampaignClient() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_16%_0%,rgba(19,164,255,0.26),transparent_27rem),radial-gradient(circle_at_82%_8%,rgba(103,212,255,0.12),transparent_25rem),linear-gradient(135deg,#071b2f_0%,#061523_34%,#04101d_100%)] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24rem,rgba(0,0,0,0.0),rgba(0,0,0,0.28)_42rem,rgba(0,0,0,0.42)_100%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_12%,rgba(0,174,255,0.45),transparent_28rem),radial-gradient(circle_at_84%_18%,rgba(122,232,255,0.22),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_45%,#000_100%)] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
       <section className="relative">
         <div className="relative mx-auto max-w-[1180px] px-4 pb-7 pt-8 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
