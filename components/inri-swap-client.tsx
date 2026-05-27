@@ -38,6 +38,9 @@ const ROUTER_ADDRESS = '0xcd5E469b9f6E3BA80F03B1De7B202EbE5DEB8DcD'
 const WINRI_ADDRESS = '0x8731F1709745173470821eAeEd9BC600EEC9A3D1'
 const IUSD_ADDRESS = '0x116b2fF23e062A52E2c0ea12dF7e2638b62Fa0FC'
 const OFFICIAL_PAIR_ADDRESS = '0xcaFFACD05499d005d8441337811bAd227Fa24643'
+const LIQUIDITY_SEEDER_ADDRESS = '0x34583A7080d47Af38d76Bae78c51Ecd0C64442cF'
+const OFFICIAL_REFERENCE_PRICE_LABEL = '0.018'
+const MIN_OFFICIAL_IUSD_RESERVE_FOR_MARKET = 1_000_000n // 1 iUSD. Dust below this is ignored for price display.
 const NATIVE_INRI = 'NATIVE_INRI'
 const IMPORTED_TOKENS_KEY = 'inri_swap_imported_tokens_v1'
 
@@ -224,6 +227,10 @@ function routeUsesOfficialIusdInriMarket(path: string[]) {
   const hasIusd = path.some((address) => sameAddress(address, IUSD_ADDRESS))
   const hasWinri = path.some((address) => sameAddress(address, WINRI_ADDRESS))
   return hasIusd && hasWinri
+}
+
+function tokensUseOfficialIusdInriMarket(tokenA: TokenInfo, tokenB: TokenInfo) {
+  return routeUsesOfficialIusdInriMarket([getTokenAddressForPath(tokenA), getTokenAddressForPath(tokenB)])
 }
 
 async function readPairInfoForTokens(tokenA: TokenInfo, tokenB: TokenInfo): Promise<LiquidityPairInfo> {
@@ -741,6 +748,13 @@ export function InriSwapClient() {
         if (tokenKey(fromToken) === tokenKey(toToken)) return
 
         const path = await resolveSwapPath(fromToken, toToken)
+        if (routeUsesOfficialIusdInriMarket(path)) {
+          if (!cancelled) {
+            setQuoteOut(0n)
+            setQuotePath(path)
+          }
+          return
+        }
         const router = new Contract(ROUTER_ADDRESS, routerAbi, rpc)
         const amounts = (await router.getAmountsOut(amountIn, path)) as bigint[]
         if (!cancelled) {
@@ -874,6 +888,10 @@ export function InriSwapClient() {
       setMessage({ kind: 'info', text: 'Preparing liquidity transaction...' })
       const { provider, account } = await ensureWallet()
       if (tokenKey(liqTokenA) === tokenKey(liqTokenB)) throw new Error('Select two different assets.')
+
+      if (tokensUseOfficialIusdInriMarket(liqTokenA, liqTokenB)) {
+        throw new Error('Official iUSD/INRI liquidity is handled by the Liquidity Campaign. Use the Join Liquidity Campaign button instead.')
+      }
 
       const amountA = safeParseUnits(liqAmountA, liqTokenA.decimals)
       const amountB = safeParseUnits(liqAmountB, liqTokenB.decimals)
@@ -1009,6 +1027,7 @@ export function InriSwapClient() {
   const maxFromBalance = fromToken.native && fromBalance > parseUnits('0.02', 18) ? fromBalance - parseUnits('0.02', 18) : fromBalance
   const directOfficialMarketSelection = routeUsesOfficialIusdInriMarket([getTokenAddressForPath(fromToken), getTokenAddressForPath(toToken)])
   const officialMarketSwapLocked = directOfficialMarketSelection || routeUsesOfficialIusdInriMarket(quotePath)
+  const officialLiquidityLocked = tokensUseOfficialIusdInriMarket(liqTokenA, liqTokenB)
   const swapActionLabel = !connected
     ? 'Connect wallet'
     : !networkReady
@@ -1018,11 +1037,18 @@ export function InriSwapClient() {
         : quoteOut <= 0n
           ? 'Enter amount'
           : 'Swap'
-  const poolTvlApprox = pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
+  const officialPoolHasUsableLiquidity = Boolean(pool && pool.reserveIusd >= MIN_OFFICIAL_IUSD_RESERVE_FOR_MARKET && pool.reserveInri > 0n)
+  const poolTvlApprox = officialPoolHasUsableLiquidity && pool ? Number(formatUnits(pool.reserveIusd, 6)) * 2 : 0
+  const officialDisplayPrice = officialPoolHasUsableLiquidity && pool?.price ? pool.price : OFFICIAL_REFERENCE_PRICE_LABEL
+  const officialTvlLabel = officialPoolHasUsableLiquidity ? `$${formatDisplayNumber(poolTvlApprox, 4)}` : 'Seeding campaign'
+  const officialReserveInriLabel = pool && officialPoolHasUsableLiquidity ? formatTokenAmount(pool.reserveInri, 18, 4) : 'Protected outside pool'
+  const officialReserveIusdLabel = pool && officialPoolHasUsableLiquidity ? formatTokenAmount(pool.reserveIusd, 6, 6) : 'Protected outside pool'
   const liqRatioText = liqPairInfo.exists && liqPairInfo.reserveA > 0n && liqPairInfo.reserveB > 0n
     ? `1 ${liqTokenA.symbol} ≈ ${formatDisplayNumber(Number(formatUnits(liqPairInfo.reserveB, liqTokenB.decimals)) / Math.max(Number(formatUnits(liqPairInfo.reserveA, liqTokenA.decimals)), 1e-18), 8)} ${liqTokenB.symbol}`
     : 'This pair does not exist yet. Your first deposit sets the starting price.'
-  const liqPairStatus = liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
+  const liqPairStatus = officialLiquidityLocked
+    ? 'Official iUSD/INRI liquidity is protected by the Liquidity Campaign. Direct pool deposits are paused.'
+    : liqPairInfo.exists ? 'Existing pair detected · amounts auto-sync to current pool ratio.' : 'New pair · choose the initial price ratio you want to create.'
   const liqBalanceA = balances[tokenKey(liqTokenA)] ?? 0n
   const liqBalanceB = balances[tokenKey(liqTokenB)] ?? 0n
   const removePercentNumber = Math.max(0, Math.min(100, Number(cleanDecimalInput(removePercent || '0')) || 0))
@@ -1269,14 +1295,26 @@ export function InriSwapClient() {
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
-                    <AlertTriangle className="mr-2 inline h-4 w-4" /> Tokens with transfer fees may deposit less than typed. INRISwap measures the real amount received by the pair.
-                  </div>
+                  {officialLiquidityLocked ? (
+                    <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Direct iUSD/INRI liquidity is paused while the official market is in seeding mode. Join the campaign so iUSD stays outside the Pair until the target is reached.
+                    </div>
+                  ) : (
+                    <div className="mt-5 rounded-[18px] border border-amber-300/22 bg-amber-300/10 p-4 text-sm leading-7 text-amber-50/86">
+                      <AlertTriangle className="mr-2 inline h-4 w-4" /> Tokens with transfer fees may deposit less than typed. INRISwap measures the real amount received by the pair.
+                    </div>
+                  )}
 
                   <div className="mt-5">
-                    <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
-                      Supply liquidity
-                    </ActionButton>
+                    {officialLiquidityLocked ? (
+                      <Link href="/liquidity-campaign" className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-cyan-300 px-5 text-sm font-black text-black shadow-[0_18px_52px_rgba(46,216,255,0.24)] transition hover:bg-cyan-200">
+                        Join Liquidity Campaign
+                      </Link>
+                    ) : (
+                      <ActionButton onClick={handleAddLiquidity} busy={busy} disabled={!connected || !networkReady}>
+                        Supply liquidity
+                      </ActionButton>
+                    )}
                   </div>
                 </Panel>
               ) : null}
@@ -1399,7 +1437,7 @@ export function InriSwapClient() {
                     <div>
                       <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Official market</p>
                       <h2 className="mt-2 text-2xl font-black text-white">iUSD / INRI</h2>
-                      <p className="mt-2 text-sm text-white/50">Primary liquidity pair on INRISwap V1</p>
+                      <p className="mt-2 text-sm text-white/50">Official pair is in liquidity seeding mode. Deposits stay in the campaign contract until target is reached.</p>
                     </div>
                     {poolLoading ? <RefreshCw className="h-5 w-5 animate-spin text-cyan-300" /> : <CheckCircle2 className="h-5 w-5 text-emerald-300" />}
                   </div>
@@ -1407,24 +1445,31 @@ export function InriSwapClient() {
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Price</div>
-                      <div className="mt-2 text-2xl font-black text-white">{pool?.price || '—'} <span className="text-sm text-white/45">iUSD</span></div>
+                      <div className="mt-2 text-2xl font-black text-white">{officialDisplayPrice} <span className="text-sm text-white/45">iUSD ref.</span></div>
                     </div>
                     <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">TVL est.</div>
-                      <div className="mt-2 text-2xl font-black text-white">{poolTvlApprox ? `$${formatDisplayNumber(poolTvlApprox, 4)}` : '—'}</div>
+                      <div className="mt-2 text-2xl font-black text-white">{officialTvlLabel}</div>
                     </div>
                     <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Reserve INRI</div>
-                      <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.reserveInri, 18, 4) : '—'}</div>
+                      <div className="mt-2 text-xl font-black text-white">{officialReserveInriLabel}</div>
                     </div>
                     <div className="rounded-[18px] border border-white/10 bg-black/25 p-4">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Reserve iUSD</div>
-                      <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.reserveIusd, 6, 6) : '—'}</div>
+                      <div className="mt-2 text-xl font-black text-white">{officialReserveIusdLabel}</div>
                     </div>
                     <div className="rounded-[18px] border border-white/10 bg-black/25 p-4 sm:col-span-2">
                       <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Your LP</div>
                       <div className="mt-2 text-xl font-black text-white">{pool ? formatTokenAmount(pool.lpBalance, 18, 6) : '—'}</div>
                     </div>
+                  </div>
+
+                  <div className="mt-5 rounded-[18px] border border-cyan-300/18 bg-cyan-300/[0.07] p-4 text-sm leading-7 text-cyan-50/80">
+                    <ShieldCheck className="mr-2 inline h-4 w-4 text-cyan-300" /> The iUSD/INRI pool is intentionally protected while liquidity forms. Use the campaign page to deposit iUSD + INRI safely; other community pools remain available.
+                    <Link href="/liquidity-campaign" className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-[14px] bg-cyan-300 px-4 text-sm font-black text-black transition hover:bg-cyan-200">
+                      Open Liquidity Campaign
+                    </Link>
                   </div>
 
                   <div className="mt-5 grid gap-2 text-sm font-bold text-white/60 sm:grid-cols-2">

@@ -28,6 +28,7 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Wallets', href: '/wallets' },
   { label: 'Bridge', href: '/bridge/' },
   { label: 'Swap', href: '/swap' },
+  { label: 'Liquidity', href: '/liquidity-campaign' },
   { label: 'Mining', href: '/mining' },
   { label: 'Pool', href: '/pool' },
   { label: 'Staking', href: '/staking' },
@@ -43,6 +44,7 @@ const utilityNavItems: InriNavItem[] = [
   { label: 'Whitepaper', href: '/whitepaper' },
   { label: 'Token Factory', href: '/token-factory' },
   { label: 'P2P', href: '/p2p' },
+  { label: 'Liquidity Campaign', href: '/liquidity-campaign' },
   { label: 'Mining Windows', href: '/mining-windows' },
   { label: 'Mining Ubuntu', href: '/mining-ubuntu' },
 ]
@@ -67,6 +69,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
       { label: 'Staking', href: '/staking' },
       { label: 'Token Factory', href: '/token-factory' },
       { label: 'Swap', href: '/swap' },
+      { label: 'Liquidity Campaign', href: '/liquidity-campaign' },
       { label: 'P2P', href: '/p2p' },
     ],
   },
