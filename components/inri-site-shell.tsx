@@ -386,7 +386,7 @@ function BackToTopButton() {
 
 export function InriShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="inri-shell-standard min-h-screen text-white">
       <InriHeader />
       {children}
       <InriFooter />
