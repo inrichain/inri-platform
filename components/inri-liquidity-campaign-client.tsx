@@ -19,8 +19,8 @@ const INRI_DECIMALS = 18
 // These are UI/planning numbers: only amounts already funded in rewardPool are guaranteed on-chain.
 const INRI_UNIT = 10n ** 18n
 const MILESTONE_75_IUSD = 75_000_000_000n
-const PLANNED_REWARD_AT_75K = 125_000n * INRI_UNIT
-const PLANNED_REWARD_AT_HARDCAP = 150_000n * INRI_UNIT
+const PLANNED_REWARD_AT_75K = 175_000n * INRI_UNIT
+const PLANNED_REWARD_AT_HARDCAP = 250_000n * INRI_UNIT
 
 const erc20Abi = [
   'function balanceOf(address) view returns (uint256)',
@@ -446,10 +446,9 @@ export function InriLiquidityCampaignClient() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(0,174,255,0.34),transparent_28rem),radial-gradient(circle_at_82%_8%,rgba(122,232,255,0.18),transparent_34rem),linear-gradient(135deg,#071a32_0%,#02040a_44%,#000_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(125,225,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(125,225,255,0.045)_1px,transparent_1px)] bg-[size:72px_72px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(0,174,255,0.22),transparent_30rem),radial-gradient(circle_at_82%_6%,rgba(122,232,255,0.10),transparent_34rem),linear-gradient(135deg,#06192f_0%,#020711_48%,#000_100%)]" />
 
-      <section className="relative border-b border-cyan-300/15">
+      <section className="relative">
         <div className="mx-auto max-w-[1280px] px-4 py-10 sm:px-8 lg:py-14">
           <div className="grid gap-7 lg:grid-cols-[1fr_420px] lg:items-end">
             <div>
@@ -534,9 +533,9 @@ export function InriLiquidityCampaignClient() {
               </div>
 
               <div className="rounded-[30px] border border-cyan-300/20 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Simple reward plan</p>
-                <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Rewards grow only if liquidity grows</h3>
-                <p className="mt-2 text-sm leading-7 text-white/58">Only funded INRI is guaranteed on-chain. Extra bonuses are deposited later only if the campaign reaches the milestone before launch.</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Milestone reward plan</p>
+                <h3 className="mt-2 text-2xl font-black tracking-[-0.04em]">Bigger liquidity unlocks stronger rewards</h3>
+                <p className="mt-2 text-sm leading-7 text-white/58">100,000 INRI is already funded on-chain. Extra milestone bonuses are deposited later only if the campaign grows before launch.</p>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
                   <div className="rounded-[22px] border border-cyan-300/20 bg-cyan-300/[0.075] p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/75">At 50,000 iUSD</p>
@@ -546,12 +545,12 @@ export function InriLiquidityCampaignClient() {
                   <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 75,000 iUSD</p>
                     <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)}</p>
-                    <p className="mt-1 text-sm font-bold text-white/55">planned with +25k INRI</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned total 175k INRI</p>
                   </div>
                   <div className="rounded-[22px] border border-white/12 bg-black/24 p-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">At 100,000 iUSD</p>
                     <p className="mt-2 text-3xl font-black">{formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)}</p>
-                    <p className="mt-1 text-sm font-bold text-white/55">planned max 150k INRI</p>
+                    <p className="mt-1 text-sm font-bold text-white/55">planned max 250k INRI</p>
                   </div>
                 </div>
               </div>
@@ -603,11 +602,11 @@ export function InriLiquidityCampaignClient() {
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</p>
                   </div>
                   <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k plan</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">75k bonus plan</p>
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</p>
                   </div>
                   <div className="rounded-[15px] border border-white/10 bg-black/22 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k plan</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/40">100k max plan</p>
                     <p className="mt-1 text-lg font-black">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</p>
                   </div>
                 </div>
