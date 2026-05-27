@@ -15,6 +15,13 @@ const SEEDER_ADDRESS = '0x34583A7080d47Af38d76Bae78c51Ecd0C64442cF'
 const IUSD_DECIMALS = 6
 const INRI_DECIMALS = 18
 
+// Controlled reward plan for the first liquidity round.
+// These are UI/planning numbers: only amounts already funded in rewardPool are guaranteed on-chain.
+const INRI_UNIT = 10n ** 18n
+const MILESTONE_75_IUSD = 75_000_000_000n
+const PLANNED_REWARD_AT_75K = 125_000n * INRI_UNIT
+const PLANNED_REWARD_AT_HARDCAP = 150_000n * INRI_UNIT
+
 const erc20Abi = [
   'function balanceOf(address) view returns (uint256)',
   'function allowance(address,address) view returns (uint256)',
@@ -263,12 +270,15 @@ export function InriLiquidityCampaignClient() {
   const targetInri = campaign.referencePrice > 0n ? (campaign.launchTargetIusd * 10n ** 18n + campaign.referencePrice - 1n) / campaign.referencePrice : 0n
   const hardCapInri = campaign.referencePrice > 0n && campaign.hardCapIusd > 0n ? (campaign.hardCapIusd * 10n ** 18n + campaign.referencePrice - 1n) / campaign.referencePrice : 0n
   const depositIusdAmount = safeParseUnits(depositIusd, IUSD_DECIMALS)
-  const rewardPerIusdAtTarget = rewardPerIusd(campaign.rewardPool, campaign.launchTargetIusd)
-  const rewardPerIusdAtHardCap = rewardPerIusd(campaign.rewardPool, campaign.hardCapIusd)
+  const fundedRewardPerIusdAtTarget = rewardPerIusd(campaign.rewardPool, campaign.launchTargetIusd)
+  const plannedRewardPerIusdAt75k = rewardPerIusd(PLANNED_REWARD_AT_75K, MILESTONE_75_IUSD)
+  const plannedRewardPerIusdAtHardCap = rewardPerIusd(PLANNED_REWARD_AT_HARDCAP, campaign.hardCapIusd)
   const depositRewardAtTarget = proportionalReward(campaign.rewardPool, depositIusdAmount, campaign.launchTargetIusd)
-  const depositRewardAtHardCap = proportionalReward(campaign.rewardPool, depositIusdAmount, campaign.hardCapIusd)
+  const depositRewardAt75kPlan = proportionalReward(PLANNED_REWARD_AT_75K, depositIusdAmount, MILESTONE_75_IUSD)
+  const depositRewardAtHardCapPlan = proportionalReward(PLANNED_REWARD_AT_HARDCAP, depositIusdAmount, campaign.hardCapIusd)
   const userRewardAtTarget = proportionalReward(campaign.rewardPool, user.contributionIusd, campaign.launchTargetIusd)
-  const userRewardAtHardCap = proportionalReward(campaign.rewardPool, user.contributionIusd, campaign.hardCapIusd)
+  const userRewardAt75kPlan = proportionalReward(PLANNED_REWARD_AT_75K, user.contributionIusd, MILESTONE_75_IUSD)
+  const userRewardAtHardCapPlan = proportionalReward(PLANNED_REWARD_AT_HARDCAP, user.contributionIusd, campaign.hardCapIusd)
   const userHasContribution = user.contributionIusd > 0n || user.contributionInri > 0n
   const claimReady = campaign.status === 1 && campaign.lpUnlockTime > 0n && BigInt(Math.floor(Date.now() / 1000)) >= campaign.lpUnlockTime
   const readWallet = useCallback(async () => {
@@ -514,16 +524,30 @@ export function InriLiquidityCampaignClient() {
                 <Stat label="INRI at hard cap" value={formatNumber(hardCapInri, INRI_DECIMALS, 0)} sub="needed for 100,000 iUSD cap" />
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">Estimated reward rate</p>
-                  <div className="mt-2 text-xl font-black text-white">{formatTokenAmount(rewardPerIusdAtTarget, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
-                  <p className="mt-1 text-xs font-bold text-white/50">if launch happens at {formatNumber(campaign.launchTargetIusd, IUSD_DECIMALS, 0)} iUSD</p>
+              <div className="mt-5 rounded-[24px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">Controlled reward plan</p>
+                    <h3 className="mt-1 text-xl font-black text-white">Gradual rewards, not excessive circulation</h3>
+                  </div>
+                  <p className="text-xs font-bold leading-5 text-white/50 sm:max-w-[360px]">Only the funded reward pool is guaranteed on-chain. Extra bonuses are added later with fundRewards() only if the campaign reaches each milestone before launch.</p>
                 </div>
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">At hard cap</p>
-                  <div className="mt-2 text-xl font-black text-white">{formatTokenAmount(rewardPerIusdAtHardCap, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
-                  <p className="mt-1 text-xs font-bold text-white/50">if campaign fills to {formatNumber(campaign.hardCapIusd, IUSD_DECIMALS, 0)} iUSD</p>
+                <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[18px] border border-cyan-300/16 bg-black/22 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80">50,000 iUSD target</p>
+                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(fundedRewardPerIusdAtTarget, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
+                    <p className="mt-1 text-xs font-bold text-white/50">current funded pool: {formatNumber(campaign.rewardPool, INRI_DECIMALS, 2)} INRI</p>
+                  </div>
+                  <div className="rounded-[18px] border border-white/10 bg-black/22 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">75,000 iUSD milestone</p>
+                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(plannedRewardPerIusdAt75k, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
+                    <p className="mt-1 text-xs font-bold text-white/50">planned total: 125,000 INRI (+25,000 bonus)</p>
+                  </div>
+                  <div className="rounded-[18px] border border-white/10 bg-black/22 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">100,000 iUSD hard cap</p>
+                    <div className="mt-2 text-2xl font-black text-white">{formatTokenAmount(plannedRewardPerIusdAtHardCap, INRI_DECIMALS, 4)} INRI / 1 iUSD</div>
+                    <p className="mt-1 text-xs font-bold text-white/50">planned max for this round: 150,000 INRI</p>
+                  </div>
                 </div>
               </div>
 
@@ -566,16 +590,21 @@ export function InriLiquidityCampaignClient() {
 
               <div className="mt-4 rounded-[18px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80"><Coins className="h-4 w-4" /> This deposit estimate</div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   <div className="rounded-[14px] border border-cyan-300/10 bg-black/20 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">Reward at target</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 50k funded</div>
                     <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAtTarget, INRI_DECIMALS, 6)} INRI</div>
                   </div>
                   <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">Reward at hard cap</div>
-                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAtHardCap, INRI_DECIMALS, 6)} INRI</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 75k plan</div>
+                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</div>
+                  </div>
+                  <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At 100k plan</div>
+                    <div className="mt-1 text-lg font-black text-white">{formatNumber(depositRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</div>
                   </div>
                 </div>
+                <p className="mt-2 text-xs font-bold leading-5 text-white/48">75k/100k estimates include planned bonus funding. They become guaranteed only after the extra INRI is deposited into the Seeder.</p>
               </div>
 
               <div className="mt-4 grid gap-3 text-sm">
@@ -598,17 +627,21 @@ export function InriLiquidityCampaignClient() {
 
                 <div className="rounded-[18px] border border-cyan-300/16 bg-cyan-300/[0.055] p-4">
                   <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80">Estimated rewards for your current deposit</div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
                     <div className="rounded-[14px] border border-cyan-300/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At target</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">50k funded</div>
                       <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAtTarget, INRI_DECIMALS, 6)} INRI</div>
                     </div>
                     <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">At hard cap</div>
-                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAtHardCap, INRI_DECIMALS, 6)} INRI</div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">75k plan</div>
+                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAt75kPlan, INRI_DECIMALS, 6)} INRI</div>
+                    </div>
+                    <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
+                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">100k plan</div>
+                      <div className="mt-1 text-lg font-black text-white">{formatNumber(userRewardAtHardCapPlan, INRI_DECIMALS, 6)} INRI</div>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs font-bold leading-5 text-white/48">Rewards are proportional to each user&apos;s iUSD deposit at launch. They are claimable only after launch + LP unlock.</p>
+                  <p className="mt-2 text-xs font-bold leading-5 text-white/48">Rewards are proportional to each user&apos;s iUSD deposit at launch. Planned milestone bonuses are controlled and added only if the campaign reaches those levels before launch.</p>
                 </div>
 
                 <div className="rounded-[18px] border border-white/10 bg-white/[0.035] p-4">
