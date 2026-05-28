@@ -252,7 +252,7 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] lg:hidden">
+        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] min-[1500px]:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
@@ -319,10 +319,10 @@ export function InriHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/82 shadow-[0_12px_40px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
       <div className="border-b border-cyan-100/15 bg-[#13a4ff]">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-center px-4 py-2.5 sm:px-8 xl:px-12 2xl:px-16">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-center px-3 py-2 sm:px-8 xl:px-12 2xl:px-16">
           <p
             translate="no"
-            className="notranslate text-center text-[10px] font-black uppercase tracking-[0.22em] text-black/78 sm:text-[12px] lg:tracking-[0.28em]"
+            className="notranslate max-w-full text-center text-[9px] font-black uppercase tracking-[0.16em] text-black/78 sm:text-[12px] sm:tracking-[0.22em] lg:tracking-[0.28em]"
           >
             INRI Mainnet · Proof-of-Work · Chain 3777 · EVM Compatible
           </p>
@@ -330,15 +330,15 @@ export function InriHeader() {
       </div>
 
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid min-h-[78px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 md:gap-6 lg:min-h-[86px] lg:py-0">
+        <div className="grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:gap-4 min-[1500px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[1500px]:min-h-[86px] min-[1500px]:py-0">
           <div className="min-w-0 justify-self-start">
             <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full">
               <Logo showText size={48} />
             </Link>
           </div>
 
-          <div className="hidden min-w-0 items-center justify-center lg:flex">
-            <nav className="flex items-center justify-center gap-1 rounded-[14px] border border-white/[0.10] bg-white/[0.035] p-1">
+          <div className="hidden min-w-0 items-center justify-center min-[1500px]:flex">
+            <nav className="flex min-w-0 items-center justify-center gap-0.5 rounded-[14px] border border-white/[0.10] bg-white/[0.035] p-1">
               {inriNavItems.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
@@ -346,11 +346,11 @@ export function InriHeader() {
             </nav>
           </div>
 
-          <div className="hidden items-center justify-self-end gap-2 md:flex">
+          <div className="hidden min-w-0 items-center justify-self-end gap-2 sm:flex">
             <ConnectWalletButton compact />
           </div>
 
-          <div className="flex items-center justify-self-end gap-2 md:hidden">
+          <div className="flex items-center justify-self-end gap-2 min-[1500px]:hidden">
             <MobileMenu />
           </div>
         </div>
