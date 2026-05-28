@@ -42,7 +42,6 @@ export function ensureInriAppKit() {
   // Critical for GitHub/Next static builds: never initialize AppKit while Next is
   // prerendering pages on the server. The modal is browser-only.
   if (typeof window === 'undefined' || appKitStarted) return
-  appKitStarted = true
 
   createAppKit({
     adapters: [new EthersAdapter()],
@@ -56,10 +55,10 @@ export function ensureInriAppKit() {
       icons: ['https://platform.inri.life/inri-logo.png'],
     },
     customRpcUrls: {
-      [INRI_CAIP_NETWORK_ID]: INRI_RPC_URL,
+      [INRI_CAIP_NETWORK_ID]: [{ url: INRI_RPC_URL }],
     },
-    networkImages: {
-      [INRI_CAIP_NETWORK_ID]: 'https://platform.inri.life/inri-logo.png',
+    chainImages: {
+      [INRI_CHAIN_ID_DECIMAL]: 'https://platform.inri.life/inri-logo.png',
     },
     themeMode: 'dark',
     themeVariables: {
@@ -67,6 +66,8 @@ export function ensureInriAppKit() {
       '--w3m-border-radius-master': '12px',
     },
     allWallets: 'SHOW',
+    enableMobileFullScreen: true,
+    enableWallets: true,
     features: {
       analytics: true,
       email: false,
@@ -75,6 +76,8 @@ export function ensureInriAppKit() {
       onramp: false,
     },
   } as any)
+
+  appKitStarted = true
 }
 
 export function ReownAppKitProvider({ children }: { children: ReactNode }) {
