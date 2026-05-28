@@ -93,12 +93,19 @@ function installInriAppKitCss() {
     w3m-modal {
       z-index: 2147483000 !important;
       --w3m-z-index: 2147483000;
+      --w3m-accent: #13a4ff;
+      --w3m-border-radius-master: 12px;
     }
 
     @media (max-width: 640px) {
       w3m-modal {
-        --w3m-border-radius-master: 12px;
+        --w3m-z-index: 2147483000;
         --w3m-accent: #13a4ff;
+        --w3m-border-radius-master: 10px;
+      }
+
+      body:has(w3m-modal) {
+        overflow-x: hidden !important;
       }
     }
   `

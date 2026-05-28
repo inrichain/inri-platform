@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 export type InriNavItem = {
   label: string
@@ -94,7 +94,7 @@ function uniqueNavItems(items: InriNavItem[]) {
   })
 }
 
-const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems])
+const mobileNavItems = uniqueNavItems([...inriNavItems, ...utilityNavItems.filter((item) => item.label !== 'INRI Wallet')])
 
 function normalizePath(path: string) {
   if (!path) return '/'
@@ -252,59 +252,88 @@ function MobileMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] transition hover:border-primary/45 hover:bg-primary/[0.08] min-[1500px]:hidden">
+        <button
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-primary/35 bg-[#07131f] text-primary shadow-[0_12px_28px_rgba(0,0,0,0.22)] transition hover:border-primary/65 hover:bg-[#082033] hover:text-white"
+          type="button"
+          aria-label="Open INRI navigation menu"
+        >
           <Menu className="h-5 w-5" />
-          <span className="sr-only">Open menu</span>
         </button>
       </SheetTrigger>
-
       <SheetContent
         side="right"
-        className="flex h-[100dvh] w-[88vw] max-w-none flex-col overflow-hidden border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md"
+        className="flex h-[100dvh] w-[100dvw] max-w-[420px] flex-col overflow-hidden border-l border-white/[0.18] bg-[linear-gradient(180deg,#03070d,#000000)] p-0 text-white sm:max-w-md"
       >
-        <SheetHeader className="shrink-0 border-b border-white/[0.10] px-5 py-5 text-left">
+        <SheetHeader className="shrink-0 border-b border-white/[0.10] px-4 py-4 text-left sm:px-5 sm:py-5">
           <SheetTitle className="text-left text-white">
-            <Logo showText size={52} />
+            <span className="flex min-w-0 items-center gap-3 pr-10">
+              <Logo size={42} />
+              <span className="min-w-0">
+                <span className="notranslate block truncate text-[1rem] font-black uppercase tracking-[0.18em] text-primary" translate="no">
+                  INRI CHAIN
+                </span>
+                <span className="notranslate block truncate text-[0.78rem] font-bold text-white/58" translate="no">
+                  PoW · Chain 3777
+                </span>
+              </span>
+            </span>
           </SheetTitle>
-          <SheetDescription className="pt-2 text-left text-white/55">
-            Official routes for the INRI mainnet.
+          <SheetDescription className="pt-1 text-left text-[13px] leading-5 text-white/55">
+            Connect wallet and access the official INRI routes.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5">
-          <div className="flex flex-col gap-6 pb-24">
-            <div className="grid gap-3">
-              <InriLinkButton href={LIVE_WALLET_URL} external noTranslate>
-                INRI Wallet
-              </InriLinkButton>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
+          <div className="flex flex-col gap-5 pb-20">
+            <div className="rounded-[18px] border border-primary/22 bg-primary/[0.055] p-3 shadow-[0_16px_44px_rgba(0,0,0,0.22)]">
+              <ConnectWalletButton compact />
+              <p className="mt-3 text-[12px] font-semibold leading-5 text-white/48">
+                Use WalletConnect on mobile or browser wallets on desktop.
+              </p>
+            </div>
 
-              <InriLinkButton href={EXPLORER_URL} external variant="secondary" noTranslate>
-                Explorer
-              </InriLinkButton>
-
-              <div className="w-full min-w-0">
-                <ConnectWalletButton compact />
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              <SheetClose asChild>
+                <Link
+                  href={EXPLORER_URL}
+                  translate="no"
+                  className="notranslate inline-flex min-h-11 items-center justify-center rounded-[12px] border border-white/[0.14] bg-white/[0.035] px-3 text-center text-[13px] font-black text-white/86 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Explorer
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link
+                  href="/whitepaper"
+                  translate="no"
+                  className="notranslate inline-flex min-h-11 items-center justify-center rounded-[12px] border border-white/[0.14] bg-white/[0.035] px-3 text-center text-[13px] font-black text-white/86 transition hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white"
+                >
+                  Whitepaper
+                </Link>
+              </SheetClose>
             </div>
 
             <div className="grid gap-2">
               {mobileNavItems.map((item, index) => {
                 const active = isPathActive(pathname || '/', item.href)
                 return (
-                  <Link
-                    key={`${item.label}-${item.href}-${index}`}
-                    href={item.href}
-                    translate="no"
-                    className={`notranslate block w-full rounded-[10px] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
-                      active
-                        ? 'border-primary/50 bg-primary/[0.10] text-white'
-                        : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
-                    }`}
-                    aria-current={active ? 'page' : undefined}
-                    {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                  >
-                    {item.label}
-                  </Link>
+                  <SheetClose asChild key={`${item.label}-${item.href}-${index}`}>
+                    <Link
+                      href={item.href}
+                      translate="no"
+                      className={`notranslate block w-full rounded-[12px] border-[1.45px] px-4 py-3 text-sm font-semibold transition ${
+                        active
+                          ? 'border-primary/50 bg-primary/[0.10] text-white'
+                          : 'border-white/[0.14] bg-white/[0.03] text-white/84 hover:border-primary/50 hover:bg-primary/[0.10] hover:text-white'
+                      }`}
+                      aria-current={active ? 'page' : undefined}
+                      {...(item.external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                    >
+                      {item.label}
+                    </Link>
+                  </SheetClose>
                 )
               })}
             </div>
@@ -329,11 +358,14 @@ export function InriHeader() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1600px] px-4 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:gap-4 min-[1500px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[1500px]:min-h-[86px] min-[1500px]:py-0">
+      <div className="mx-auto max-w-[1600px] px-3 sm:px-8 xl:px-12 2xl:px-16">
+        <div className="grid min-h-[64px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 py-2 sm:min-h-[72px] sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:py-3 md:gap-4 min-[1500px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[1500px]:min-h-[86px] min-[1500px]:py-0">
           <div className="min-w-0 justify-self-start">
-            <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full">
-              <Logo showText size={48} />
+            <Link href="/" aria-label="INRI home" className="hidden min-w-0 items-center rounded-full min-[421px]:inline-flex">
+              <Logo showText size={44} />
+            </Link>
+            <Link href="/" aria-label="INRI home" className="inline-flex items-center rounded-full min-[421px]:hidden">
+              <Logo size={40} />
             </Link>
           </div>
 
@@ -344,6 +376,10 @@ export function InriHeader() {
               ))}
               <UtilityMenu />
             </nav>
+          </div>
+
+          <div className="flex min-w-0 items-center justify-self-end gap-2 sm:hidden">
+            <ConnectWalletButton iconOnly />
           </div>
 
           <div className="hidden min-w-0 items-center justify-self-end gap-2 sm:flex">
