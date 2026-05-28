@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { createAppKit } from '@reown/appkit/react'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 import { defineChain } from '@reown/appkit/networks'
@@ -15,9 +15,11 @@ export const INRI_REOWN_PROJECT_ID =
   process.env.NEXT_PUBLIC_REOWN_PROJECT_ID ||
   'bfc7a39282888507c8c1dca6d8b2dbfe'
 
+export const INRI_CAIP_NETWORK_ID = `eip155:${INRI_CHAIN_ID_DECIMAL}`
+
 export const inriAppKitNetwork = defineChain({
   id: INRI_CHAIN_ID_DECIMAL,
-  caipNetworkId: `eip155:${INRI_CHAIN_ID_DECIMAL}`,
+  caipNetworkId: INRI_CAIP_NETWORK_ID,
   chainNamespace: 'eip155',
   name: 'INRI CHAIN',
   nativeCurrency: {
@@ -37,7 +39,9 @@ export const inriAppKitNetwork = defineChain({
 let appKitStarted = false
 
 export function ensureInriAppKit() {
-  if (appKitStarted) return
+  // Critical for GitHub/Next static builds: never initialize AppKit while Next is
+  // prerendering pages on the server. The modal is browser-only.
+  if (typeof window === 'undefined' || appKitStarted) return
   appKitStarted = true
 
   createAppKit({
@@ -52,10 +56,10 @@ export function ensureInriAppKit() {
       icons: ['https://platform.inri.life/inri-logo.png'],
     },
     customRpcUrls: {
-      [`eip155:${INRI_CHAIN_ID_DECIMAL}`]: INRI_RPC_URL,
+      [INRI_CAIP_NETWORK_ID]: INRI_RPC_URL,
     },
-    chainImages: {
-      [INRI_CHAIN_ID_DECIMAL]: 'https://platform.inri.life/inri-logo.png',
+    networkImages: {
+      [INRI_CAIP_NETWORK_ID]: 'https://platform.inri.life/inri-logo.png',
     },
     themeMode: 'dark',
     themeVariables: {
@@ -66,15 +70,17 @@ export function ensureInriAppKit() {
     features: {
       analytics: true,
       email: false,
-      socials: [],
+      socials: false,
       swaps: false,
       onramp: false,
     },
   } as any)
 }
 
-ensureInriAppKit()
-
 export function ReownAppKitProvider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    ensureInriAppKit()
+  }, [])
+
   return <>{children}</>
 }

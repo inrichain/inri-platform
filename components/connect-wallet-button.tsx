@@ -16,8 +16,6 @@ import {
   type InriWalletConnector,
 } from '@/lib/inri-active-wallet'
 
-ensureInriAppKit()
-
 declare global {
   interface Window {
     __INRI_ACTIVE_WALLET__?: {
@@ -126,6 +124,10 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
   const [busy, setBusy] = useState(false)
   const switchAttemptRef = useRef('')
 
+  useEffect(() => {
+    ensureInriAppKit()
+  }, [])
+
   const chainIdHex = useMemo(() => toHexChainId(chainId as string | number | undefined), [chainId])
   const networkReady = chainIdHex.toLowerCase() === INRI_CHAIN_ID_HEX
   const connecting = busy || status === 'connecting' || status === 'reconnecting'
@@ -152,6 +154,7 @@ export function ConnectWalletButton({ compact = false }: { compact?: boolean }) 
 
   async function handleOpenWalletModal() {
     try {
+      ensureInriAppKit()
       setBusy(true)
       await open(
         isConnected
