@@ -97,7 +97,8 @@ function installInriAppKitCss() {
 
     @media (max-width: 640px) {
       w3m-modal {
-        --w3m-border-radius-master: 10px;
+        --w3m-border-radius-master: 12px;
+        --w3m-accent: #13a4ff;
       }
     }
   `
@@ -129,32 +130,6 @@ export function ensureInriAppKit() {
       [INRI_CAIP_NETWORK_ID]: [{ url: INRI_RPC_URL }],
       'eip155:1': [{ url: 'https://ethereum-rpc.publicnode.com' }],
       'eip155:137': [{ url: 'https://polygon-rpc.com' }],
-    },
-    universalProviderConfigOverride: {
-      defaultChain: INRI_CAIP_NETWORK_ID,
-      chains: {
-        eip155: [String(INRI_CHAIN_ID_DECIMAL), '1', '137'],
-      },
-      methods: {
-        eip155: [
-          'eth_sendTransaction',
-          'eth_signTransaction',
-          'eth_sign',
-          'personal_sign',
-          'eth_signTypedData',
-          'eth_signTypedData_v4',
-          'wallet_switchEthereumChain',
-          'wallet_addEthereumChain',
-        ],
-      },
-      events: {
-        eip155: ['chainChanged', 'accountsChanged', 'disconnect'],
-      },
-      rpcMap: {
-        [INRI_CHAIN_ID_DECIMAL]: INRI_RPC_URL,
-        1: 'https://ethereum-rpc.publicnode.com',
-        137: 'https://polygon-rpc.com',
-      },
     },
     chainImages: {
       [INRI_CHAIN_ID_DECIMAL]: 'https://platform.inri.life/inri-logo.png',

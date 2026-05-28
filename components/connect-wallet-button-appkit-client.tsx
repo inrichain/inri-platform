@@ -161,7 +161,7 @@ export function ConnectWalletButtonClient({ compact = false }: { compact?: boole
       await open(
         isConnected
           ? ({ view: 'Account' } as any)
-          : ({ view: 'Connect', namespace: 'eip155' } as any),
+          : ({ view: 'Connect' } as any),
       )
     } finally {
       window.setTimeout(() => setBusy(false), 350)

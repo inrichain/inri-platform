@@ -120,17 +120,19 @@ function looksLikeWalletConnect(provider: EthereumProvider) {
 
 async function forceWalletConnectInriChain(provider: WalletConnectLike) {
   try {
-    await provider.setDefaultChain?.(INRI_CHAIN_ID_DECIMAL)
+    // WalletConnect v2 expects CAIP-2 ids for chain-specific routing.
+    // Example: eip155:3777, not just 3777.
+    await provider.setDefaultChain?.(INRI_WALLETCONNECT_CHAIN_ID)
   } catch {
     try {
-      await provider.setDefaultChain?.(INRI_WALLETCONNECT_CHAIN_ID)
+      await provider.setDefaultChain?.(INRI_CHAIN_ID_DECIMAL)
     } catch {
       // Some provider builds do not expose setDefaultChain.
     }
   }
 
   try {
-    if (!provider.chainId) provider.chainId = INRI_CHAIN_ID_DECIMAL
+    if (!provider.chainId) provider.chainId = INRI_WALLETCONNECT_CHAIN_ID
   } catch {
     // chainId may be read-only in some builds.
   }
