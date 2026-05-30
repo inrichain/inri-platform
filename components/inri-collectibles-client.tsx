@@ -247,7 +247,7 @@ export function InriCollectiblesClient() {
 
   const featured = collectibleCountries.find((item) => chainData[item.countryId]?.exists) || collectibleCountries[0]
   const featuredInfo = chainData[featured.countryId]
-  const featuredImage = featuredInfo?.imageURI || imageUrlForCountry(featured.slug)
+  const featuredImage = imageUrlForCountry(featured.slug)
   const featuredNextSerial = featuredInfo?.nextSerial || 1
 
   return (
@@ -426,7 +426,7 @@ export function InriCollectiblesClient() {
             {filteredCountries.map((country) => {
               const info = chainData[country.countryId]
               const live = Boolean(info?.exists)
-              const imageUrl = info?.imageURI || imageUrlForCountry(country.slug)
+              const imageUrl = imageUrlForCountry(country.slug)
               const nextSerial = info?.nextSerial || 1
               const nextRarity = rarityForSerial(nextSerial)
               const nextReward = rewardForSerial(nextSerial)
