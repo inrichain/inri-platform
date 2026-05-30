@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { BrowserProvider, Contract, parseUnits } from 'ethers'
 import { ExternalLink, Loader2, Search, Sparkles, Wallet, Zap } from 'lucide-react'
 import {
@@ -39,28 +39,43 @@ const erc20Abi = [
   'function approve(address spender, uint256 amount) returns (bool)',
 ]
 
-function shortAddress(value?: string) {
-  if (!value || value === '0x0000000000000000000000000000000000000000') return '—'
-  return `${value.slice(0, 6)}...${value.slice(-4)}`
+const imageScaleBySlug: Record<string, number> = {
+  'china-dragon-noodles': 1.08,
+  'united-states-eagle-burger': 1.07,
+  'indonesia-komodo-boss': 1.16,
+  'japan-samurai-sushi-cat': 1.08,
 }
 
 function classNames(...items: Array<string | false | null | undefined>) {
   return items.filter(Boolean).join(' ')
 }
 
-function StatBox({ label, value, sub }: { label: string; value: string; sub: string }) {
+function shortAddress(value?: string) {
+  if (!value || value === '0x0000000000000000000000000000000000000000') return '—'
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
+function Pill({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,rgba(8,22,40,0.96),rgba(4,11,21,0.96))] p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/38">{label}</p>
-      <p className="mt-2 text-[2rem] font-black leading-none text-white">{value}</p>
+    <span className="rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200 sm:text-[11px]">
+      {children}
+    </span>
+  )
+}
+
+function StatCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,rgba(9,22,40,0.96),rgba(4,10,20,0.96))] p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/38">{label}</p>
+      <p className="mt-2 text-[1.95rem] font-black leading-none text-white">{value}</p>
       <p className="mt-1 text-sm text-white/56">{sub}</p>
     </div>
   )
 }
 
-function FeatureBox({ title, children }: { title: string; children: React.ReactNode }) {
+function InfoFeature({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4">
+    <div className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4 backdrop-blur-sm">
       <p className="text-base font-black text-white">{title}</p>
       <p className="mt-2 text-sm leading-7 text-white/68">{children}</p>
     </div>
@@ -163,6 +178,7 @@ export function InriCollectiblesClient() {
     return [...collectibleCountries]
       .filter((country) => {
         const live = chainData[country.countryId]?.exists
+
         if (liveOnly && !live) return false
         if (selectedRegion !== 'All' && country.region !== selectedRegion) return false
 
@@ -229,27 +245,21 @@ export function InriCollectiblesClient() {
   const featuredNextSerial = featuredInfo?.nextSerial || 1
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 xl:px-6">
+    <main className="mx-auto w-full max-w-[1480px] px-3 py-4 sm:px-5 sm:py-6 xl:px-6">
       <div className="space-y-6">
-        <section className="relative overflow-hidden rounded-[28px] border border-cyan-400/12 bg-[linear-gradient(180deg,#04111d,#02060d)] shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,164,255,0.18),transparent_28%),radial-gradient(circle_at_top_left,rgba(19,164,255,0.08),transparent_36%)]" />
+        <section className="relative overflow-hidden rounded-[30px] border border-cyan-400/12 bg-[linear-gradient(180deg,#04111d,#02060d)] shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,164,255,0.18),transparent_26%),radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_34%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(19,164,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.18)_1px,transparent_1px)] [background-size:52px_52px]" />
 
-          <div className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.1fr_0.9fr] xl:gap-7 xl:p-8">
+          <div className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.08fr_0.92fr] xl:gap-8 xl:p-8">
             <div className="flex flex-col justify-center">
               <div className="mb-4 flex flex-wrap gap-2">
-                <span className="rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200 sm:text-[11px]">
-                  Official INRI NFT Collection
-                </span>
-                <span className="rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200 sm:text-[11px]">
-                  Mint with iUSD
-                </span>
-                <span className="rounded-full border border-cyan-400/25 bg-cyan-400/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200 sm:text-[11px]">
-                  Free transfers after mint
-                </span>
+                <Pill>Official INRI NFT Collection</Pill>
+                <Pill>Mint with iUSD</Pill>
+                <Pill>Free transfers after mint</Pill>
               </div>
 
-              <h1 className="max-w-[800px] text-[2.4rem] font-black uppercase leading-[0.92] tracking-[-0.05em] text-white sm:text-[3.2rem] xl:text-[4.3rem]">
+              <h1 className="max-w-[790px] text-[2.5rem] font-black uppercase leading-[0.9] tracking-[-0.05em] text-white sm:text-[3.4rem] xl:text-[4.6rem]">
                 INRI World Meme Collectibles
               </h1>
 
@@ -259,22 +269,22 @@ export function InriCollectiblesClient() {
               </p>
 
               <div className="mt-5 grid gap-3 md:grid-cols-3">
-                <FeatureBox title="Get iUSD first">
-                  Use USDT on Polygon through the official INRI Bridge, then mint on INRI Chain.
-                </FeatureBox>
-                <FeatureBox title="Liquidity first">
-                  95% of each mint supports project liquidity operations, focused on iUSD / WINRI.
-                </FeatureBox>
-                <FeatureBox title="Country rewards">
-                  Each NFT mints country tokens by rarity. Holders may later create their own pools on INRISwap.
-                </FeatureBox>
+                <InfoFeature title="Get iUSD first">
+                  Use USDT on Polygon through the official INRI Bridge, then mint directly on INRI Chain.
+                </InfoFeature>
+                <InfoFeature title="Liquidity first">
+                  95% of each mint supports project liquidity operations focused on iUSD / WINRI.
+                </InfoFeature>
+                <InfoFeature title="Country rewards">
+                  Each NFT delivers country reward tokens by rarity. Holders may later open their own pools on INRISwap.
+                </InfoFeature>
               </div>
 
               <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-                <StatBox label="Mint price" value="5 iUSD" sub="Paid on INRI" />
-                <StatBox label="Initial split" value="95 / 5" sub="Liquidity / creator" />
-                <StatBox label="Genesis" value="#0" sub="NFT + 100 tokens" />
-                <StatBox label="Live" value={`${liveCount}/30`} sub={`${totalPublicMinted} public mints`} />
+                <StatCard label="Mint price" value="5 iUSD" sub="Paid on INRI" />
+                <StatCard label="Initial split" value="95 / 5" sub="Liquidity / creator" />
+                <StatCard label="Genesis" value="#0" sub="NFT + 100 tokens" />
+                <StatCard label="Live" value={`${liveCount}/30`} sub={`${totalPublicMinted} public mints`} />
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -297,25 +307,34 @@ export function InriCollectiblesClient() {
             </div>
 
             <div className="flex items-center justify-center xl:justify-end">
-              <div className="w-full max-w-[560px] rounded-[26px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(6,20,39,0.96),rgba(3,9,21,0.98))] p-4 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+              <div className="w-full max-w-[560px] rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(6,20,39,0.96),rgba(3,9,21,0.98))] p-4 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
                 <div className="rounded-[22px] border border-white/8 bg-[#010713] p-3">
-                  <div className="relative overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
-                    <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
-                      <span className="rounded-full bg-emerald-400 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950">
-                        Live
-                      </span>
-                      <span className="rounded-full bg-black/50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">
-                        {featured.countryCode}
+                  <div className="relative overflow-hidden rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
+                    <div className="absolute left-3 top-3 z-10">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-950" />
+                        Live now
                       </span>
                     </div>
                     <div className="relative aspect-square">
-                      <Image src={featuredImage} alt={`${featured.countryName} ${featured.memeName}`} fill className="object-contain p-5" sizes="(max-width: 1024px) 90vw, 500px" priority />
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `scale(${imageScaleBySlug[featured.slug] || 1.08})` }}>
+                        <div className="relative h-full w-full">
+                          <Image
+                            src={featuredImage}
+                            alt={`${featured.countryName} ${featured.memeName}`}
+                            fill
+                            className="object-contain p-5"
+                            sizes="(max-width: 1024px) 90vw, 500px"
+                            priority
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-3">
-                  <MiniMetric label="Country" value={featured.countryName} />
+                  <MiniMetric label="Country" value={`${featured.countryName} · ${featured.countryCode}`} />
                   <MiniMetric label="Rarity" value={rarityForSerial(featuredNextSerial)} />
                   <MiniMetric label="Next" value={`#${featuredNextSerial}`} />
                 </div>
@@ -391,15 +410,15 @@ export function InriCollectiblesClient() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Live mint board</p>
-              <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">Mintable countries</h2>
-              <p className="mt-1 text-sm text-white/58">Professional mint cards with direct token and contract access.</p>
+              <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">Premium collection cards</h2>
+              <p className="mt-1 text-sm text-white/58">Cleaner proportions, tighter layout, premium presentation and direct mint access.</p>
             </div>
             <div className="rounded-[16px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/72">
               Showing <span className="text-white">{filteredCountries.length}</span> countries • <span className="text-white">{liveCount}</span> live
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {filteredCountries.map((country) => {
               const info = chainData[country.countryId]
               const live = Boolean(info?.exists)
@@ -415,45 +434,52 @@ export function InriCollectiblesClient() {
               return (
                 <article
                   key={country.countryId}
-                  className="overflow-hidden rounded-[24px] border border-cyan-400/12 bg-[linear-gradient(180deg,rgba(7,19,35,0.98),rgba(3,8,16,0.98))] shadow-[0_16px_50px_rgba(0,0,0,0.25)]"
+                  className="overflow-hidden rounded-[24px] border border-cyan-400/12 bg-[linear-gradient(180deg,rgba(7,19,35,0.98),rgba(3,8,16,0.98))] shadow-[0_16px_50px_rgba(0,0,0,0.24)]"
                 >
                   <div className="p-3 pb-2">
                     <div className="relative overflow-hidden rounded-[20px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020814]">
-                      <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
+                      <div className="absolute left-3 top-3 z-10">
                         {live ? (
-                          <span className="rounded-full bg-emerald-400/95 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-950" />
                             Live
                           </span>
                         ) : (
-                          <span className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white/75">
+                          <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white/75">
                             Soon
                           </span>
                         )}
-                        <span className="rounded-full bg-black/45 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white">
-                          {country.countryCode}
-                        </span>
                       </div>
+
                       <div className="relative aspect-square">
-                        <Image
-                          src={imageUrl}
-                          alt={`${country.countryName} ${country.memeName}`}
-                          fill
-                          className="object-contain p-4"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
-                        />
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `scale(${imageScaleBySlug[country.slug] || 1.08})` }}>
+                          <div className="relative h-full w-full">
+                            <Image
+                              src={imageUrl}
+                              alt={`${country.countryName} ${country.memeName}`}
+                              fill
+                              className="object-contain p-4"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="px-4 pb-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-[1.15rem] font-black leading-tight text-white sm:text-[1.25rem]">{country.countryName}</h3>
-                        <p className="mt-1 text-[1.05rem] font-black text-cyan-300">{country.memeName}</p>
+                      <div className="min-w-0">
+                        <h3 className="text-[1.18rem] font-black leading-tight text-white sm:text-[1.28rem]">{country.countryName}</h3>
+                        <p className="mt-1 text-[1.03rem] font-black text-cyan-300">{country.memeName}</p>
+                        <div className="mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/62">
+                          {country.countryCode} • {country.region}
+                        </div>
                       </div>
-                      <div className="rounded-[16px] border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
+
+                      <div className="min-w-[78px] rounded-[16px] border border-white/10 bg-white/[0.04] px-3 py-2 text-center">
                         <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">Next</p>
-                        <p className="mt-1 text-[1.25rem] font-black text-white">#{nextSerial}</p>
+                        <p className="mt-1 text-[1.15rem] font-black text-white">#{nextSerial}</p>
                       </div>
                     </div>
 
@@ -481,12 +507,12 @@ export function InriCollectiblesClient() {
                       </div>
 
                       {live ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="mt-4 flex gap-2">
                           <Link
                             href={`${INRI_EXPLORER_URL}/token/${info.rewardToken}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 rounded-[12px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-white/82 transition hover:border-cyan-400/35 hover:text-white"
+                            className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[12px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-white/82 transition hover:border-cyan-400/35 hover:text-white"
                           >
                             Token
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -495,7 +521,7 @@ export function InriCollectiblesClient() {
                             href={`${INRI_EXPLORER_URL}/address/${INRI_COLLECTIBLES_CONTRACT}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 rounded-[12px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-white/82 transition hover:border-cyan-400/35 hover:text-white"
+                            className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[12px] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-white/82 transition hover:border-cyan-400/35 hover:text-white"
                           >
                             NFT contract
                             <ExternalLink className="h-3.5 w-3.5" />
