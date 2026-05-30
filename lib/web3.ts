@@ -1,15 +1,21 @@
 import type { BrowserProvider } from 'ethers'
 
-declare global {
-  interface Window {
-    ethereum?: {
-      request?: (args: { method: string; params?: unknown[] }) => Promise<unknown>
-    }
-  }
-}
-
 export const INRI_CHAIN_ID_DECIMAL = 3777
 export const INRI_CHAIN_ID_HEX = '0xec1'
+
+type EthereumProvider = {
+  request?: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+}
+
+function getEthereum(): EthereumProvider | undefined {
+  if (typeof window === 'undefined') return undefined
+
+  const maybeWindow = window as unknown as {
+    ethereum?: EthereumProvider
+  }
+
+  return maybeWindow.ethereum
+}
 
 export function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error
@@ -46,12 +52,14 @@ export async function isInriChain(provider: BrowserProvider): Promise<boolean> {
 }
 
 export async function switchToInriChain(): Promise<void> {
-  if (!window.ethereum?.request) {
+  const ethereum = getEthereum()
+
+  if (!ethereum?.request) {
     throw new Error('Wallet not found.')
   }
 
   try {
-    await window.ethereum.request({
+    await ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: INRI_CHAIN_ID_HEX }],
     })
@@ -59,7 +67,7 @@ export async function switchToInriChain(): Promise<void> {
     const err = error as { code?: number }
 
     if (err?.code === 4902) {
-      await window.ethereum.request({
+      await ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [
           {
@@ -75,6 +83,7 @@ export async function switchToInriChain(): Promise<void> {
           },
         ],
       })
+
       return
     }
 
