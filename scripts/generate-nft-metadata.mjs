@@ -4,18 +4,19 @@ import path from 'node:path'
 const PLATFORM_URL = 'https://platform.inri.life'
 const CONTRACT = '0xA1DD3d0809501080735543f9F65E2981d5ED9cD6'
 const CREATOR = '0x2bD38c91696aBa907DF9b2D4240F19e30161350C'
+const CACHE_VERSION = '20260530-wallet-fix'
 
 const countries = [
-  [1, 'China', 'CHN', 'Dragon Noodles', 'china-dragon-noodles', 'Asia', 'Street food dragon energy', 'Dragon fire'],
+  [1, 'China', 'CHN', 'Dragon Noodles', 'china-dragon-noodles-v2', 'Asia', 'Street food dragon energy', 'Dragon fire'],
   [2, 'United States', 'USA', 'Eagle Burger', 'united-states-eagle-burger', 'North America', 'Burger eagle collector', 'Stars & grill'],
   [3, 'Indonesia', 'IDN', 'Komodo Boss', 'indonesia-komodo-boss', 'Asia', 'Komodo island boss', 'Island roar'],
   [4, 'Japan', 'JPN', 'Samurai Sushi Cat', 'japan-samurai-sushi-cat', 'Asia', 'Sushi samurai cat', 'Neon katana'],
   [5, 'Taiwan', 'TWN', 'Boba Blast', 'taiwan-boba-blast', 'Asia', 'Boba-powered meme coin', 'Bubble pop'],
   [6, 'Spain', 'ESP', 'Fiesta Bull', 'spain-fiesta-bull', 'Europe', 'Fiesta bull energy', 'Red fiesta'],
   [7, 'Hong Kong', 'HKG', 'Neon Dim Sum', 'hong-kong-neon-dim-sum', 'Asia', 'Neon street dim sum', 'Cyber neon'],
-  [8, 'Portugal', 'PRT', 'Galo da Mata', 'portugal-galo-da-mata', 'Europe', 'Rooster legend', 'Azulejo gold'],
+  [8, 'Portugal', 'PRT', 'Galo da Nata', 'portugal-galo-da-nata', 'Europe', 'Rooster and pastel de nata meme collectible', 'Azulejo gold'],
   [9, 'Poland', 'POL', 'Pierogi Knight', 'poland-pierogi-knight', 'Europe', 'Pierogi armor knight', 'Steel dumpling'],
-  [10, 'Italy', 'ITA', 'Pizza Mafia', 'italy-pizza-mafia', 'Europe', 'Pizza boss collectible', 'Tomato gold'],
+  [10, 'Italy', 'ITA', 'Pizza Mafioso', 'italy-pizza-mafioso', 'Europe', 'Pizza mafioso meme collectible', 'Tomato gold'],
   [11, 'France', 'FRA', 'Croissant Pup', 'france-croissant-pup', 'Europe', 'Croissant puppy boss', 'Paris bakery'],
   [12, 'Switzerland', 'CHE', 'Alpine Cheese', 'switzerland-alpine-cheese', 'Europe', 'Alpine cheese collector', 'Swiss alpine'],
   [13, 'Singapore', 'SGP', 'Merlion Mob', 'singapore-merlion-mob', 'Asia', 'Merlion city boss', 'Marina shine'],
@@ -57,16 +58,18 @@ function reward(serial) {
 }
 
 const outDir = path.join(process.cwd(), 'public', 'api', 'nft', 'inri-world-meme')
+fs.rmSync(outDir, { recursive: true, force: true })
 fs.mkdirSync(outDir, { recursive: true })
 
 for (const [countryId, countryName, countryCode, memeName, slug, region, theme, accent] of countries) {
   for (let serial = 0; serial <= 500; serial += 1) {
     const tokenId = countryId * 100000 + serial
+    const currentRarity = rarity(serial)
     const data = {
-      name: `${countryName} ${memeName} #${serial}`,
+      name: `${countryName} ${memeName} #${serial} - ${currentRarity}`,
       description: `INRI World Meme Collectibles - ${countryName} ${memeName}. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher ${countryCode} reward tokens.`,
-      image: `${PLATFORM_URL}/nft-assets/countries/${slug}.png`,
-      external_url: `${PLATFORM_URL}/collectibles?country=${slug}&tokenId=${tokenId}`,
+      image: `${PLATFORM_URL}/nft-assets/countries/${slug}.png?v=${CACHE_VERSION}`,
+      external_url: `${PLATFORM_URL}/collectibles?country=${slug.replace('-v2', '')}&tokenId=${tokenId}`,
       background_color: '03070D',
       attributes: [
         { trait_type: 'Collection', value: 'INRI World Meme Collectibles' },
@@ -77,7 +80,7 @@ for (const [countryId, countryName, countryCode, memeName, slug, region, theme, 
         { trait_type: 'Theme', value: theme },
         { trait_type: 'Accent', value: accent },
         { trait_type: 'Serial', value: serial },
-        { trait_type: 'Rarity', value: rarity(serial) },
+        { trait_type: 'Rarity', value: currentRarity },
         { trait_type: 'Reward Token', value: countryCode },
         { trait_type: 'Reward Amount', value: reward(serial) },
         { trait_type: 'Contract', value: CONTRACT },
@@ -95,7 +98,7 @@ fs.writeFileSync(
     {
       name: 'INRI World Meme Collectibles',
       description: 'Official INRI Chain country meme NFT collection. Mint with iUSD and receive country reward tokens by rarity.',
-      image: `${PLATFORM_URL}/nft-assets/countries/china-dragon-noodles.png`,
+      image: `${PLATFORM_URL}/nft-assets/countries/china-dragon-noodles-v2.png?v=${CACHE_VERSION}`,
       external_link: `${PLATFORM_URL}/collectibles`,
       seller_fee_basis_points: 0,
       fee_recipient: CREATOR,
