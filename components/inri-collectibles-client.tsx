@@ -415,7 +415,7 @@ export function InriCollectiblesClient() {
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Live mint board</p>
               <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">Premium collection cards</h2>
-              <p className="mt-1 text-sm text-white/58">Cleaner proportions, tighter layout, premium presentation and direct mint access.</p>
+              <p className="mt-1 text-sm text-white/58">10 live countries synced • premium layout v28 • direct mint access.</p>
             </div>
             <div className="rounded-[16px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/72">
               Showing <span className="text-white">{filteredCountries.length}</span> countries • <span className="text-white">{liveCount}</span> live
