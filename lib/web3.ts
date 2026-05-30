@@ -83,7 +83,6 @@ export async function switchToInriChain(): Promise<void> {
           },
         ],
       })
-
       return
     }
 
