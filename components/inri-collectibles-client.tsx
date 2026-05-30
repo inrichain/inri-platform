@@ -308,8 +308,7 @@ export function InriCollectiblesClient() {
 
             <div className="flex items-center justify-center xl:justify-end">
               <div className="w-full max-w-[560px] rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(6,20,39,0.96),rgba(3,9,21,0.98))] p-4 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
-                <div className="rounded-[22px] border border-white/8 bg-[#010713] p-3">
-                  <div className="relative overflow-hidden rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
+                <div className="relative overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
                     <div className="absolute left-3 top-3 z-10">
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
                         <span className="h-1.5 w-1.5 rounded-full bg-slate-950" />
@@ -323,14 +322,13 @@ export function InriCollectiblesClient() {
                             src={featuredImage}
                             alt={`${featured.countryName} ${featured.memeName}`}
                             fill
-                            className="object-contain p-5"
+                            className="object-contain p-3"
                             sizes="(max-width: 1024px) 90vw, 500px"
                             priority
                           />
                         </div>
                       </div>
                     </div>
-                  </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-3">
@@ -436,8 +434,8 @@ export function InriCollectiblesClient() {
                   key={country.countryId}
                   className="overflow-hidden rounded-[24px] border border-cyan-400/12 bg-[linear-gradient(180deg,rgba(7,19,35,0.98),rgba(3,8,16,0.98))] shadow-[0_16px_50px_rgba(0,0,0,0.24)]"
                 >
-                  <div className="p-3 pb-2">
-                    <div className="relative overflow-hidden rounded-[20px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020814]">
+                  <div className="px-3 pt-3 pb-2">
+                    <div className="relative overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020814]">
                       <div className="absolute left-3 top-3 z-10">
                         {live ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
@@ -458,7 +456,7 @@ export function InriCollectiblesClient() {
                               src={imageUrl}
                               alt={`${country.countryName} ${country.memeName}`}
                               fill
-                              className="object-contain p-4"
+                              className="object-contain p-2.5"
                               sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
                             />
                           </div>
