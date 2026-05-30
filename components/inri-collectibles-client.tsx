@@ -44,6 +44,12 @@ const imageScaleBySlug: Record<string, number> = {
   'united-states-eagle-burger': 1.07,
   'indonesia-komodo-boss': 1.16,
   'japan-samurai-sushi-cat': 1.08,
+  'taiwan-boba-blast': 1.08,
+  'spain-fiesta-bull': 1.08,
+  'hong-kong-neon-dim-sum': 1.08,
+  'portugal-galo-da-nata': 1.08,
+  'poland-pierogi-knight': 1.08,
+  'italy-pizza-mafioso': 1.08,
 }
 
 function classNames(...items: Array<string | false | null | undefined>) {
