@@ -27,6 +27,7 @@ export const inriNavItems: InriNavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Wallets', href: '/wallets' },
   { label: 'Bridge', href: '/bridge/' },
+  { label: 'Collectibles', href: '/collectibles' },
   { label: 'Liquidity', href: '/liquidity/' },
   { label: 'P2P', href: '/p2p' },
   { label: 'Swap', href: '/swap' },
@@ -55,6 +56,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
       { label: 'Home', href: '/' },
       { label: 'INRI Wallet', href: LIVE_WALLET_URL, external: true },
       { label: 'iUSD Bridge', href: '/bridge/' },
+      { label: 'Collectibles', href: '/collectibles' },
       { label: 'Explorer', href: EXPLORER_URL, external: true },
       { label: 'Whitepaper', href: '/whitepaper' },
     ],
@@ -63,6 +65,7 @@ const footerGroups: { title: string; links: InriNavItem[] }[] = [
     title: 'Ecosystem',
     links: [
       { label: 'iUSD Bridge', href: '/bridge/' },
+      { label: 'Collectibles', href: '/collectibles' },
       { label: 'Liquidity Campaign', href: '/liquidity/' },
       { label: 'P2P', href: '/p2p' },
       { label: 'Swap', href: '/swap' },
