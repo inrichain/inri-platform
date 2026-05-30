@@ -400,5 +400,9 @@ export function rewardForSerial(serial: number) {
 }
 
 export function imageUrlForCountry(slug: string) {
+  return `/nft-assets/countries/${slug}.png`
+}
+
+export function absoluteImageUrlForCountry(slug: string) {
   return `${PLATFORM_URL}/nft-assets/countries/${slug}.png`
 }

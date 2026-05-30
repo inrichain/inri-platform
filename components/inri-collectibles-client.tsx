@@ -473,12 +473,12 @@ export function InriCollectiblesClient() {
                 INRI World Meme Collectibles
               </h1>
               <p className="mt-6 max-w-3xl text-base font-semibold leading-8 text-white/64 sm:text-lg">
-                Country meme NFTs on INRI Chain. Each country has 501 NFTs: the Genesis #0 goes to the creator, and #1 to #500 are public mints. Mint earlier to receive a lower serial, stronger rarity and more country reward tokens.
+                Country meme NFTs on INRI Chain created to help grow iUSD usage and liquidity. Each country has 501 NFTs: Genesis #0 goes to the creator, and #1 to #500 are public mints. Mint earlier to receive a lower serial, stronger rarity and more country reward tokens. Need iUSD? Bridge USDT from Polygon to iUSD first, then mint on INRI.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label="Mint price" value="5 iUSD" note="Paid on INRI Chain" />
-                <StatCard label="Initial split" value="95 / 5" note="Liquidity / creator" />
+                <StatCard label="Initial split" value="95 / 5" note="Liquidity wallet / creator" />
                 <StatCard label="Genesis" value="#0" note="Creator NFT + 100 tokens" />
                 <StatCard label="Live countries" value={`${liveCount}/30`} note={`${mintedCount} public mints`} />
               </div>
@@ -487,6 +487,12 @@ export function InriCollectiblesClient() {
                 <a href="#mint" className="inri-button-primary inline-flex items-center justify-center gap-2 px-6">
                   Explore collection <ArrowRight className="h-4 w-4" />
                 </a>
+                <Link
+                  href="/bridge/"
+                  className="inri-button-secondary inline-flex items-center justify-center gap-2 px-6"
+                >
+                  Get iUSD with USDT <ArrowRight className="h-4 w-4" />
+                </Link>
                 <Link
                   href={`${INRI_EXPLORER_URL}/address/${INRI_COLLECTIBLES_CONTRACT}`}
                   target="_blank"
@@ -536,12 +542,12 @@ export function InriCollectiblesClient() {
           <div className="rounded-[1.4rem] border border-amber-300/20 bg-amber-400/[0.055] p-5">
             <Coins className="h-7 w-7 text-amber-200" />
             <h2 className="mt-4 text-lg font-black text-white">Country reward tokens</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-white/58">Mint Brazil to receive BRA, China to receive CHN, India to receive IND. Lower serials receive higher token rewards.</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-white/58">Mint Brazil to receive BRA, China to receive CHN, India to receive IND. Lower serials receive higher token rewards. These country tokens have no transfer tax.</p>
           </div>
           <div className="rounded-[1.4rem] border border-emerald-300/20 bg-emerald-400/[0.055] p-5">
             <Globe2 className="h-7 w-7 text-emerald-200" />
             <h2 className="mt-4 text-lg font-black text-white">Built to expand</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-white/58">The contract supports adding new countries later. The page uses one clean country list so future collections can be added fast.</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-white/58">The contract supports adding new countries later. The page uses one clean country list so future countries and artwork can be added without changing the core NFT contract.</p>
           </div>
         </div>
       </section>
@@ -556,7 +562,7 @@ export function InriCollectiblesClient() {
             <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-white/58 sm:text-base">Every country follows the same rarity ladder. The NFT image is the country artwork, while the on-chain serial and metadata define rarity and reward.</p>
           </div>
           <div className="rounded-[1.2rem] border border-white/[0.10] bg-white/[0.04] p-4 text-sm font-semibold text-white/60 lg:max-w-md">
-            Mint payment: <span className="font-black text-white">5 iUSD</span>. Split: <span className="font-black text-white">4.75 iUSD</span> to liquidity and <span className="font-black text-white">0.25 iUSD</span> to creator/project.
+            Mint payment: <span className="font-black text-white">5 iUSD</span>. Split: <span className="font-black text-white">4.75 iUSD</span> to the project liquidity wallet and <span className="font-black text-white">0.25 iUSD</span> to creator/project.
           </div>
         </div>
 
@@ -576,7 +582,7 @@ export function InriCollectiblesClient() {
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div>
               <h2 className="text-3xl font-black uppercase tracking-[-0.035em] text-white sm:text-5xl">Collection countries</h2>
-              <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-white/58 sm:text-base">Start with China live on-chain, then add the remaining countries using the same contract. Missing images safely show a placeholder until you export the final square NFT artwork.</p>
+              <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-white/58 sm:text-base">Start with China live on-chain, then add the remaining countries using the same contract. Users need iUSD on INRI to mint; they can use the official bridge to convert USDT on Polygon into iUSD on INRI. Missing images safely show a placeholder until the final square NFT artwork is uploaded.</p>
             </div>
             <button
               type="button"
@@ -686,15 +692,15 @@ export function InriCollectiblesClient() {
               </div>
               <h2 className="mt-4 text-3xl font-black uppercase tracking-[-0.035em] text-white sm:text-5xl">Designed like a real marketplace front page.</h2>
               <p className="mt-4 text-sm font-semibold leading-7 text-white/58 sm:text-base">
-                Top NFT marketplaces emphasize collection discovery, filters, trait metadata, activity and clean buy actions. This V1 page starts with minting and rarity discovery; later we can add holder pages, activity, listings and marketplace trading.
+                This V1 starts with minting, rarity discovery and clean metadata. Each mint supports the iUSD ecosystem: 95% of the initial mint payment goes to the project liquidity wallet, while buyers receive the NFT and the country reward token tied to that NFT.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
                 ['1', 'Choose a country', 'Pick a country meme NFT from the collection grid.'],
-                ['2', 'Approve 5 iUSD', 'The page sends the iUSD approval to the verified NFT contract.'],
+                ['2', 'Get or approve 5 iUSD', 'Use the bridge to receive iUSD from Polygon USDT, then approve 5 iUSD for the verified NFT contract.'],
                 ['3', 'Mint the NFT', 'The contract mints the next serial number for that country.'],
-                ['4', 'Receive country tokens', 'The buyer receives country reward tokens based on rarity.'],
+                ['4', 'Receive country tokens', 'The buyer receives country reward tokens based on rarity. The token uses the same country identity and can later be used by the community in INRISwap liquidity.'],
               ].map(([step, title, text]) => (
                 <div key={step} className="rounded-[1.25rem] border border-white/[0.10] bg-white/[0.04] p-5">
                   <div className="inline-flex h-9 w-9 items-center justify-center rounded-[0.8rem] bg-primary text-sm font-black text-black">{step}</div>
@@ -708,10 +714,19 @@ export function InriCollectiblesClient() {
           <div className="mt-8 rounded-[1.5rem] border border-white/[0.10] bg-[linear-gradient(135deg,rgba(19,164,255,0.12),rgba(247,200,67,0.08),rgba(255,255,255,0.025))] p-5 sm:p-7">
             <h3 className="text-xl font-black text-white">Official V1 economics</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-4">
-              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Price</p><p className="mt-1 text-lg font-black text-white">5 iUSD</p></div>
-              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Creator fee</p><p className="mt-1 text-lg font-black text-white">5% initial only</p></div>
-              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Liquidity</p><p className="mt-1 text-lg font-black text-white">95% to project wallet</p></div>
-              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Transfers</p><p className="mt-1 text-lg font-black text-white">No NFT resale tax</p></div>
+              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Price</p><p className="mt-1 text-lg font-black text-white">5 iUSD</p><p className="mt-1 text-xs font-bold text-white/45">Use the bridge if you have USDT on Polygon.</p></div>
+              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Creator fee</p><p className="mt-1 text-lg font-black text-white">5% initial only</p><p className="mt-1 text-xs font-bold text-white/45">No future NFT transfer fee in V1.</p></div>
+              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Liquidity wallet</p><p className="mt-1 text-lg font-black text-white">95% of mints</p><p className="mt-1 text-xs font-bold text-white/45">Supports iUSD/WINRI and country liquidity reserves.</p></div>
+              <div className="rounded-[1rem] bg-black/30 p-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-white/38">Country tokens</p><p className="mt-1 text-lg font-black text-white">No token tax</p><p className="mt-1 text-xs font-bold text-white/45">Users can create INRISwap pools with iUSD.</p></div>
+            </div>
+            <div className="mt-5 rounded-[1rem] border border-primary/20 bg-black/30 p-4">
+              <p className="text-sm font-bold leading-7 text-white/62">
+                Liquidity plan: the 95% mint allocation is received by the project liquidity wallet. The project can use part of it for the main iUSD/WINRI liquidity and reserve part for country-token liquidity initiatives after a country reaches stronger demand or sells out. Country-token liquidity still needs the token side of the pair, so it can be created by holders, the creator, or community campaigns on INRISwap. Reward tokens are automatic; market price is created by community demand and liquidity, not promised profit.
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link href="/bridge/" className="inri-button-primary inline-flex items-center justify-center gap-2 px-5">Get iUSD with Polygon USDT <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/swap" className="inri-button-secondary inline-flex items-center justify-center gap-2 px-5">Open INRISwap <ExternalLink className="h-4 w-4" /></Link>
+              </div>
             </div>
           </div>
         </div>
