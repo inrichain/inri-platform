@@ -4,31 +4,19 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ExternalLink, Loader2, Search, Sparkles, Wallet, Zap } from 'lucide-react'
-import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers'
+import { BrowserProvider, Contract, parseUnits } from 'ethers'
 import {
   collectibleCountries,
-  getCountryByTokenId,
   imageUrlForCountry,
   INRI_COLLECTIBLES_CONTRACT,
   INRI_EXPLORER_URL,
   IUSD_ADDRESS,
-  PLATFORM_URL,
   rarityBands,
   rarityForSerial,
   rewardForSerial,
   type CollectibleCountry,
 } from '@/lib/inri-collectibles'
-import {
-  getErrorMessage,
-  isInriChain,
-  switchToInriChain,
-} from '@/lib/web3'
-
-declare global {
-  interface Window {
-    ethereum?: any
-  }
-}
+import { getErrorMessage, isInriChain, switchToInriChain } from '@/lib/web3'
 
 type CountryChainState = {
   exists: boolean
@@ -66,8 +54,6 @@ export function InriCollectiblesClient() {
   const [liveOnly, setLiveOnly] = useState(false)
 
   const [chainData, setChainData] = useState<Record<number, CountryChainState>>({})
-  const [loadingStates, setLoadingStates] = useState<Record<number, boolean>>({})
-  const [globalLoading, setGlobalLoading] = useState(true)
   const [mintingCountryId, setMintingCountryId] = useState<number | null>(null)
   const [status, setStatus] = useState<string>('')
 
@@ -85,10 +71,12 @@ export function InriCollectiblesClient() {
 
   async function loadCountry(country: CollectibleCountry) {
     try {
-      setLoadingStates((prev) => ({ ...prev, [country.countryId]: true }))
-      const provider = new BrowserProvider(window.ethereum ?? undefined)
-      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, provider)
+      if (!window.ethereum) {
+        throw new Error('Wallet provider not available')
+      }
 
+      const provider = new BrowserProvider(window.ethereum as any)
+      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, provider)
       const info = await contract.countryInfo(country.countryId)
 
       setChainData((prev) => ({
@@ -116,18 +104,11 @@ export function InriCollectiblesClient() {
           imageURI: imageUrlForCountry(country.slug),
         },
       }))
-    } finally {
-      setLoadingStates((prev) => ({ ...prev, [country.countryId]: false }))
     }
   }
 
   async function loadAllCountries() {
-    setGlobalLoading(true)
-    try {
-      await Promise.all(collectibleCountries.map((country) => loadCountry(country)))
-    } finally {
-      setGlobalLoading(false)
-    }
+    await Promise.all(collectibleCountries.map((country) => loadCountry(country)))
   }
 
   useEffect(() => {
@@ -158,7 +139,7 @@ export function InriCollectiblesClient() {
         throw new Error('No wallet found. Please open with MetaMask or another EVM wallet.')
       }
 
-      const provider = new BrowserProvider(window.ethereum)
+      const provider = new BrowserProvider(window.ethereum as any)
       await provider.send('eth_requestAccounts', [])
 
       if (!(await isInriChain(provider))) {
@@ -328,7 +309,7 @@ export function InriCollectiblesClient() {
                   'rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition',
                   selectedRegion === region
                     ? 'bg-cyan-400 text-slate-950'
-                    : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white'
+                    : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
                 )}
               >
                 {region}
@@ -342,7 +323,7 @@ export function InriCollectiblesClient() {
               'h-12 rounded-[16px] px-4 text-sm font-black transition',
               liveOnly
                 ? 'bg-emerald-400 text-slate-950'
-                : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white'
+                : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
             )}
           >
             {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
@@ -491,10 +472,7 @@ export function InriCollectiblesClient() {
         <h2 className="text-2xl font-black text-white sm:text-3xl">Rarity & reward structure</h2>
         <div className="mt-5 grid gap-3 lg:grid-cols-3">
           {rarityBands.map((item) => (
-            <div
-              key={item.label}
-              className={`rounded-[20px] border border-white/8 bg-gradient-to-br ${item.tone} p-4`}
-            >
+            <div key={item.label} className={`rounded-[20px] border border-white/8 bg-gradient-to-br ${item.tone} p-4`}>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-cyan-300" />
                 <p className="text-lg font-black text-white">{item.label}</p>
