@@ -56,6 +56,13 @@ const imageScaleBySlug: Record<string, number> = {
   'netherlands-bike-boss': 1.08,
   'brazil-samba-capy': 1.08,
   'australia-outback-roo': 1.08,
+  'germany-pretzel-boss': 1.08,
+  'bangladesh-rickshaw-tiger': 1.08,
+  'united-kingdom-tea-bulldog': 1.08,
+  'south-korea-kimchi-gamer': 1.08,
+  'russia-bear-boss': 1.08,
+  'india-masala-tiger': 1.08,
+  'liechtenstein-alpine-prince': 1.08,
 }
 
 function classNames(...items: Array<string | false | null | undefined>) {
