@@ -4,7 +4,7 @@ import path from 'node:path'
 const PLATFORM_URL = 'https://platform.inri.life'
 const CONTRACT = '0xA1DD3d0809501080735543f9F65E2981d5ED9cD6'
 const CREATOR = '0x2bD38c91696aBa907DF9b2D4240F19e30161350C'
-const CACHE_VERSION = '20260530-wallet-fix'
+const CACHE_VERSION = '20260531-countries-11-16'
 
 const countries = [
   [1, 'China', 'CHN', 'Dragon Noodles', 'china-dragon-noodles-v2', 'Asia', 'Street food dragon energy', 'Dragon fire'],
@@ -19,7 +19,7 @@ const countries = [
   [10, 'Italy', 'ITA', 'Pizza Mafioso', 'italy-pizza-mafioso', 'Europe', 'Pizza mafioso meme collectible', 'Tomato gold'],
   [11, 'France', 'FRA', 'Croissant Pup', 'france-croissant-pup', 'Europe', 'Croissant puppy boss', 'Paris bakery'],
   [12, 'Switzerland', 'CHE', 'Alpine Cheese', 'switzerland-alpine-cheese', 'Europe', 'Alpine cheese collector', 'Swiss alpine'],
-  [13, 'Singapore', 'SGP', 'Merlion Mob', 'singapore-merlion-mob', 'Asia', 'Merlion city boss', 'Marina shine'],
+  [13, 'Singapore', 'SGP', 'Merlion Mode', 'singapore-merlion-mode', 'Asia', 'Merlion city boss', 'Marina shine'],
   [14, 'Netherlands', 'NLD', 'Bike Boss', 'netherlands-bike-boss', 'Europe', 'Bike culture boss', 'Orange wheel'],
   [15, 'Brazil', 'BRA', 'Samba Capy', 'brazil-samba-capy', 'South America', 'Samba capybara meme', 'Carnival green'],
   [16, 'Australia', 'AUS', 'Outback Roo', 'australia-outback-roo', 'Oceania', 'Outback kangaroo boss', 'Desert jump'],
