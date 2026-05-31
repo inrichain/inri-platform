@@ -65,11 +65,12 @@ for (const [countryId, countryName, countryCode, memeName, slug, region, theme, 
   for (let serial = 0; serial <= 500; serial += 1) {
     const tokenId = countryId * 100000 + serial
     const currentRarity = rarity(serial)
+    const cleanSlug = slug.replace('-v2', '')
     const data = {
       name: `${countryName} ${memeName} #${serial} - ${currentRarity}`,
       description: `INRI World Meme Collectibles - ${countryName} ${memeName}. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher ${countryCode} reward tokens.`,
       image: `${PLATFORM_URL}/nft-assets/countries/${slug}.png?v=${CACHE_VERSION}`,
-      external_url: `${PLATFORM_URL}/collectibles?country=${slug.replace('-v2', '')}&tokenId=${tokenId}`,
+      external_url: `${PLATFORM_URL}/collectibles?country=${cleanSlug}&tokenId=${tokenId}`,
       background_color: '03070D',
       attributes: [
         { trait_type: 'Collection', value: 'INRI World Meme Collectibles' },
