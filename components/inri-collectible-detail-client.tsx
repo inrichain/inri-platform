@@ -114,7 +114,7 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
   const nextTokenId = country.countryId * 100000 + nextSerial
   const genesisTokenId = country.countryId * 100000
 
-  const pageUrl = useMemo(() => `https://platform.inri.life/collectibles/${country.slug}`, [country.slug])
+  const pageUrl = useMemo(() => `https://platform.inri.life/collectibles/${country.slug}/`, [country.slug])
   const shareText = useMemo(
     () =>
       `I picked ${country.countryName} ${country.memeName} on INRI World Meme Collectibles. Mint, gift or flex your country NFT and help support iUSD / WINRI liquidity.`,

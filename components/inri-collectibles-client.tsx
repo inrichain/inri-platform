@@ -468,7 +468,7 @@ export function InriCollectiblesClient() {
                         )}
                       </div>
 
-                      <Link href={`/collectibles/${country.slug}`} className="group block" aria-label={`Open ${country.countryName} ${country.memeName} page`}>
+                      <Link href={`/collectibles/${country.slug}/`} className="group block" aria-label={`Open ${country.countryName} ${country.memeName} page`}>
                         <div className="relative aspect-square">
                           <div className="absolute inset-0 flex items-center justify-center transition duration-300 group-hover:scale-[1.025]" style={{ transform: `scale(${imageScaleBySlug[country.slug] || 1.08})` }}>
                             <div className="relative h-full w-full">
@@ -554,7 +554,7 @@ export function InriCollectiblesClient() {
 
                     <div className="mt-4 grid gap-3">
                       <Link
-                        href={`/collectibles/${country.slug}`}
+                        href={`/collectibles/${country.slug}/`}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-cyan-400/20 bg-cyan-400/[0.06] px-4 py-3 text-sm font-black text-cyan-100 transition hover:border-cyan-300/45 hover:bg-cyan-400/[0.10]"
                       >
                         View country page
