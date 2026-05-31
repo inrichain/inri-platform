@@ -10,7 +10,11 @@ import {
   Copy,
   ExternalLink,
   Gift,
+  Instagram,
   Loader2,
+  Mail,
+  MessageCircle,
+  Send,
   Share2,
   ShieldCheck,
   Sparkles,
@@ -60,6 +64,53 @@ function classNames(...items: Array<string | false | null | undefined>) {
 function shortAddress(value?: string) {
   if (!value || value === ZERO_ADDRESS) return '—'
   return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
+function DiscordIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.078.037c-.211.375-.444.864-.608 1.249a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.249.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.579.099 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 13.94 13.94 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.011c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.128 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.04.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .031-.055c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.211 0 2.175 1.095 2.157 2.418 0 1.334-.955 2.419-2.157 2.419Zm7.975 0c-1.184 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.211 0 2.175 1.095 2.157 2.418 0 1.334-.946 2.419-2.157 2.419Z" />
+    </svg>
+  )
+}
+
+type ShareNetwork = {
+  label: string
+  sub: string
+  href?: string
+  icon: ReactNode
+  onClick?: () => void
+}
+
+function ShareNetworkButton({ item }: { item: ShareNetwork }) {
+  const content = (
+    <>
+      <span className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-white/10 bg-white/[0.055] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+        {item.icon}
+      </span>
+      <span className="min-w-0 text-left">
+        <span className="block truncate text-[12px] font-black text-white">{item.label}</span>
+        <span className="block truncate text-[10px] font-bold uppercase tracking-[0.12em] text-white/38">{item.sub}</span>
+      </span>
+    </>
+  )
+
+  const className =
+    'group relative inline-flex min-h-[58px] items-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.035] px-2.5 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-emerald-300/35 hover:bg-emerald-300/[0.07] hover:shadow-[0_0_24px_rgba(16,185,129,0.12)]'
+
+  if (item.href) {
+    return (
+      <Link href={item.href} target="_blank" rel="noreferrer" className={className}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <button type="button" onClick={item.onClick} className={className}>
+      {content}
+    </button>
+  )
 }
 
 function DetailStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -121,6 +172,9 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
     [country.countryName, country.memeName],
   )
   const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`
+  const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}`
+  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`
+  const emailShareUrl = `mailto:?subject=${encodeURIComponent(`INRI NFT: ${country.countryName} ${country.memeName}`)}&body=${encodeURIComponent(`${shareText}\n\n${pageUrl}`)}`
 
   async function loadCountry() {
     try {
@@ -310,23 +364,37 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
                   </Link>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    href={xShareUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/78 transition hover:border-cyan-400/35 hover:text-white"
-                  >
-                    <Share2 className="h-4 w-4" />
-                    Share
-                  </Link>
-                  <button
-                    onClick={copyPageLink}
-                    className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black text-white/78 transition hover:border-cyan-400/35 hover:text-white"
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    {copied ? 'Copied' : 'Copy'}
-                  </button>
+                <div className="rounded-[22px] border border-emerald-300/16 bg-[linear-gradient(135deg,rgba(4,28,23,0.72),rgba(5,13,24,0.72))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
+                    <div>
+                      <p className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
+                        </span>
+                        Live mint
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-white/48">Share, gift, flex and bring collectors to INRI.</p>
+                    </div>
+                    <span className="rounded-full border border-emerald-300/18 bg-emerald-300/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100">
+                      iUSD / WINRI
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {[
+                      { label: 'X', sub: 'Post', href: xShareUrl, icon: <span className="text-sm font-black">X</span> },
+                      { label: 'Telegram', sub: 'Share', href: telegramShareUrl, icon: <Send className="h-4 w-4" /> },
+                      { label: 'WhatsApp', sub: 'Send', href: whatsappShareUrl, icon: <MessageCircle className="h-4 w-4" /> },
+                      { label: 'Discord', sub: 'Community', href: 'https://discord.gg/VuUCSTYJNe', icon: <DiscordIcon className="h-4 w-4" /> },
+                      { label: 'Instagram', sub: 'Profile', href: 'https://www.instagram.com/inrichain/', icon: <Instagram className="h-4 w-4" /> },
+                      { label: 'Email', sub: 'Invite', href: emailShareUrl, icon: <Mail className="h-4 w-4" /> },
+                      { label: copied ? 'Copied' : 'Copy', sub: 'Link', onClick: copyPageLink, icon: copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" /> },
+                      { label: 'Flex', sub: 'NFT page', href: pageUrl, icon: <Share2 className="h-4 w-4" /> },
+                    ].map((item) => (
+                      <ShareNetworkButton key={`${item.label}-${item.sub}`} item={item} />
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -407,7 +475,7 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
             {country.countryName} {country.memeName} is part of the official INRI World Meme Collectibles set. Lower serials are scarcer, the country reward token is issued at mint, and the art is made to be displayed, gifted and shared.
           </p>
           <div className="mt-5 rounded-[18px] border border-cyan-300/14 bg-cyan-300/[0.055] p-4 text-sm leading-7 text-cyan-100/80">
-            Tip: after minting, share your NFT page on X and tag the community. Country culture + meme energy helps bring new users into the INRI ecosystem.
+            Tip: after minting, share your NFT page on X, Telegram, WhatsApp or Discord, use it as your profile flex and invite your country community into INRI.
           </div>
         </div>
 

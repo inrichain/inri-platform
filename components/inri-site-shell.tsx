@@ -441,8 +441,9 @@ function FooterSocialIcon({ link }: { link: SocialLink }) {
       rel="noreferrer"
       aria-label={link.label}
       title={link.label}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.025] text-white/68 transition-all hover:-translate-y-px hover:border-primary/35 hover:bg-primary/[0.08] hover:text-white"
+      className="group relative inline-flex aspect-square h-11 w-11 items-center justify-center rounded-[14px] border border-emerald-300/14 bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.14),rgba(255,255,255,0.035)_48%,rgba(255,255,255,0.02))] text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_28px_rgba(0,0,0,0.22)] transition-all hover:-translate-y-1 hover:border-emerald-300/45 hover:bg-emerald-300/10 hover:text-white hover:shadow-[0_0_26px_rgba(16,185,129,0.18)]"
     >
+      <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-300 opacity-0 shadow-[0_0_12px_rgba(52,211,153,0.95)] transition group-hover:opacity-100" />
       {link.icon}
     </Link>
   )
@@ -458,10 +459,22 @@ export function InriFooter() {
             <p className="mt-6 text-sm leading-7 text-white/56 sm:text-[15px]">
               INRI CHAIN official surface: wallet, explorer, mining, staking, token launch, P2P and championship routes from one network interface.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-2">
-              {socialLinks.map((link) => (
-                <FooterSocialIcon key={link.label} link={link} />
-              ))}
+            <div className="mt-7 rounded-[24px] border border-emerald-300/14 bg-[linear-gradient(135deg,rgba(3,18,28,0.94),rgba(2,7,14,0.94))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_18px_50px_rgba(0,0,0,0.28)]">
+              <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-emerald-200">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
+                  </span>
+                  Live community
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/34">Join / share</span>
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                {socialLinks.map((link) => (
+                  <FooterSocialIcon key={link.label} link={link} />
+                ))}
+              </div>
             </div>
             <div className="mt-8 h-px w-full bg-gradient-to-r from-primary/60 via-white/10 to-transparent" />
             <div className="mt-6 space-y-1.5 text-sm text-white/40">
