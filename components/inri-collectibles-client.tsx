@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BrowserProvider, Contract, parseUnits } from 'ethers'
-import { ExternalLink, Loader2, Search, Sparkles, Wallet, Zap } from 'lucide-react'
+import { ArrowRight, ExternalLink, Loader2, Search, Sparkles, Wallet, Zap } from 'lucide-react'
 import {
   collectibleCountries,
   imageUrlForCountry,
@@ -428,7 +428,7 @@ export function InriCollectiblesClient() {
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Live mint board</p>
               <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">Premium collection cards</h2>
-              <p className="mt-1 text-sm text-white/58">10 live countries synced • premium layout v28 • direct mint access.</p>
+              <p className="mt-1 text-sm text-white/58">30 country pages ready • premium mint access • profile-ready NFTs.</p>
             </div>
             <div className="rounded-[16px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/72">
               Showing <span className="text-white">{filteredCountries.length}</span> countries • <span className="text-white">{liveCount}</span> live
@@ -468,19 +468,24 @@ export function InriCollectiblesClient() {
                         )}
                       </div>
 
-                      <div className="relative aspect-square">
-                        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `scale(${imageScaleBySlug[country.slug] || 1.08})` }}>
-                          <div className="relative h-full w-full">
-                            <Image
-                              src={imageUrl}
-                              alt={`${country.countryName} ${country.memeName}`}
-                              fill
-                              className="object-contain p-2.5"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
-                            />
+                      <Link href={`/collectibles/${country.slug}`} className="group block" aria-label={`Open ${country.countryName} ${country.memeName} page`}>
+                        <div className="relative aspect-square">
+                          <div className="absolute inset-0 flex items-center justify-center transition duration-300 group-hover:scale-[1.025]" style={{ transform: `scale(${imageScaleBySlug[country.slug] || 1.08})` }}>
+                            <div className="relative h-full w-full">
+                              <Image
+                                src={imageUrl}
+                                alt={`${country.countryName} ${country.memeName}`}
+                                fill
+                                className="object-contain p-2.5"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
+                              />
+                            </div>
+                          </div>
+                          <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden rounded-[14px] border border-cyan-300/20 bg-black/55 px-3 py-2 text-center text-xs font-black uppercase tracking-[0.14em] text-cyan-100 opacity-0 backdrop-blur-md transition group-hover:opacity-100 sm:block">
+                            Open country page
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     </div>
                   </div>
 
@@ -547,7 +552,14 @@ export function InriCollectiblesClient() {
                       ) : null}
                     </div>
 
-                    <div className="mt-4">
+                    <div className="mt-4 grid gap-3">
+                      <Link
+                        href={`/collectibles/${country.slug}`}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-cyan-400/20 bg-cyan-400/[0.06] px-4 py-3 text-sm font-black text-cyan-100 transition hover:border-cyan-300/45 hover:bg-cyan-400/[0.10]"
+                      >
+                        View country page
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                       {live ? (
                         <button
                           onClick={() => handleMint(country)}
