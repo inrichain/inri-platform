@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BrowserProvider, Contract, parseUnits } from 'ethers'
-import { ArrowRight, ExternalLink, Loader2, Search, Sparkles, Wallet, Zap } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Coins, ExternalLink, Globe2, Loader2, RotateCw, Search, ShieldCheck, Sparkles, Wallet, Zap } from 'lucide-react'
 import {
   collectibleCountries,
   imageUrlForCountry,
@@ -63,6 +63,13 @@ const imageScaleBySlug: Record<string, number> = {
   'russia-bear-boss': 1.08,
   'india-masala-tiger': 1.08,
   'liechtenstein-alpine-prince': 1.08,
+  'vietnam-pho-rider': 1.08,
+  'new-zealand-kiwi-boss': 1.08,
+  'norway-fjord-viking': 1.08,
+  'turkiye-kebab-sultan': 1.08,
+  'slovakia-tatra-wolf': 1.08,
+  'united-arab-emirates-desert-falcon': 1.08,
+  'philippines-jeepney-star': 1.08,
 }
 
 function classNames(...items: Array<string | false | null | undefined>) {
@@ -88,6 +95,32 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub: st
       <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/38">{label}</p>
       <p className="mt-2 text-[1.95rem] font-black leading-none text-white">{value}</p>
       <p className="mt-1 text-sm text-white/56">{sub}</p>
+    </div>
+  )
+}
+
+function HeroStat({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
+  return (
+    <div className="group rounded-[18px] border border-cyan-300/12 bg-[linear-gradient(180deg,rgba(7,22,38,0.72),rgba(2,7,15,0.82))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md transition hover:border-cyan-300/32 hover:bg-cyan-300/[0.05]">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[15px] border border-cyan-300/14 bg-cyan-300/[0.06] text-cyan-300 shadow-[0_0_22px_rgba(20,184,255,0.10)]">{icon}</span>
+        <span>
+          <span className="block text-[1.45rem] font-black leading-none text-white">{value}</span>
+          <span className="mt-1 block text-xs font-semibold text-white/55">{label}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function HeroFeature({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
+  return (
+    <div className="flex gap-4 border-cyan-300/10 px-4 py-3 md:border-l first:md:border-l-0">
+      <span className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-cyan-400/[0.06] text-cyan-300">{icon}</span>
+      <span>
+        <span className="block text-base font-black text-cyan-300">{title}</span>
+        <span className="mt-1 block text-sm leading-6 text-white/58">{children}</span>
+      </span>
     </div>
   )
 }
@@ -139,8 +172,33 @@ export function InriCollectiblesClient() {
   const [chainData, setChainData] = useState<Record<number, CountryChainState>>({})
   const [mintingCountryId, setMintingCountryId] = useState<number | null>(null)
   const [status, setStatus] = useState('')
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0)
 
   const regions = useMemo(() => ['All', ...Array.from(new Set(collectibleCountries.map((item) => item.region)))], [])
+
+  const heroSlugs = useMemo(
+    () => [
+      'brazil-samba-capy',
+      'spain-fiesta-bull',
+      'france-croissant-pup',
+      'australia-outback-roo',
+      'japan-samurai-sushi-cat',
+      'singapore-merlion-mode',
+      'germany-pretzel-boss',
+      'new-zealand-kiwi-boss',
+      'china-dragon-noodles',
+      'united-states-eagle-burger',
+    ],
+    [],
+  )
+
+  const heroCountries = useMemo(() => {
+    const selected = heroSlugs
+      .map((slug) => collectibleCountries.find((country) => country.slug === slug))
+      .filter((country): country is CollectibleCountry => Boolean(country))
+
+    return selected.length ? selected : collectibleCountries.slice(0, 7)
+  }, [heroSlugs])
 
   const liveCount = useMemo(() => collectibleCountries.filter((item) => chainData[item.countryId]?.exists).length, [chainData])
 
@@ -192,6 +250,16 @@ export function InriCollectiblesClient() {
   useEffect(() => {
     loadAllCountries()
   }, [])
+
+  useEffect(() => {
+    if (heroCountries.length <= 1) return
+
+    const timer = window.setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % heroCountries.length)
+    }, 4200)
+
+    return () => window.clearInterval(timer)
+  }, [heroCountries.length])
 
   const filteredCountries = useMemo(() => {
     return [...collectibleCountries]
@@ -258,127 +326,185 @@ export function InriCollectiblesClient() {
     }
   }
 
-  const featured = collectibleCountries.find((item) => chainData[item.countryId]?.exists) || collectibleCountries[0]
+  const featured = heroCountries[activeHeroIndex % heroCountries.length] || collectibleCountries.find((item) => chainData[item.countryId]?.exists) || collectibleCountries[0]
   const featuredInfo = chainData[featured.countryId]
   const featuredImage = imageUrlForCountry(featured.slug)
   const featuredNextSerial = featuredInfo?.nextSerial || 1
+  const heroDisplayCountries = useMemo(() => {
+    if (!heroCountries.length) return []
+
+    return [-2, -1, 0, 1, 2].map((offset) => {
+      const index = (activeHeroIndex + offset + heroCountries.length) % heroCountries.length
+      return { country: heroCountries[index], offset }
+    })
+  }, [activeHeroIndex, heroCountries])
 
   return (
     <main className="mx-auto w-full max-w-[1480px] px-3 py-4 sm:px-5 sm:py-6 xl:px-6">
       <div className="space-y-6">
-        <section className="relative overflow-hidden rounded-[30px] border border-cyan-400/12 bg-[linear-gradient(180deg,#04111d,#02060d)] shadow-[0_25px_80px_rgba(0,0,0,0.22)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,164,255,0.18),transparent_26%),radial-gradient(circle_at_top_left,rgba(19,164,255,0.10),transparent_34%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(19,164,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(19,164,255,0.18)_1px,transparent_1px)] [background-size:52px_52px]" />
+        <section className="relative overflow-hidden rounded-[30px] border border-cyan-300/12 bg-[radial-gradient(circle_at_68%_25%,rgba(14,165,233,0.18),transparent_32%),linear-gradient(180deg,#04101c,#02050b_70%,#010309)] shadow-[0_32px_120px_rgba(0,0,0,0.34)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_35%,rgba(250,204,21,0.08),transparent_22%),radial-gradient(circle_at_42%_55%,rgba(20,184,255,0.14),transparent_30%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:58px_58px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/45 to-transparent" />
 
-          <div className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.08fr_0.92fr] xl:gap-8 xl:p-8">
-            <div className="flex flex-col justify-center">
-              <div className="mb-4 flex flex-wrap gap-2">
-                <Pill>Official INRI NFT Collection</Pill>
-                <Pill>Mint with iUSD</Pill>
-                <Pill>Free transfers after mint</Pill>
+          <div className="relative grid gap-7 px-4 pb-5 pt-7 sm:px-6 sm:pb-7 sm:pt-10 xl:grid-cols-[0.86fr_1.14fr] xl:gap-6 xl:px-10 xl:py-12">
+            <div className="relative z-10 flex flex-col justify-center">
+              <div className="mb-5 inline-flex w-fit items-center rounded-full border border-cyan-300/25 bg-cyan-300/[0.045] px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200 shadow-[0_0_28px_rgba(20,184,255,0.10)] sm:text-[11px]">
+                INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
 
-              <h1 className="max-w-[790px] text-[2.5rem] font-black uppercase leading-[0.9] tracking-[-0.05em] text-white sm:text-[3.4rem] xl:text-[4.6rem]">
-                INRI World Meme Collectibles
+              <h1 className="max-w-[760px] text-[2.7rem] font-black leading-[0.93] tracking-[-0.055em] text-white sm:text-[4rem] xl:text-[5.25rem]">
+                <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-200 bg-clip-text text-transparent">INRI</span>{' '}
+                World
+                <span className="block">Meme Collectibles</span>
               </h1>
 
-              <p className="mt-4 max-w-[760px] text-[15px] leading-7 text-white/74 sm:text-[17px]">
-                Country meme NFTs on INRI Chain. Each country has 501 NFTs: the Genesis #0 goes to the creator, and #1 to #500 are public mints.
-                Lower serials are rarer and receive more country reward tokens.
+              <p className="mt-5 max-w-[680px] text-base leading-8 text-white/72 sm:text-[1.1rem]">
+                Premium country-themed meme NFTs on INRI Chain. Mint, gift, flex and help strengthen{' '}
+                <span className="font-black text-cyan-300">iUSD / WINRI</span> liquidity.
               </p>
 
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
-                <InfoFeature title="Get iUSD first">
-                  Use USDT on Polygon through the official INRI Bridge, then mint directly on INRI Chain.
-                </InfoFeature>
-                <InfoFeature title="Liquidity first">
-                  95% of each mint supports project liquidity operations focused on iUSD / WINRI.
-                </InfoFeature>
-                <InfoFeature title="Country rewards">
-                  Each NFT delivers country reward tokens by rarity. Holders may later open their own pools on INRISwap.
-                </InfoFeature>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-                <StatCard label="Mint price" value="5 iUSD" sub="Paid on INRI" />
-                <StatCard label="Initial split" value="95 / 5" sub="Liquidity / creator" />
-                <StatCard label="Genesis" value="#0" sub="NFT + 100 tokens" />
-                <StatCard label="Live" value={`${liveCount}/30`} sub={`${totalPublicMinted} public mints`} />
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  href="https://platform.inri.life/bridge/"
-                  className="inline-flex items-center justify-center rounded-[16px] bg-gradient-to-r from-cyan-300 to-sky-500 px-5 py-3 text-sm font-black text-slate-950 transition hover:brightness-110"
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a
+                  href="#collection"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-cyan-300 to-sky-500 px-6 text-sm font-black text-slate-950 shadow-[0_14px_34px_rgba(14,165,233,0.26)] transition hover:-translate-y-0.5 hover:brightness-110"
                 >
-                  Get iUSD on Bridge
-                </Link>
+                  <Sparkles className="h-4 w-4" />
+                  Explore Collection
+                </a>
+                <a
+                  href="#collection"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-cyan-300/30 bg-cyan-300/[0.06] px-6 text-sm font-black text-white shadow-[0_0_26px_rgba(14,165,233,0.17)] transition hover:-translate-y-0.5 hover:bg-cyan-300/[0.10]"
+                >
+                  <Zap className="h-4 w-4" />
+                  Mint Now
+                </a>
                 <Link
                   href={`${INRI_EXPLORER_URL}/address/${INRI_COLLECTIBLES_CONTRACT}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.04] px-5 py-3 text-sm font-black text-white transition hover:border-cyan-400/40 hover:bg-cyan-400/[0.06]"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.035] px-6 text-sm font-black text-white/82 transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:text-white"
                 >
-                  View NFT Contract
                   <ExternalLink className="h-4 w-4" />
+                  View on Explorer
                 </Link>
+              </div>
+
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <HeroStat icon={<Globe2 className="h-5 w-5" />} value="30" label="Countries Live" />
+                <HeroStat icon={<Coins className="h-5 w-5" />} value="5 iUSD" label="Mint Price" />
+                <HeroStat icon={<Sparkles className="h-5 w-5" />} value="100" label="Country Tokens" />
+                <HeroStat icon={<ShieldCheck className="h-5 w-5" />} value="INRI" label="Chain" />
               </div>
             </div>
 
-            <div className="flex items-center justify-center xl:justify-end">
-              <div className="w-full max-w-[560px] rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(6,20,39,0.96),rgba(3,9,21,0.98))] p-4 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
-                <div className="relative overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
-                    <div className="absolute left-3 top-3 z-10">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-400/14 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.22)] backdrop-blur-md">
-                        <span className="relative flex h-2 w-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)]" />
-                        </span>
-                        Live now
-                      </span>
-                    </div>
-                    <div className="relative aspect-square">
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `scale(${imageScaleBySlug[featured.slug] || 1.08})` }}>
-                        <div className="relative h-full w-full">
-                          <Image
-                            src={featuredImage}
-                            alt={`${featured.countryName} ${featured.memeName}`}
-                            fill
-                            className="object-contain p-3"
-                            sizes="(max-width: 1024px) 90vw, 500px"
-                            priority
-                          />
-                        </div>
-                      </div>
-                    </div>
-                </div>
+            <div className="relative min-h-[440px] overflow-hidden rounded-[30px] border border-cyan-300/0 xl:min-h-[560px]">
+              <div className="absolute left-1/2 top-5 z-20 -translate-x-1/2 rounded-full border border-cyan-300/20 bg-black/38 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/78 shadow-[0_0_26px_rgba(14,165,233,0.16)] backdrop-blur-md">
+                <span className="inline-flex items-center gap-2">
+                  <RotateCw className="h-3.5 w-3.5 text-cyan-300" />
+                  Live rotating collection
+                </span>
+              </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  <MiniMetric label="Country" value={`${featured.countryName} · ${featured.countryCode}`} />
-                  <MiniMetric label="Rarity" value={rarityForSerial(featuredNextSerial)} />
-                  <MiniMetric label="Next" value={`#${featuredNextSerial}`} />
-                </div>
+              <div className="pointer-events-none absolute inset-x-[8%] bottom-[16%] h-[120px] rounded-[100%] border border-cyan-300/18 bg-cyan-300/[0.03] shadow-[0_0_55px_rgba(14,165,233,0.28),inset_0_0_40px_rgba(14,165,233,0.12)]" />
+              <div className="pointer-events-none absolute inset-x-[20%] bottom-[20%] h-[42px] rounded-[100%] bg-cyan-300/12 blur-2xl" />
 
-                <div className="mt-4 rounded-[18px] border border-white/8 bg-white/[0.03] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/40">Country token contract</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <code className="rounded bg-black/28 px-2 py-1 text-[11px] font-bold text-cyan-200 sm:text-[12px]">
-                      {featuredInfo?.rewardToken || 'Will appear after addCountry'}
-                    </code>
-                    {featuredInfo?.rewardToken ? (
+              <div className="absolute inset-0 flex items-center justify-center pt-8">
+                <div className="relative h-[330px] w-full max-w-[780px] sm:h-[390px] xl:h-[460px]">
+                  {heroDisplayCountries.map(({ country, offset }) => {
+                    const isCenter = offset === 0
+                    const positionClass =
+                      offset === -2
+                        ? 'left-[0%] top-[26%] z-10 w-[31%] -rotate-[8deg] opacity-65 blur-[0.2px]'
+                        : offset === -1
+                          ? 'left-[15%] top-[18%] z-20 w-[35%] -rotate-[5deg] opacity-85'
+                          : offset === 0
+                            ? 'left-[32%] top-[2%] z-40 w-[43%] rotate-0 opacity-100'
+                            : offset === 1
+                              ? 'left-[65%] top-[20%] z-20 w-[34%] rotate-[6deg] opacity-85'
+                              : 'left-[80%] top-[28%] z-10 w-[29%] rotate-[8deg] opacity-65 blur-[0.2px]'
+
+                    return (
                       <Link
-                        href={`${INRI_EXPLORER_URL}/token/${featuredInfo.rewardToken}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-black text-cyan-300 hover:text-cyan-200"
+                        key={`${country.slug}-${offset}`}
+                        href={`/collectibles/${country.slug}/`}
+                        className={classNames(
+                          'absolute block aspect-[1.28/1] -translate-x-1/2 rounded-[18px] transition-all duration-700 hover:z-50 hover:scale-[1.035]',
+                          positionClass,
+                        )}
+                        aria-label={`Open ${country.countryName} ${country.memeName}`}
                       >
-                        Open token
-                        <ExternalLink className="h-3.5 w-3.5" />
+                        <div className={classNames('relative h-full w-full overflow-hidden rounded-[18px] border bg-black shadow-[0_22px_70px_rgba(0,0,0,0.38)]', isCenter ? 'border-amber-300/55 shadow-[0_0_44px_rgba(251,191,36,0.20),0_28px_85px_rgba(0,0,0,0.44)]' : 'border-cyan-300/12')}>
+                          <Image
+                            src={imageUrlForCountry(country.slug)}
+                            alt={`${country.countryName} ${country.memeName}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 56vw, 520px"
+                            priority={isCenter}
+                          />
+                          {isCenter ? (
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/72 to-transparent p-3 text-center">
+                              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Featured now</p>
+                              <p className="mt-1 text-lg font-black text-white">{country.countryName} · {country.memeName}</p>
+                            </div>
+                          ) : null}
+                        </div>
                       </Link>
-                    ) : null}
-                  </div>
+                    )
+                  })}
                 </div>
               </div>
+
+              <div className="absolute bottom-9 left-1/2 z-30 flex -translate-x-1/2 items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveHeroIndex((prev) => (prev - 1 + heroCountries.length) % heroCountries.length)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-300/18 bg-black/38 text-cyan-200 backdrop-blur-md transition hover:border-cyan-300/42 hover:bg-cyan-300/[0.08]"
+                  aria-label="Previous featured NFT"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-2">
+                  {heroCountries.slice(0, 7).map((country, index) => (
+                    <button
+                      key={country.slug}
+                      type="button"
+                      onClick={() => setActiveHeroIndex(index)}
+                      className={classNames(
+                        'h-3 rounded-full transition-all',
+                        activeHeroIndex % heroCountries.length === index ? 'w-7 bg-cyan-300 shadow-[0_0_14px_rgba(34,211,238,0.8)]' : 'w-3 bg-white/22 hover:bg-white/42',
+                      )}
+                      aria-label={`Show ${country.countryName}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveHeroIndex((prev) => (prev + 1) % heroCountries.length)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-300/18 bg-black/38 text-cyan-200 backdrop-blur-md transition hover:border-cyan-300/42 hover:bg-cyan-300/[0.08]"
+                  aria-label="Next featured NFT"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative border-t border-cyan-300/10 px-4 py-5 sm:px-6 xl:px-10">
+            <div className="grid gap-3 rounded-[24px] border border-cyan-300/10 bg-black/18 p-4 backdrop-blur-sm md:grid-cols-4">
+              <HeroFeature icon={<Globe2 className="h-6 w-6" />} title="Global Meme Culture">
+                30 country-themed meme NFTs celebrating iconic vibes worldwide.
+              </HeroFeature>
+              <HeroFeature icon={<Sparkles className="h-6 w-6" />} title="Scarce & Limited">
+                Only 500 public NFTs per country. First come, first minted.
+              </HeroFeature>
+              <HeroFeature icon={<Coins className="h-6 w-6" />} title="Utility & Rewards">
+                Each NFT mints country tokens by rarity and serial.
+              </HeroFeature>
+              <HeroFeature icon={<ShieldCheck className="h-6 w-6" />} title="Secure & Transparent">
+                Built on INRI Chain: PoW, EVM compatible and on-chain.
+              </HeroFeature>
             </div>
           </div>
         </section>
@@ -426,7 +552,7 @@ export function InriCollectiblesClient() {
           </div>
         </section>
 
-        <section className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
+        <section id="collection" className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Live mint board</p>
