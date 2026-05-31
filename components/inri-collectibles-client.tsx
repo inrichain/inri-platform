@@ -50,6 +50,12 @@ const imageScaleBySlug: Record<string, number> = {
   'portugal-galo-da-nata': 1.08,
   'poland-pierogi-knight': 1.08,
   'italy-pizza-mafioso': 1.08,
+  'france-croissant-pup': 1.08,
+  'switzerland-alpine-cheese': 1.08,
+  'singapore-merlion-mode': 1.08,
+  'netherlands-bike-boss': 1.08,
+  'brazil-samba-capy': 1.08,
+  'australia-outback-roo': 1.08,
 }
 
 function classNames(...items: Array<string | false | null | undefined>) {
