@@ -4,7 +4,7 @@ import path from 'node:path'
 const PLATFORM_URL = 'https://platform.inri.life'
 const CONTRACT = '0xA1DD3d0809501080735543f9F65E2981d5ED9cD6'
 const CREATOR = '0x2bD38c91696aBa907DF9b2D4240F19e30161350C'
-const CACHE_VERSION = '20260531-countries-11-16'
+const CACHE_VERSION = '20260531-countries-17-23'
 
 const countries = [
   [1, 'China', 'CHN', 'Dragon Noodles', 'china-dragon-noodles-v2', 'Asia', 'Street food dragon energy', 'Dragon fire'],
@@ -26,7 +26,7 @@ const countries = [
   [17, 'Germany', 'DEU', 'Pretzel Boss', 'germany-pretzel-boss', 'Europe', 'Pretzel power boss', 'Bavarian gold'],
   [18, 'Bangladesh', 'BGD', 'Rickshaw Tiger', 'bangladesh-rickshaw-tiger', 'Asia', 'Rickshaw tiger rush', 'Dhaka speed'],
   [19, 'United Kingdom', 'GBR', 'Tea Bulldog', 'united-kingdom-tea-bulldog', 'Europe', 'Tea bulldog collector', 'Royal tea'],
-  [20, 'South Korea', 'KOR', 'Kimchi Champ', 'south-korea-kimchi-champ', 'Asia', 'Kimchi champ energy', 'K-wave red'],
+  [20, 'South Korea', 'KOR', 'Kimchi Gamer', 'south-korea-kimchi-gamer', 'Asia', 'Kimchi gamer energy', 'K-wave neon'],
   [21, 'Russia', 'RUS', 'Bear Boss', 'russia-bear-boss', 'Europe/Asia', 'Bear boss collectible', 'Ice bear'],
   [22, 'India', 'IND', 'Masala Tiger', 'india-masala-tiger', 'Asia', 'Masala tiger heat', 'Spice gold'],
   [23, 'Liechtenstein', 'LIE', 'Alpine Prince', 'liechtenstein-alpine-prince', 'Europe', 'Alpine prince collector', 'Mountain royal'],
