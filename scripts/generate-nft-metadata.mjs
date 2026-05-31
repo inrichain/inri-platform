@@ -70,7 +70,7 @@ for (const [countryId, countryName, countryCode, memeName, slug, region, theme, 
       name: `${countryName} ${memeName} #${serial} - ${currentRarity}`,
       description: `INRI World Meme Collectibles - ${countryName} ${memeName}. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher ${countryCode} reward tokens.`,
       image: `${PLATFORM_URL}/nft-assets/countries/${slug}.png?v=${CACHE_VERSION}`,
-      external_url: `${PLATFORM_URL}/collectibles?country=${cleanSlug}&tokenId=${tokenId}`,
+      external_url: `${PLATFORM_URL}/collectibles/${cleanSlug}?tokenId=${tokenId}`,
       background_color: '03070D',
       attributes: [
         { trait_type: 'Collection', value: 'INRI World Meme Collectibles' },
