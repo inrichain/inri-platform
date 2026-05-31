@@ -1,0 +1,8 @@
+{
+  "name": "INRI World Meme Collectibles",
+  "description": "Official INRI Chain country meme NFT collection. Mint with iUSD and receive country reward tokens by rarity.",
+  "image": "https://platform.inri.life/nft-assets/countries/china-dragon-noodles-v2.png?v=20260530-wallet-fix-2",
+  "external_link": "https://platform.inri.life/collectibles",
+  "seller_fee_basis_points": 0,
+  "fee_recipient": "0x2bD38c91696aBa907DF9b2D4240F19e30161350C"
+}

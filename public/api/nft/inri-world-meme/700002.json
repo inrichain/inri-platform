@@ -1,0 +1,57 @@
+{
+  "name": "Hong Kong Neon Dim Sum #2 - Legendary",
+  "description": "INRI World Meme Collectibles - Hong Kong Neon Dim Sum. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher HKG reward tokens.",
+  "image": "https://platform.inri.life/nft-assets/countries/hong-kong-neon-dim-sum.png?v=20260530-wallet-fix-2",
+  "external_url": "https://platform.inri.life/collectibles?country=hong-kong-neon-dim-sum&tokenId=700002",
+  "background_color": "03070D",
+  "attributes": [
+    {
+      "trait_type": "Collection",
+      "value": "INRI World Meme Collectibles"
+    },
+    {
+      "trait_type": "Country",
+      "value": "Hong Kong"
+    },
+    {
+      "trait_type": "Code",
+      "value": "HKG"
+    },
+    {
+      "trait_type": "Meme",
+      "value": "Neon Dim Sum"
+    },
+    {
+      "trait_type": "Region",
+      "value": "Asia"
+    },
+    {
+      "trait_type": "Theme",
+      "value": "Neon street dim sum"
+    },
+    {
+      "trait_type": "Accent",
+      "value": "Cyber neon"
+    },
+    {
+      "trait_type": "Serial",
+      "value": 2
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Legendary"
+    },
+    {
+      "trait_type": "Reward Token",
+      "value": "HKG"
+    },
+    {
+      "trait_type": "Reward Amount",
+      "value": "100"
+    },
+    {
+      "trait_type": "Contract",
+      "value": "0xA1DD3d0809501080735543f9F65E2981d5ED9cD6"
+    }
+  ]
+}

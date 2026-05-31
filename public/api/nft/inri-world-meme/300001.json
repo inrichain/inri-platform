@@ -1,0 +1,57 @@
+{
+  "name": "Indonesia Komodo Boss #1 - Legendary",
+  "description": "INRI World Meme Collectibles - Indonesia Komodo Boss. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher IDN reward tokens.",
+  "image": "https://platform.inri.life/nft-assets/countries/indonesia-komodo-boss.png?v=20260530-wallet-fix-2",
+  "external_url": "https://platform.inri.life/collectibles?country=indonesia-komodo-boss&tokenId=300001",
+  "background_color": "03070D",
+  "attributes": [
+    {
+      "trait_type": "Collection",
+      "value": "INRI World Meme Collectibles"
+    },
+    {
+      "trait_type": "Country",
+      "value": "Indonesia"
+    },
+    {
+      "trait_type": "Code",
+      "value": "IDN"
+    },
+    {
+      "trait_type": "Meme",
+      "value": "Komodo Boss"
+    },
+    {
+      "trait_type": "Region",
+      "value": "Asia"
+    },
+    {
+      "trait_type": "Theme",
+      "value": "Komodo island boss"
+    },
+    {
+      "trait_type": "Accent",
+      "value": "Island roar"
+    },
+    {
+      "trait_type": "Serial",
+      "value": 1
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Legendary"
+    },
+    {
+      "trait_type": "Reward Token",
+      "value": "IDN"
+    },
+    {
+      "trait_type": "Reward Amount",
+      "value": "100"
+    },
+    {
+      "trait_type": "Contract",
+      "value": "0xA1DD3d0809501080735543f9F65E2981d5ED9cD6"
+    }
+  ]
+}

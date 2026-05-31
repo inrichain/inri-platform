@@ -1,0 +1,57 @@
+{
+  "name": "United States Eagle Burger #0 - Genesis Creator",
+  "description": "INRI World Meme Collectibles - United States Eagle Burger. Country meme NFT minted on INRI Chain. Lower serials have higher rarity and higher USA reward tokens.",
+  "image": "https://platform.inri.life/nft-assets/countries/united-states-eagle-burger.png?v=20260530-wallet-fix-2",
+  "external_url": "https://platform.inri.life/collectibles?country=united-states-eagle-burger&tokenId=200000",
+  "background_color": "03070D",
+  "attributes": [
+    {
+      "trait_type": "Collection",
+      "value": "INRI World Meme Collectibles"
+    },
+    {
+      "trait_type": "Country",
+      "value": "United States"
+    },
+    {
+      "trait_type": "Code",
+      "value": "USA"
+    },
+    {
+      "trait_type": "Meme",
+      "value": "Eagle Burger"
+    },
+    {
+      "trait_type": "Region",
+      "value": "North America"
+    },
+    {
+      "trait_type": "Theme",
+      "value": "Burger eagle collector"
+    },
+    {
+      "trait_type": "Accent",
+      "value": "Stars & grill"
+    },
+    {
+      "trait_type": "Serial",
+      "value": 0
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Genesis Creator"
+    },
+    {
+      "trait_type": "Reward Token",
+      "value": "USA"
+    },
+    {
+      "trait_type": "Reward Amount",
+      "value": "100"
+    },
+    {
+      "trait_type": "Contract",
+      "value": "0xA1DD3d0809501080735543f9F65E2981d5ED9cD6"
+    }
+  ]
+}
