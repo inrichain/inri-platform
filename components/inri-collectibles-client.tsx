@@ -329,8 +329,11 @@ export function InriCollectiblesClient() {
               <div className="w-full max-w-[560px] rounded-[28px] border border-cyan-400/14 bg-[linear-gradient(180deg,rgba(6,20,39,0.96),rgba(3,9,21,0.98))] p-4 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
                 <div className="relative overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020812]">
                     <div className="absolute left-3 top-3 z-10">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-950" />
+                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-400/14 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.22)] backdrop-blur-md">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)]" />
+                        </span>
                         Live now
                       </span>
                     </div>
@@ -457,8 +460,11 @@ export function InriCollectiblesClient() {
                     <div className="relative overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.08),transparent_55%),#020814]">
                       <div className="absolute left-3 top-3 z-10">
                         {live ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-950" />
+                          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-400/14 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.22)] backdrop-blur-md">
+                            <span className="relative flex h-2 w-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
+                              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)]" />
+                            </span>
                             Live
                           </span>
                         ) : (

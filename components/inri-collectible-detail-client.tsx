@@ -292,6 +292,21 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
           <div className="space-y-5">
             <div className="overflow-hidden rounded-[28px] border border-white/10 bg-black/24 p-3 shadow-[0_22px_70px_rgba(0,0,0,0.36)]">
               <div className="relative overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(20,164,255,0.12),transparent_50%),#020813]">
+                <div className="absolute left-4 top-4 z-20">
+                  {live ? (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-400/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100 shadow-[0_0_26px_rgba(16,185,129,0.28),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.95)]" />
+                      </span>
+                      Live mint
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.08] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/70 backdrop-blur-md">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
                 <Image
                   src={imageUrl}
                   alt={`${country.countryName} ${country.memeName}`}
@@ -314,9 +329,19 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
           <aside className="flex flex-col justify-center lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-[28px] border border-cyan-400/16 bg-[linear-gradient(180deg,rgba(5,18,33,0.96),rgba(2,7,15,0.98))] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.32)] sm:p-6">
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-emerald-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950">
-                  {live ? 'Live mint' : 'Coming soon'}
-                </span>
+                {live ? (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-400/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 shadow-[0_0_22px_rgba(16,185,129,0.2)]">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-80" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)]" />
+                    </span>
+                    Live mint
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/70">
+                    Coming soon
+                  </span>
+                )}
                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/70">
                   {country.region}
                 </span>
