@@ -356,15 +356,15 @@ export function InriCollectiblesClient() {
   return (
     <main className="w-full overflow-hidden bg-[#02070d]">
       <div className="space-y-0">
-        <section className="relative isolate min-h-[860px] overflow-hidden bg-[#020711] lg:min-h-[900px]">
+        <section className="relative isolate min-h-[800px] overflow-hidden bg-[#020711] lg:min-h-[840px]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_64%_20%,rgba(34,211,238,0.32),transparent_25%),radial-gradient(circle_at_82%_35%,rgba(59,130,246,0.23),transparent_30%),radial-gradient(circle_at_30%_58%,rgba(6,182,212,0.11),transparent_36%),linear-gradient(180deg,#061b2b_0%,#020811_53%,#010309_100%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:54px_54px]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_47%_18%,rgba(56,189,248,0.60)_0_1px,transparent_2px),radial-gradient(circle_at_57%_12%,rgba(125,211,252,0.44)_0_1px,transparent_2px),radial-gradient(circle_at_72%_22%,rgba(56,189,248,0.40)_0_1px,transparent_2px),radial-gradient(circle_at_86%_36%,rgba(56,189,248,0.36)_0_1px,transparent_2px),radial-gradient(circle_at_61%_61%,rgba(14,165,233,0.30)_0_1px,transparent_2px),radial-gradient(circle_at_94%_18%,rgba(255,255,255,0.24)_0_1px,transparent_2px)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-[#02070d] via-[#02070d]/88 to-transparent" />
 
-          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 px-5 pb-8 pt-12 sm:px-8 sm:pt-14 lg:grid-cols-[minmax(430px,0.41fr)_minmax(0,0.59fr)] lg:px-12 lg:pt-16 xl:px-16 2xl:px-20">
-            <div className="relative z-30 flex min-h-[610px] flex-col justify-center lg:min-h-[720px] lg:pb-24 xl:pb-28">
+          <div className="relative mx-auto grid w-full max-w-[1720px] grid-cols-1 px-5 pb-8 pt-12 sm:px-8 sm:pt-14 lg:grid-cols-[minmax(430px,0.41fr)_minmax(0,0.59fr)] lg:px-12 lg:pt-16 xl:px-16 2xl:px-20">
+            <div className="relative z-30 flex min-h-[610px] flex-col justify-center lg:min-h-[660px] lg:pb-20 xl:pb-24">
               <div className="mb-6 inline-flex w-fit items-center rounded-full border border-cyan-300/32 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.23em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.13)] sm:text-[11px]">
                 INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
@@ -403,7 +403,7 @@ export function InriCollectiblesClient() {
                   href={`${INRI_EXPLORER_URL}/address/${INRI_COLLECTIBLES_CONTRACT}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.04] px-7 text-sm font-black text-white/84 transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:text-white"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-white/12 bg-white/[0.025] px-7 text-sm font-black text-white/84 transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:text-white"
                 >
                   <ExternalLink className="h-4 w-4" />
                   View on Explorer
@@ -418,7 +418,7 @@ export function InriCollectiblesClient() {
               </div>
             </div>
 
-            <div className="relative z-20 min-h-[520px] overflow-visible lg:min-h-[720px]">
+            <div className="relative z-20 min-h-[520px] overflow-visible lg:min-h-[660px]">
               <div className="absolute left-1/2 top-4 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/52 px-4 py-2 text-[10px] font-black uppercase tracking-[0.21em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-7 sm:text-[11px]">
                 <span className="inline-flex items-center gap-2">
                   <RotateCw className="h-3.5 w-3.5 animate-spin text-cyan-300 [animation-duration:4s]" />
@@ -529,7 +529,7 @@ export function InriCollectiblesClient() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[1760px] px-5 pb-10 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
+          <div className="relative mx-auto w-full max-w-[1720px] px-5 pb-10 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
             <div className="grid gap-4 rounded-[24px] border border-cyan-300/14 bg-black/28 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_70px_rgba(0,0,0,0.24)] backdrop-blur-md lg:grid-cols-[270px_1fr]">
               <div className="flex flex-col justify-center rounded-[18px] border border-cyan-300/10 bg-cyan-300/[0.03] p-4">
                 <p className="text-xl font-black text-cyan-300">Featured Countries</p>
@@ -552,7 +552,7 @@ export function InriCollectiblesClient() {
                       key={country.slug}
                       className="group grid grid-cols-[92px_1fr] gap-3 rounded-[16px] border border-white/9 bg-white/[0.025] p-2 transition hover:-translate-y-0.5 hover:border-cyan-300/34 hover:bg-cyan-300/[0.045] xl:grid-cols-[108px_1fr]"
                     >
-                      <div className="relative aspect-square overflow-hidden rounded-[12px] bg-transparent shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+                      <div className="relative aspect-square overflow-hidden rounded-[12px] bg-transparent shadow-none">
                         <Image
                           src={imageUrlForCountry(country.slug)}
                           alt={`${country.countryName} ${country.memeName}`}
@@ -592,7 +592,7 @@ export function InriCollectiblesClient() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search country, code or meme..."
-                className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
+                className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.025] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
               />
             </div>
 
@@ -605,7 +605,7 @@ export function InriCollectiblesClient() {
                     'rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition',
                     selectedRegion === region
                       ? 'bg-cyan-400 text-slate-950'
-                      : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
+                      : 'border border-white/10 bg-white/[0.025] text-white/65 hover:border-cyan-400/35 hover:text-white',
                   )}
                 >
                   {region}
@@ -619,7 +619,7 @@ export function InriCollectiblesClient() {
                 'h-12 rounded-[16px] px-4 text-sm font-black transition',
                 liveOnly
                   ? 'bg-emerald-400 text-slate-950'
-                  : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
+                  : 'border border-white/10 bg-white/[0.025] text-white/72 hover:border-emerald-400/35 hover:text-white',
               )}
             >
               {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
@@ -701,12 +701,12 @@ export function InriCollectiblesClient() {
                       <div className="min-w-0">
                         <h3 className="text-[1.18rem] font-black leading-tight text-white sm:text-[1.28rem]">{country.countryName}</h3>
                         <p className="mt-1 text-[1.03rem] font-black text-cyan-300">{country.memeName}</p>
-                        <div className="mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/62">
+                        <div className="mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/[0.025] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white/62">
                           {country.countryCode} • {country.region}
                         </div>
                       </div>
 
-                      <div className="min-w-[78px] rounded-[16px] border border-white/10 bg-white/[0.04] px-3 py-2 text-center">
+                      <div className="min-w-[78px] rounded-[16px] border border-white/10 bg-white/[0.025] px-3 py-2 text-center">
                         <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">Next</p>
                         <p className="mt-1 text-[1.15rem] font-black text-white">#{nextSerial}</p>
                       </div>
