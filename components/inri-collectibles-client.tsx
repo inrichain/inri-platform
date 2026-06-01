@@ -357,30 +357,30 @@ export function InriCollectiblesClient() {
     <main className="w-full overflow-hidden bg-[#02070d]">
       <div className="space-y-0">
         <section className="relative isolate overflow-hidden bg-[#020711]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgba(14,165,233,0.30),transparent_28%),radial-gradient(circle_at_87%_38%,rgba(30,64,175,0.18),transparent_30%),radial-gradient(circle_at_36%_58%,rgba(6,182,212,0.10),transparent_38%),linear-gradient(180deg,#061b2b_0%,#020811_52%,#010309_100%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(20,184,255,0.17)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.17)_1px,transparent_1px)] [background-size:56px_56px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_46%_18%,rgba(56,189,248,0.44)_0_1px,transparent_2px),radial-gradient(circle_at_58%_13%,rgba(125,211,252,0.35)_0_1px,transparent_2px),radial-gradient(circle_at_80%_30%,rgba(56,189,248,0.33)_0_1px,transparent_2px),radial-gradient(circle_at_59%_58%,rgba(14,165,233,0.24)_0_1px,transparent_2px),radial-gradient(circle_at_94%_20%,rgba(255,255,255,0.22)_0_1px,transparent_2px)]" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/45 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#02070d] via-[#02070d]/82 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(14,165,233,0.34),transparent_25%),radial-gradient(circle_at_84%_38%,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_32%_56%,rgba(6,182,212,0.11),transparent_36%),linear-gradient(180deg,#061b2b_0%,#020811_54%,#010309_100%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.17] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:56px_56px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_47%_18%,rgba(56,189,248,0.54)_0_1px,transparent_2px),radial-gradient(circle_at_57%_13%,rgba(125,211,252,0.42)_0_1px,transparent_2px),radial-gradient(circle_at_73%_22%,rgba(56,189,248,0.42)_0_1px,transparent_2px),radial-gradient(circle_at_86%_36%,rgba(56,189,248,0.35)_0_1px,transparent_2px),radial-gradient(circle_at_61%_61%,rgba(14,165,233,0.26)_0_1px,transparent_2px),radial-gradient(circle_at_94%_18%,rgba(255,255,255,0.24)_0_1px,transparent_2px)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#02070d] via-[#02070d]/84 to-transparent" />
 
-          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-0 px-5 pb-8 pt-12 sm:px-8 sm:pt-14 lg:min-h-[760px] lg:grid-cols-[minmax(430px,0.41fr)_minmax(0,0.59fr)] lg:px-12 lg:pt-16 xl:min-h-[790px] xl:px-16 2xl:px-20">
-            <div className="relative z-30 flex flex-col justify-center lg:pb-32 xl:pb-36">
+          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-0 px-5 pb-7 pt-12 sm:px-8 sm:pt-14 lg:min-h-[690px] lg:grid-cols-[minmax(430px,0.42fr)_minmax(0,0.58fr)] lg:px-12 lg:pt-15 xl:min-h-[720px] xl:px-16 2xl:px-20">
+            <div className="relative z-30 flex flex-col justify-center lg:pb-24 xl:pb-28">
               <div className="mb-6 inline-flex w-fit items-center rounded-full border border-cyan-300/32 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.23em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.13)] sm:text-[11px]">
                 INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
 
-              <h1 className="max-w-[860px] text-[3.55rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5.25rem] lg:text-[5.05rem] xl:text-[6.2rem] 2xl:text-[7.1rem]">
+              <h1 className="max-w-[850px] text-[3.35rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5rem] lg:text-[4.85rem] xl:text-[5.9rem] 2xl:text-[6.7rem]">
                 <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-100 bg-clip-text text-transparent">INRI</span>{' '}
                 World
                 <span className="block">Meme Collectibles</span>
               </h1>
 
-              <p className="mt-6 max-w-[740px] text-base font-semibold leading-8 text-white/75 sm:text-[1.12rem] xl:text-[1.28rem]">
+              <p className="mt-6 max-w-[720px] text-base font-semibold leading-8 text-white/75 sm:text-[1.08rem] xl:text-[1.22rem]">
                 Mint unique country meme NFTs on INRI Chain. Power the future by strengthening{' '}
                 <span className="font-black text-cyan-300">iUSD / WINRI</span> liquidity.
               </p>
 
-              <div className="mt-4 max-w-[730px] rounded-[18px] border border-cyan-300/15 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64">
+              <div className="mt-4 max-w-[710px] rounded-[18px] border border-cyan-300/15 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64">
                 Need iUSD first? Buy iUSD with USDT on Polygon using the official Bridge, then mint your country NFT on INRI Chain.
               </div>
 
@@ -410,7 +410,7 @@ export function InriCollectiblesClient() {
                 </Link>
               </div>
 
-              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-[850px]">
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-[830px]">
                 <HeroStat icon={<Globe2 className="h-5 w-5" />} value="30" label="Countries Live" />
                 <HeroStat icon={<Coins className="h-5 w-5" />} value="5 iUSD" label="Mint Price" />
                 <HeroStat icon={<Sparkles className="h-5 w-5" />} value="100" label="Country Tokens" />
@@ -418,33 +418,37 @@ export function InriCollectiblesClient() {
               </div>
             </div>
 
-            <div className="relative z-20 min-h-[470px] overflow-visible sm:min-h-[590px] lg:min-h-0">
+            <div className="relative z-20 min-h-[420px] overflow-visible sm:min-h-[520px] lg:min-h-0">
               <div className="absolute left-1/2 top-1 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/48 px-4 py-2 text-[10px] font-black uppercase tracking-[0.21em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-6 sm:text-[11px]">
                 <span className="inline-flex items-center gap-2">
-                  <RotateCw className="h-3.5 w-3.5 text-cyan-300" />
+                  <RotateCw className="h-3.5 w-3.5 animate-spin text-cyan-300 [animation-duration:4s]" />
                   Live rotating collection
                 </span>
               </div>
 
-              <div className="pointer-events-none absolute left-1/2 top-[7%] h-[560px] w-[1100px] -translate-x-1/2 rounded-full bg-cyan-400/13 blur-[96px] lg:top-[8%] lg:h-[680px] lg:w-[1320px]" />
-              <div className="pointer-events-none absolute left-1/2 top-[43%] h-[220px] w-[960px] -translate-x-1/2 rounded-[100%] border border-cyan-300/30 bg-cyan-300/[0.05] shadow-[0_0_95px_rgba(14,165,233,0.48),inset_0_0_66px_rgba(14,165,233,0.22)] sm:h-[260px] lg:top-[48%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[58px] w-[650px] -translate-x-1/2 rounded-full bg-cyan-300/22 blur-2xl lg:top-[56%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[60%] h-px w-[780px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent" />
+              <div className="pointer-events-none absolute left-1/2 top-[4%] h-[480px] w-[1050px] -translate-x-1/2 rounded-full bg-cyan-400/14 blur-[94px] lg:top-[7%] lg:h-[590px] lg:w-[1250px]" />
+              <div className="pointer-events-none absolute left-1/2 top-[42%] h-[170px] w-[790px] -translate-x-1/2 rounded-[100%] border border-cyan-300/36 bg-cyan-300/[0.055] shadow-[0_0_95px_rgba(14,165,233,0.55),inset_0_0_60px_rgba(14,165,233,0.24)] sm:h-[205px] lg:top-[49%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[48%] h-[52px] w-[560px] -translate-x-1/2 rounded-full bg-cyan-300/24 blur-2xl lg:top-[56%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[720px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
 
-              <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-8 sm:pt-14 lg:pt-0">
-                <div className="relative h-[450px] w-full max-w-[1180px] overflow-visible sm:h-[590px] lg:h-[670px] xl:h-[710px]">
+              <div className="pointer-events-none absolute left-[18%] top-[23%] hidden h-24 w-24 rounded-full border border-cyan-300/14 bg-cyan-300/[0.045] blur-[1px] lg:block" />
+              <div className="pointer-events-none absolute right-[13%] top-[16%] hidden h-16 w-16 rounded-full border border-cyan-300/12 bg-cyan-300/[0.035] blur-[1px] lg:block" />
+              <div className="pointer-events-none absolute bottom-[23%] right-[22%] hidden h-12 w-12 rounded-full border border-cyan-300/10 bg-cyan-300/[0.03] blur-[1px] lg:block" />
+
+              <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-8 sm:pt-12 lg:pt-0">
+                <div className="relative h-[390px] w-full max-w-[1080px] overflow-visible sm:h-[510px] lg:h-[600px] xl:h-[630px]">
                   {heroDisplayCountries.map(({ country, offset }) => {
                     const isCenter = offset === 0
                     const positionClass =
                       offset === -2
-                        ? 'hidden xl:block left-[3%] top-[35%] z-10 w-[34%] -rotate-[10deg] opacity-[0.52]'
+                        ? 'hidden xl:block left-[7%] top-[34%] z-10 w-[29%] -rotate-[9deg] opacity-[0.50]'
                         : offset === -1
-                          ? 'left-[20%] top-[31%] z-20 w-[52%] -rotate-[6deg] opacity-[0.84] sm:left-[24%] sm:top-[27%] sm:w-[43%] lg:left-[24%] lg:w-[41%]'
+                          ? 'left-[22%] top-[31%] z-20 w-[43%] -rotate-[6deg] opacity-[0.83] sm:left-[25%] sm:top-[28%] sm:w-[36%] lg:left-[26%] lg:w-[34%]'
                           : offset === 0
-                            ? 'left-[50%] top-[8%] z-40 w-[105%] opacity-100 sm:top-[7%] sm:w-[82%] lg:w-[70%] xl:w-[66%]'
+                            ? 'left-[50%] top-[10%] z-40 w-[82%] opacity-100 sm:top-[8%] sm:w-[66%] lg:w-[54%] xl:w-[51%]'
                             : offset === 1
-                              ? 'left-[80%] top-[31%] z-20 w-[52%] rotate-[6deg] opacity-[0.84] sm:left-[76%] sm:top-[27%] sm:w-[43%] lg:left-[76%] lg:w-[41%]'
-                              : 'hidden xl:block left-[97%] top-[35%] z-10 w-[34%] rotate-[10deg] opacity-[0.52]'
+                              ? 'left-[78%] top-[31%] z-20 w-[43%] rotate-[6deg] opacity-[0.83] sm:left-[75%] sm:top-[28%] sm:w-[36%] lg:left-[74%] lg:w-[34%]'
+                              : 'hidden xl:block left-[93%] top-[34%] z-10 w-[29%] rotate-[9deg] opacity-[0.50]'
 
                     return (
                       <Link
@@ -462,10 +466,10 @@ export function InriCollectiblesClient() {
                           width={1024}
                           height={1024}
                           className={classNames(
-                            'h-auto w-full object-contain drop-shadow-[0_32px_60px_rgba(0,0,0,0.62)]',
-                            isCenter ? 'drop-shadow-[0_0_42px_rgba(251,191,36,0.22)]' : '',
+                            'h-auto w-full object-contain drop-shadow-[0_30px_58px_rgba(0,0,0,0.62)]',
+                            isCenter ? 'drop-shadow-[0_0_44px_rgba(251,191,36,0.20)]' : '',
                           )}
-                          sizes="(max-width: 640px) 105vw, (max-width: 1024px) 82vw, 760px"
+                          sizes="(max-width: 640px) 82vw, (max-width: 1024px) 66vw, 560px"
                           priority={isCenter}
                         />
                       </Link>
@@ -474,7 +478,7 @@ export function InriCollectiblesClient() {
                 </div>
               </div>
 
-              <div className="absolute bottom-[3%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[5%] sm:gap-4 lg:bottom-[7%]">
+              <div className="absolute bottom-[8%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[9%] sm:gap-4 lg:bottom-[10%]">
                 <button
                   type="button"
                   onClick={() => setActiveHeroIndex((prev) => (prev - 1 + heroCountries.length) % heroCountries.length)}
