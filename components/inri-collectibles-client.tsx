@@ -425,13 +425,6 @@ export function InriCollectiblesClient() {
                   Live rotating collection
                 </span>
               </div>
-
-              <div className="pointer-events-none absolute left-1/2 top-[6%] h-[560px] w-[1120px] -translate-x-1/2 rounded-full bg-cyan-400/14 blur-[92px] lg:top-[8%] lg:h-[690px] lg:w-[1360px]" />
-              <div className="pointer-events-none absolute left-1/2 top-[32%] h-[330px] w-[980px] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.25)_0%,rgba(14,165,233,0.12)_30%,transparent_68%)] blur-sm" />
-              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[120px] w-[720px] -translate-x-1/2 rounded-[100%] border border-cyan-300/50 bg-cyan-300/[0.035] shadow-[0_0_120px_rgba(14,165,233,0.72),inset_0_0_35px_rgba(14,165,233,0.18)] sm:h-[155px] lg:top-[57%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[55%] h-[44px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/34 blur-2xl lg:top-[61%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[880px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent" />
-              <div className="pointer-events-none absolute left-1/2 top-[61%] h-px w-[620px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
               <div className="pointer-events-none absolute left-[38%] top-[18%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.66)]" />
               <div className="pointer-events-none absolute right-[31%] top-[11%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.58)]" />
               <div className="pointer-events-none absolute right-[7%] top-[31%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_20px_5px_rgba(34,211,238,0.50)]" />
