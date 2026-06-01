@@ -180,14 +180,14 @@ export function InriCollectiblesClient() {
     () => [
       'spain-fiesta-bull',
       'france-croissant-pup',
+      'singapore-merlion-mode',
       'australia-outback-roo',
       'japan-samurai-sushi-cat',
-      'australia-outback-roo',
-      'singapore-merlion-mode',
       'china-dragon-noodles',
       'united-states-eagle-burger',
       'indonesia-komodo-boss',
       'brazil-samba-capy',
+      'new-zealand-kiwi-boss',
     ],
     [],
   )
@@ -357,19 +357,19 @@ export function InriCollectiblesClient() {
     <main className="w-full overflow-hidden bg-[#02070d]">
       <div className="space-y-0">
         <section className="relative isolate overflow-hidden bg-[#020711]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgba(14,165,233,0.38),transparent_25%),radial-gradient(circle_at_88%_38%,rgba(37,99,235,0.24),transparent_30%),radial-gradient(circle_at_37%_55%,rgba(6,182,212,0.12),transparent_38%),linear-gradient(180deg,#061b2b_0%,#020811_54%,#010309_100%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:linear-gradient(rgba(20,184,255,0.17)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.17)_1px,transparent_1px)] [background-size:54px_54px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_47%_18%,rgba(56,189,248,0.62)_0_1px,transparent_2px),radial-gradient(circle_at_56%_12%,rgba(125,211,252,0.46)_0_1px,transparent_2px),radial-gradient(circle_at_72%_20%,rgba(56,189,248,0.45)_0_1px,transparent_2px),radial-gradient(circle_at_86%_35%,rgba(56,189,248,0.38)_0_1px,transparent_2px),radial-gradient(circle_at_61%_61%,rgba(14,165,233,0.30)_0_1px,transparent_2px),radial-gradient(circle_at_94%_18%,rgba(255,255,255,0.28)_0_1px,transparent_2px)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_68%_16%,rgba(34,211,238,0.36),transparent_24%),radial-gradient(circle_at_86%_36%,rgba(59,130,246,0.24),transparent_30%),radial-gradient(circle_at_33%_60%,rgba(6,182,212,0.11),transparent_38%),linear-gradient(180deg,#061b2b_0%,#020811_52%,#010309_100%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:54px_54px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_47%_18%,rgba(56,189,248,0.62)_0_1px,transparent_2px),radial-gradient(circle_at_58%_12%,rgba(125,211,252,0.46)_0_1px,transparent_2px),radial-gradient(circle_at_73%_22%,rgba(56,189,248,0.42)_0_1px,transparent_2px),radial-gradient(circle_at_87%_36%,rgba(56,189,248,0.36)_0_1px,transparent_2px),radial-gradient(circle_at_63%_61%,rgba(14,165,233,0.30)_0_1px,transparent_2px),radial-gradient(circle_at_94%_18%,rgba(255,255,255,0.25)_0_1px,transparent_2px)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#02070d] via-[#02070d]/86 to-transparent" />
 
-          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-0 px-5 pb-7 pt-12 sm:px-8 sm:pt-14 lg:min-h-[830px] lg:grid-cols-[minmax(430px,0.42fr)_minmax(0,0.58fr)] lg:px-12 lg:pt-16 xl:min-h-[870px] xl:px-16 2xl:px-20">
-            <div className="relative z-30 flex flex-col justify-center lg:pb-40 xl:pb-44">
+          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-0 px-5 pb-7 pt-12 sm:px-8 sm:pt-14 lg:min-h-[800px] lg:grid-cols-[minmax(430px,0.42fr)_minmax(0,0.58fr)] lg:px-12 lg:pt-16 xl:min-h-[840px] xl:px-16 2xl:px-20">
+            <div className="relative z-30 flex flex-col justify-center lg:pb-34 xl:pb-40">
               <div className="mb-6 inline-flex w-fit items-center rounded-full border border-cyan-300/32 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.23em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.13)] sm:text-[11px]">
                 INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
 
-              <h1 className="max-w-[850px] text-[3.35rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5rem] lg:text-[4.95rem] xl:text-[6.05rem] 2xl:text-[6.9rem]">
+              <h1 className="max-w-[850px] text-[3.35rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5rem] lg:text-[4.9rem] xl:text-[5.95rem] 2xl:text-[6.8rem]">
                 <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-100 bg-clip-text text-transparent">INRI</span>{' '}
                 World
                 <span className="block">Meme Collectibles</span>
@@ -426,39 +426,54 @@ export function InriCollectiblesClient() {
                 </span>
               </div>
 
-              <div className="pointer-events-none absolute left-1/2 top-[4%] h-[500px] w-[1060px] -translate-x-1/2 rounded-full bg-cyan-400/15 blur-[90px] lg:top-[5%] lg:h-[620px] lg:w-[1280px]" />
-              <div className="pointer-events-none absolute left-1/2 top-[39%] h-[190px] w-[860px] -translate-x-1/2 rounded-[100%] border border-cyan-300/36 bg-cyan-300/[0.055] shadow-[0_0_105px_rgba(14,165,233,0.60),inset_0_0_66px_rgba(14,165,233,0.25)] sm:h-[220px] lg:top-[46%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[46%] h-[58px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/26 blur-2xl lg:top-[53%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[57%] h-px w-[820px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-300/75 to-transparent" />
+              <div className="pointer-events-none absolute left-1/2 top-[3%] h-[500px] w-[1080px] -translate-x-1/2 rounded-full bg-cyan-400/15 blur-[88px] lg:top-[5%] lg:h-[640px] lg:w-[1300px]" />
+              <div className="pointer-events-none absolute left-1/2 top-[33%] h-[360px] w-[980px] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.26)_0%,rgba(14,165,233,0.12)_28%,transparent_68%)] blur-sm" />
+              <div className="pointer-events-none absolute left-1/2 top-[43%] h-[180px] w-[800px] -translate-x-1/2 rounded-[100%] border border-cyan-300/50 bg-cyan-300/[0.060] shadow-[0_0_120px_rgba(14,165,233,0.68),inset_0_0_70px_rgba(14,165,233,0.30)] sm:h-[220px] lg:top-[48%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[60px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/34 blur-2xl lg:top-[55%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[57%] h-px w-[880px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent" />
+              <div className="pointer-events-none absolute left-1/2 top-[60%] h-px w-[620px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
 
-              <div className="pointer-events-none absolute left-[10%] top-[24%] h-28 w-28 rounded-full border border-cyan-300/12 bg-cyan-300/[0.035] blur-[1px]" />
-              <div className="pointer-events-none absolute right-[11%] top-[15%] h-20 w-20 rounded-[22px] border border-cyan-300/12 bg-cyan-300/[0.035] blur-[1px]" />
-              <div className="pointer-events-none absolute bottom-[30%] right-[18%] h-14 w-14 rounded-full border border-cyan-300/10 bg-cyan-300/[0.03] blur-[1px]" />
-              <div className="pointer-events-none absolute left-[38%] top-[18%] h-1 w-1 rounded-full bg-cyan-200 shadow-[0_0_20px_5px_rgba(34,211,238,0.55)]" />
-              <div className="pointer-events-none absolute right-[31%] top-[10%] h-1 w-1 rounded-full bg-cyan-200 shadow-[0_0_20px_5px_rgba(34,211,238,0.50)]" />
-              <div className="pointer-events-none absolute right-[7%] top-[30%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_18px_4px_rgba(34,211,238,0.46)]" />
+              <div className="pointer-events-none absolute left-[10%] top-[24%] h-28 w-28 rounded-full border border-cyan-300/14 bg-cyan-300/[0.04] shadow-[0_0_42px_rgba(34,211,238,0.10)]" />
+              <div className="pointer-events-none absolute right-[11%] top-[15%] h-20 w-20 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.04] shadow-[0_0_42px_rgba(34,211,238,0.10)]" />
+              <div className="pointer-events-none absolute bottom-[30%] right-[18%] h-14 w-14 rounded-full border border-cyan-300/12 bg-cyan-300/[0.035]" />
+              <div className="pointer-events-none absolute left-[38%] top-[18%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.66)]" />
+              <div className="pointer-events-none absolute right-[31%] top-[10%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.58)]" />
+              <div className="pointer-events-none absolute right-[7%] top-[30%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_20px_5px_rgba(34,211,238,0.50)]" />
+              <div className="pointer-events-none absolute left-[25%] bottom-[24%] h-1 w-1 rounded-full bg-cyan-100 shadow-[0_0_20px_5px_rgba(34,211,238,0.46)]" />
 
               <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-8 sm:pt-12 lg:pt-0">
-                <div className="relative h-[400px] w-full max-w-[1090px] overflow-visible sm:h-[520px] lg:h-[620px] xl:h-[650px]">
+                <div className="relative h-[400px] w-full max-w-[1080px] overflow-visible [perspective:1200px] sm:h-[520px] lg:h-[620px] xl:h-[650px]">
                   {heroDisplayCountries.map(({ country, offset }) => {
                     const isCenter = offset === 0
                     const positionClass =
                       offset === -2
-                        ? 'hidden xl:block left-[5%] top-[36%] z-10 w-[29%] -rotate-[10deg] opacity-[0.48]'
+                        ? 'hidden xl:block left-[5%] top-[37%] z-10 w-[28%] opacity-[0.42]'
                         : offset === -1
-                          ? 'left-[21%] top-[32%] z-20 w-[42%] -rotate-[6deg] opacity-[0.82] sm:left-[25%] sm:top-[29%] sm:w-[35%] lg:left-[26%] lg:w-[33%]'
+                          ? 'left-[22%] top-[33%] z-20 w-[40%] opacity-[0.72] sm:left-[25%] sm:top-[30%] sm:w-[33%] lg:left-[26%] lg:w-[31%]'
                           : offset === 0
-                            ? 'left-[50%] top-[10%] z-40 w-[76%] opacity-100 sm:top-[8%] sm:w-[60%] lg:w-[49%] xl:w-[46%]'
+                            ? 'left-[50%] top-[11%] z-40 w-[73%] opacity-100 sm:top-[9%] sm:w-[57%] lg:w-[47%] xl:w-[44%]'
                             : offset === 1
-                              ? 'left-[79%] top-[32%] z-20 w-[42%] rotate-[6deg] opacity-[0.82] sm:left-[75%] sm:top-[29%] sm:w-[35%] lg:left-[74%] lg:w-[33%]'
-                              : 'hidden xl:block left-[95%] top-[36%] z-10 w-[29%] rotate-[10deg] opacity-[0.48]'
+                              ? 'left-[78%] top-[33%] z-20 w-[40%] opacity-[0.72] sm:left-[75%] sm:top-[30%] sm:w-[33%] lg:left-[74%] lg:w-[31%]'
+                              : 'hidden xl:block left-[95%] top-[37%] z-10 w-[28%] opacity-[0.42]'
+
+                    const transformStyle =
+                      offset === -2
+                        ? { transform: 'translateX(-50%) rotateY(46deg) rotateZ(-10deg) scale(0.92)' }
+                        : offset === -1
+                          ? { transform: 'translateX(-50%) rotateY(32deg) rotateZ(-6deg) scale(0.96)' }
+                          : offset === 0
+                            ? { transform: 'translateX(-50%) rotateY(0deg) rotateZ(0deg) scale(1)' }
+                            : offset === 1
+                              ? { transform: 'translateX(-50%) rotateY(-32deg) rotateZ(6deg) scale(0.96)' }
+                              : { transform: 'translateX(-50%) rotateY(-46deg) rotateZ(10deg) scale(0.92)' }
 
                     return (
                       <Link
                         key={`${country.slug}-${offset}`}
                         href={`/collectibles/${country.slug}/`}
+                        style={transformStyle}
                         className={classNames(
-                          'absolute block -translate-x-1/2 transform-gpu transition-all duration-700 hover:z-50 hover:scale-[1.035]',
+                          'absolute block transform-gpu transition-all duration-700 hover:z-50 hover:scale-[1.035]',
                           positionClass,
                         )}
                         aria-label={`Open ${country.countryName} ${country.memeName}`}
@@ -469,10 +484,10 @@ export function InriCollectiblesClient() {
                           width={1024}
                           height={1024}
                           className={classNames(
-                            'h-auto w-full object-contain drop-shadow-[0_30px_58px_rgba(0,0,0,0.62)]',
-                            isCenter ? 'drop-shadow-[0_0_42px_rgba(251,191,36,0.20)]' : '',
+                            'h-auto w-full object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.70)]',
+                            isCenter ? 'drop-shadow-[0_0_46px_rgba(251,191,36,0.24)]' : 'brightness-[0.76] saturate-[0.92]',
                           )}
-                          sizes="(max-width: 640px) 76vw, (max-width: 1024px) 60vw, 500px"
+                          sizes="(max-width: 640px) 73vw, (max-width: 1024px) 57vw, 480px"
                           priority={isCenter}
                         />
                       </Link>
