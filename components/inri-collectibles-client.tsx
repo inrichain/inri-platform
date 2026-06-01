@@ -357,30 +357,30 @@ export function InriCollectiblesClient() {
     <main className="w-full overflow-hidden bg-[#02070d]">
       <div className="space-y-0">
         <section className="relative isolate overflow-hidden bg-[#020711]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(14,165,233,0.28),transparent_28%),radial-gradient(circle_at_87%_39%,rgba(37,99,235,0.18),transparent_28%),radial-gradient(circle_at_34%_55%,rgba(6,182,212,0.10),transparent_36%),linear-gradient(180deg,#061b2b_0%,#020811_54%,#010308_100%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:58px_58px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_42%_20%,rgba(56,189,248,0.42)_0_1px,transparent_2px),radial-gradient(circle_at_56%_13%,rgba(125,211,252,0.34)_0_1px,transparent_2px),radial-gradient(circle_at_80%_31%,rgba(56,189,248,0.34)_0_1px,transparent_2px),radial-gradient(circle_at_59%_58%,rgba(14,165,233,0.24)_0_1px,transparent_2px),radial-gradient(circle_at_93%_19%,rgba(255,255,255,0.22)_0_1px,transparent_2px)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgba(14,165,233,0.30),transparent_28%),radial-gradient(circle_at_87%_38%,rgba(30,64,175,0.18),transparent_30%),radial-gradient(circle_at_36%_58%,rgba(6,182,212,0.10),transparent_38%),linear-gradient(180deg,#061b2b_0%,#020811_52%,#010309_100%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(20,184,255,0.17)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.17)_1px,transparent_1px)] [background-size:56px_56px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_46%_18%,rgba(56,189,248,0.44)_0_1px,transparent_2px),radial-gradient(circle_at_58%_13%,rgba(125,211,252,0.35)_0_1px,transparent_2px),radial-gradient(circle_at_80%_30%,rgba(56,189,248,0.33)_0_1px,transparent_2px),radial-gradient(circle_at_59%_58%,rgba(14,165,233,0.24)_0_1px,transparent_2px),radial-gradient(circle_at_94%_20%,rgba(255,255,255,0.22)_0_1px,transparent_2px)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/45 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#02070d] via-[#02070d]/75 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#02070d] via-[#02070d]/82 to-transparent" />
 
-          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-4 px-5 pb-7 pt-12 sm:px-8 sm:pb-8 sm:pt-14 lg:min-h-[720px] lg:grid-cols-[minmax(420px,0.42fr)_minmax(0,0.58fr)] lg:gap-0 lg:px-12 lg:pt-16 xl:min-h-[760px] xl:px-16 2xl:px-20">
-            <div className="relative z-30 flex flex-col justify-center lg:pb-28 xl:pb-32">
+          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-0 px-5 pb-8 pt-12 sm:px-8 sm:pt-14 lg:min-h-[760px] lg:grid-cols-[minmax(430px,0.41fr)_minmax(0,0.59fr)] lg:px-12 lg:pt-16 xl:min-h-[790px] xl:px-16 2xl:px-20">
+            <div className="relative z-30 flex flex-col justify-center lg:pb-32 xl:pb-36">
               <div className="mb-6 inline-flex w-fit items-center rounded-full border border-cyan-300/32 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.23em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.13)] sm:text-[11px]">
                 INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
 
-              <h1 className="max-w-[820px] text-[3.55rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5.25rem] lg:text-[5.2rem] xl:text-[6.35rem] 2xl:text-[7.15rem]">
+              <h1 className="max-w-[860px] text-[3.55rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5.25rem] lg:text-[5.05rem] xl:text-[6.2rem] 2xl:text-[7.1rem]">
                 <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-100 bg-clip-text text-transparent">INRI</span>{' '}
                 World
                 <span className="block">Meme Collectibles</span>
               </h1>
 
-              <p className="mt-6 max-w-[730px] text-base font-semibold leading-8 text-white/74 sm:text-[1.12rem] xl:text-[1.28rem]">
+              <p className="mt-6 max-w-[740px] text-base font-semibold leading-8 text-white/75 sm:text-[1.12rem] xl:text-[1.28rem]">
                 Mint unique country meme NFTs on INRI Chain. Power the future by strengthening{' '}
                 <span className="font-black text-cyan-300">iUSD / WINRI</span> liquidity.
               </p>
 
-              <div className="mt-4 max-w-[720px] rounded-[18px] border border-cyan-300/14 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64">
+              <div className="mt-4 max-w-[730px] rounded-[18px] border border-cyan-300/15 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64">
                 Need iUSD first? Buy iUSD with USDT on Polygon using the official Bridge, then mint your country NFT on INRI Chain.
               </div>
 
@@ -418,61 +418,63 @@ export function InriCollectiblesClient() {
               </div>
             </div>
 
-            <div className="relative z-20 min-h-[440px] overflow-visible sm:min-h-[560px] lg:min-h-0">
-              <div className="absolute left-1/2 top-2 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/48 px-4 py-2 text-[10px] font-black uppercase tracking-[0.21em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-6 sm:text-[11px]">
+            <div className="relative z-20 min-h-[470px] overflow-visible sm:min-h-[590px] lg:min-h-0">
+              <div className="absolute left-1/2 top-1 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/48 px-4 py-2 text-[10px] font-black uppercase tracking-[0.21em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-6 sm:text-[11px]">
                 <span className="inline-flex items-center gap-2">
                   <RotateCw className="h-3.5 w-3.5 text-cyan-300" />
                   Live rotating collection
                 </span>
               </div>
 
-              <div className="pointer-events-none absolute left-1/2 top-[8%] h-[500px] w-[960px] -translate-x-1/2 rounded-full bg-cyan-400/12 blur-[88px] lg:top-[10%] lg:h-[620px] lg:w-[1180px]" />
-              <div className="pointer-events-none absolute left-1/2 top-[23%] h-[390px] w-[900px] -translate-x-1/2 rounded-[100%] border border-cyan-300/10 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.15),transparent_65%)] shadow-[inset_0_0_90px_rgba(14,165,233,0.10)]" />
-              <div className="pointer-events-none absolute inset-x-[5%] bottom-[18%] h-[128px] rounded-[100%] border border-cyan-300/30 bg-cyan-300/[0.045] shadow-[0_0_90px_rgba(14,165,233,0.48),inset_0_0_60px_rgba(14,165,233,0.20)] sm:h-[156px]" />
-              <div className="pointer-events-none absolute inset-x-[15%] bottom-[23%] h-[58px] rounded-[100%] bg-cyan-300/20 blur-2xl" />
+              <div className="pointer-events-none absolute left-1/2 top-[7%] h-[560px] w-[1100px] -translate-x-1/2 rounded-full bg-cyan-400/13 blur-[96px] lg:top-[8%] lg:h-[680px] lg:w-[1320px]" />
+              <div className="pointer-events-none absolute left-1/2 top-[43%] h-[220px] w-[960px] -translate-x-1/2 rounded-[100%] border border-cyan-300/30 bg-cyan-300/[0.05] shadow-[0_0_95px_rgba(14,165,233,0.48),inset_0_0_66px_rgba(14,165,233,0.22)] sm:h-[260px] lg:top-[48%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[58px] w-[650px] -translate-x-1/2 rounded-full bg-cyan-300/22 blur-2xl lg:top-[56%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[60%] h-px w-[780px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent" />
 
               <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-8 sm:pt-14 lg:pt-0">
-                <div className="relative h-[410px] w-full max-w-[1140px] overflow-visible sm:h-[540px] lg:h-[620px] xl:h-[665px]">
+                <div className="relative h-[450px] w-full max-w-[1180px] overflow-visible sm:h-[590px] lg:h-[670px] xl:h-[710px]">
                   {heroDisplayCountries.map(({ country, offset }) => {
                     const isCenter = offset === 0
                     const positionClass =
                       offset === -2
-                        ? 'hidden xl:block left-[7%] top-[43%] z-10 w-[30%] -rotate-[9deg] opacity-[0.52]'
+                        ? 'hidden xl:block left-[3%] top-[35%] z-10 w-[34%] -rotate-[10deg] opacity-[0.52]'
                         : offset === -1
-                          ? 'left-[22%] top-[37%] z-20 w-[45%] -rotate-[6deg] opacity-[0.86] sm:left-[25%] sm:top-[33%] sm:w-[39%] lg:left-[27%] lg:w-[37%]'
+                          ? 'left-[20%] top-[31%] z-20 w-[52%] -rotate-[6deg] opacity-[0.84] sm:left-[24%] sm:top-[27%] sm:w-[43%] lg:left-[24%] lg:w-[41%]'
                           : offset === 0
-                            ? 'left-[50%] top-[12%] z-40 w-[94%] opacity-100 sm:top-[10%] sm:w-[70%] lg:w-[64%] xl:w-[60%]'
+                            ? 'left-[50%] top-[8%] z-40 w-[105%] opacity-100 sm:top-[7%] sm:w-[82%] lg:w-[70%] xl:w-[66%]'
                             : offset === 1
-                              ? 'left-[78%] top-[37%] z-20 w-[45%] rotate-[6deg] opacity-[0.86] sm:left-[75%] sm:top-[33%] sm:w-[39%] lg:left-[73%] lg:w-[37%]'
-                              : 'hidden xl:block left-[93%] top-[43%] z-10 w-[30%] rotate-[9deg] opacity-[0.52]'
+                              ? 'left-[80%] top-[31%] z-20 w-[52%] rotate-[6deg] opacity-[0.84] sm:left-[76%] sm:top-[27%] sm:w-[43%] lg:left-[76%] lg:w-[41%]'
+                              : 'hidden xl:block left-[97%] top-[35%] z-10 w-[34%] rotate-[10deg] opacity-[0.52]'
 
                     return (
                       <Link
                         key={`${country.slug}-${offset}`}
                         href={`/collectibles/${country.slug}/`}
                         className={classNames(
-                          'absolute block aspect-[1.47/1] -translate-x-1/2 transform-gpu rounded-[10px] transition-all duration-700 hover:z-50 hover:scale-[1.035]',
+                          'absolute block -translate-x-1/2 transform-gpu transition-all duration-700 hover:z-50 hover:scale-[1.035]',
                           positionClass,
                         )}
                         aria-label={`Open ${country.countryName} ${country.memeName}`}
                       >
-                        <div className={classNames('relative h-full w-full overflow-hidden rounded-[10px] border bg-black shadow-[0_28px_90px_rgba(0,0,0,0.54)] ring-1 ring-white/5', isCenter ? 'border-amber-300/75 shadow-[0_0_74px_rgba(251,191,36,0.28),0_38px_120px_rgba(0,0,0,0.62)]' : 'border-cyan-300/18')}>
-                          <Image
-                            src={imageUrlForCountry(country.slug)}
-                            alt={`${country.countryName} ${country.memeName}`}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 94vw, (max-width: 1024px) 72vw, 720px"
-                            priority={isCenter}
-                          />
-                        </div>
+                        <Image
+                          src={imageUrlForCountry(country.slug)}
+                          alt={`${country.countryName} ${country.memeName}`}
+                          width={1024}
+                          height={1024}
+                          className={classNames(
+                            'h-auto w-full object-contain drop-shadow-[0_32px_60px_rgba(0,0,0,0.62)]',
+                            isCenter ? 'drop-shadow-[0_0_42px_rgba(251,191,36,0.22)]' : '',
+                          )}
+                          sizes="(max-width: 640px) 105vw, (max-width: 1024px) 82vw, 760px"
+                          priority={isCenter}
+                        />
                       </Link>
                     )
                   })}
                 </div>
               </div>
 
-              <div className="absolute bottom-[7%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[8%] sm:gap-4">
+              <div className="absolute bottom-[3%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[5%] sm:gap-4 lg:bottom-[7%]">
                 <button
                   type="button"
                   onClick={() => setActiveHeroIndex((prev) => (prev - 1 + heroCountries.length) % heroCountries.length)}
@@ -507,7 +509,7 @@ export function InriCollectiblesClient() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[1820px] px-5 pb-9 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
+          <div className="relative mx-auto w-full max-w-[1820px] px-5 pb-10 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
             <div className="grid gap-4 rounded-[24px] border border-cyan-300/14 bg-black/26 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_70px_rgba(0,0,0,0.24)] backdrop-blur-md lg:grid-cols-[270px_1fr]">
               <div className="flex flex-col justify-center rounded-[18px] border border-cyan-300/10 bg-cyan-300/[0.03] p-4">
                 <p className="text-xl font-black text-cyan-300">Featured Countries</p>
@@ -530,12 +532,12 @@ export function InriCollectiblesClient() {
                       key={country.slug}
                       className="group grid grid-cols-[108px_1fr] gap-3 rounded-[16px] border border-white/9 bg-white/[0.04] p-2 transition hover:-translate-y-0.5 hover:border-cyan-300/34 hover:bg-cyan-300/[0.055] xl:grid-cols-[128px_1fr]"
                     >
-                      <div className="relative aspect-[1.34/1] overflow-hidden rounded-[12px] bg-black shadow-[0_14px_32px_rgba(0,0,0,0.24)]">
+                      <div className="relative aspect-square overflow-hidden rounded-[12px] bg-black/25 shadow-[0_14px_32px_rgba(0,0,0,0.24)]">
                         <Image
                           src={imageUrlForCountry(country.slug)}
                           alt={`${country.countryName} ${country.memeName}`}
                           fill
-                          className="object-cover transition duration-300 group-hover:scale-105"
+                          className="object-contain transition duration-300 group-hover:scale-105"
                           sizes="190px"
                         />
                       </div>
@@ -562,48 +564,48 @@ export function InriCollectiblesClient() {
         </section>
 
         <div className="mx-auto w-full max-w-[1720px] space-y-6 px-2 py-6 sm:px-4 xl:px-6">
-          <section className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search country, code or meme..."
-                  className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {regions.map((region) => (
-                  <button
-                    key={region}
-                    onClick={() => setSelectedRegion(region)}
-                    className={classNames(
-                      'rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition',
-                      selectedRegion === region
-                        ? 'bg-cyan-400 text-slate-950'
-                        : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
-                    )}
-                  >
-                    {region}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setLiveOnly((prev) => !prev)}
-                className={classNames(
-                  'h-12 rounded-[16px] px-4 text-sm font-black transition',
-                  liveOnly
-                    ? 'bg-emerald-400 text-slate-950'
-                    : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
-                )}
-              >
-                {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
-              </button>
+        <section className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search country, code or meme..."
+                className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
+              />
             </div>
-          </section>
+
+            <div className="flex flex-wrap gap-2">
+              {regions.map((region) => (
+                <button
+                  key={region}
+                  onClick={() => setSelectedRegion(region)}
+                  className={classNames(
+                    'rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition',
+                    selectedRegion === region
+                      ? 'bg-cyan-400 text-slate-950'
+                      : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
+                  )}
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setLiveOnly((prev) => !prev)}
+              className={classNames(
+                'h-12 rounded-[16px] px-4 text-sm font-black transition',
+                liveOnly
+                  ? 'bg-emerald-400 text-slate-950'
+                  : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
+              )}
+            >
+              {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
+            </button>
+          </div>
+        </section>
 
         <section id="collection" className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
