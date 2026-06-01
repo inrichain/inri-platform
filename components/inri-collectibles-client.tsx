@@ -256,7 +256,7 @@ export function InriCollectiblesClient() {
 
     const timer = window.setInterval(() => {
       setActiveHeroIndex((prev) => (prev + 1) % heroCountries.length)
-    }, 9000)
+    }, 16000)
 
     return () => window.clearInterval(timer)
   }, [heroCountries.length])
@@ -428,8 +428,8 @@ export function InriCollectiblesClient() {
 
               <div className="pointer-events-none absolute left-1/2 top-[6%] h-[560px] w-[1120px] -translate-x-1/2 rounded-full bg-cyan-400/14 blur-[92px] lg:top-[8%] lg:h-[690px] lg:w-[1360px]" />
               <div className="pointer-events-none absolute left-1/2 top-[32%] h-[330px] w-[980px] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.25)_0%,rgba(14,165,233,0.12)_30%,transparent_68%)] blur-sm" />
-              <div className="pointer-events-none absolute left-1/2 top-[43%] h-[176px] w-[790px] -translate-x-1/2 rounded-[100%] border border-cyan-300/50 bg-cyan-300/[0.060] shadow-[0_0_120px_rgba(14,165,233,0.68),inset_0_0_70px_rgba(14,165,233,0.30)] sm:h-[215px] lg:top-[49%]" />
-              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[62px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/34 blur-2xl lg:top-[56%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[50%] h-[120px] w-[720px] -translate-x-1/2 rounded-[100%] border border-cyan-300/50 bg-cyan-300/[0.035] shadow-[0_0_120px_rgba(14,165,233,0.72),inset_0_0_35px_rgba(14,165,233,0.18)] sm:h-[155px] lg:top-[57%]" />
+              <div className="pointer-events-none absolute left-1/2 top-[55%] h-[44px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/34 blur-2xl lg:top-[61%]" />
               <div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[880px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent" />
               <div className="pointer-events-none absolute left-1/2 top-[61%] h-px w-[620px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
 
@@ -473,10 +473,7 @@ export function InriCollectiblesClient() {
                         href={`/collectibles/${country.slug}/`}
                         style={transformStyle}
                         className={classNames(
-                          'absolute block aspect-[1.55/1] transform-gpu overflow-hidden rounded-[7px] border bg-black transition-all duration-700 hover:z-50 hover:scale-[1.035]',
-                          isCenter
-                            ? 'border-amber-300/80 shadow-[0_0_44px_rgba(251,191,36,0.30),0_38px_110px_rgba(0,0,0,0.62)]'
-                            : 'border-cyan-300/16 shadow-[0_28px_70px_rgba(0,0,0,0.64)]',
+                          'absolute block transform-gpu transition-all duration-700 hover:z-50 hover:scale-[1.035]',
                           positionClass,
                         )}
                         aria-label={`Open ${country.countryName} ${country.memeName}`}
@@ -484,10 +481,13 @@ export function InriCollectiblesClient() {
                         <Image
                           src={imageUrlForCountry(country.slug)}
                           alt={`${country.countryName} ${country.memeName}`}
-                          fill
+                          width={1024}
+                          height={1024}
                           className={classNames(
-                            'object-cover',
-                            isCenter ? 'saturate-[1.06]' : 'brightness-[0.62] saturate-[0.82]',
+                            'h-auto w-full object-contain drop-shadow-[0_34px_70px_rgba(0,0,0,0.70)]',
+                            isCenter
+                              ? 'saturate-[1.08] drop-shadow-[0_0_46px_rgba(251,191,36,0.26)]'
+                              : 'brightness-[0.72] saturate-[0.88]',
                           )}
                           sizes="(max-width: 640px) 86vw, (max-width: 1024px) 66vw, 560px"
                           priority={isCenter}
@@ -498,7 +498,7 @@ export function InriCollectiblesClient() {
                 </div>
               </div>
 
-              <div className="absolute bottom-[10%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[11%] sm:gap-4 lg:bottom-[13%]">
+              <div className="absolute bottom-[7%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[8%] sm:gap-4 lg:bottom-[9%]">
                 <button
                   type="button"
                   onClick={() => setActiveHeroIndex((prev) => (prev - 1 + heroCountries.length) % heroCountries.length)}
@@ -561,7 +561,7 @@ export function InriCollectiblesClient() {
                           src={imageUrlForCountry(country.slug)}
                           alt={`${country.countryName} ${country.memeName}`}
                           fill
-                          className="object-cover transition duration-300 group-hover:scale-105"
+                          className="object-contain transition duration-300 group-hover:scale-105"
                           sizes="190px"
                         />
                       </div>
