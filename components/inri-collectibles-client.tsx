@@ -183,11 +183,11 @@ export function InriCollectiblesClient() {
       'australia-outback-roo',
       'japan-samurai-sushi-cat',
       'singapore-merlion-mode',
-      'germany-pretzel-boss',
-      'new-zealand-kiwi-boss',
       'china-dragon-noodles',
       'united-states-eagle-burger',
+      'indonesia-komodo-boss',
       'brazil-samba-capy',
+      'new-zealand-kiwi-boss',
     ],
     [],
   )
@@ -356,45 +356,45 @@ export function InriCollectiblesClient() {
   return (
     <main className="w-full overflow-hidden bg-[#02070d]">
       <div className="space-y-0">
-        <section className="relative isolate min-h-[760px] overflow-hidden bg-[#020711] sm:min-h-[820px] lg:min-h-[calc(100svh-104px)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_71%_22%,rgba(14,165,233,0.28),transparent_27%),radial-gradient(circle_at_86%_38%,rgba(59,130,246,0.19),transparent_26%),radial-gradient(circle_at_38%_54%,rgba(6,182,212,0.12),transparent_34%),linear-gradient(180deg,#051827_0%,#020812_50%,#010309_100%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:62px_62px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_45%_22%,rgba(14,165,233,0.45)_0_1px,transparent_2px),radial-gradient(circle_at_68%_17%,rgba(125,211,252,0.38)_0_1px,transparent_2px),radial-gradient(circle_at_82%_31%,rgba(56,189,248,0.34)_0_1px,transparent_2px),radial-gradient(circle_at_58%_61%,rgba(14,165,233,0.26)_0_1px,transparent_2px),radial-gradient(circle_at_93%_18%,rgba(255,255,255,0.22)_0_1px,transparent_2px)]" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#02070d] to-transparent" />
+        <section className="relative isolate overflow-hidden bg-[#020711]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(14,165,233,0.28),transparent_28%),radial-gradient(circle_at_87%_39%,rgba(37,99,235,0.18),transparent_28%),radial-gradient(circle_at_34%_55%,rgba(6,182,212,0.10),transparent_36%),linear-gradient(180deg,#061b2b_0%,#020811_54%,#010308_100%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(20,184,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,255,0.16)_1px,transparent_1px)] [background-size:58px_58px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_42%_20%,rgba(56,189,248,0.42)_0_1px,transparent_2px),radial-gradient(circle_at_56%_13%,rgba(125,211,252,0.34)_0_1px,transparent_2px),radial-gradient(circle_at_80%_31%,rgba(56,189,248,0.34)_0_1px,transparent_2px),radial-gradient(circle_at_59%_58%,rgba(14,165,233,0.24)_0_1px,transparent_2px),radial-gradient(circle_at_93%_19%,rgba(255,255,255,0.22)_0_1px,transparent_2px)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/45 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#02070d] via-[#02070d]/75 to-transparent" />
 
-          <div className="relative mx-auto grid min-h-[760px] w-full max-w-[1920px] grid-cols-1 gap-4 px-5 pb-7 pt-12 sm:min-h-[820px] sm:px-8 sm:pt-14 lg:min-h-[calc(100svh-104px)] lg:grid-cols-[minmax(420px,0.42fr)_minmax(0,0.58fr)] lg:px-12 lg:pb-8 lg:pt-14 xl:px-16 2xl:px-20">
-            <div className="relative z-30 flex flex-col justify-center lg:pb-20">
-              <div className="mb-7 inline-flex w-fit items-center rounded-full border border-cyan-300/34 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.14)] sm:text-[11px]">
+          <div className="relative mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-4 px-5 pb-7 pt-12 sm:px-8 sm:pb-8 sm:pt-14 lg:min-h-[720px] lg:grid-cols-[minmax(420px,0.42fr)_minmax(0,0.58fr)] lg:gap-0 lg:px-12 lg:pt-16 xl:min-h-[760px] xl:px-16 2xl:px-20">
+            <div className="relative z-30 flex flex-col justify-center lg:pb-28 xl:pb-32">
+              <div className="mb-6 inline-flex w-fit items-center rounded-full border border-cyan-300/32 bg-cyan-300/[0.055] px-4 py-2 text-[10px] font-black uppercase tracking-[0.23em] text-cyan-200 shadow-[0_0_34px_rgba(20,184,255,0.13)] sm:text-[11px]">
                 INRI Chain • Proof-of-Work • Chain 3777 • EVM Compatible
               </div>
 
-              <h1 className="max-w-[820px] text-[3.65rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5.4rem] lg:text-[5.1rem] xl:text-[6.25rem] 2xl:text-[7.1rem]">
+              <h1 className="max-w-[820px] text-[3.55rem] font-black leading-[0.91] tracking-[-0.07em] text-white sm:text-[5.25rem] lg:text-[5.2rem] xl:text-[6.35rem] 2xl:text-[7.15rem]">
                 <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-100 bg-clip-text text-transparent">INRI</span>{' '}
                 World
                 <span className="block">Meme Collectibles</span>
               </h1>
 
-              <p className="mt-6 max-w-[720px] text-base font-semibold leading-8 text-white/74 sm:text-[1.14rem] xl:text-[1.28rem]">
+              <p className="mt-6 max-w-[730px] text-base font-semibold leading-8 text-white/74 sm:text-[1.12rem] xl:text-[1.28rem]">
                 Mint unique country meme NFTs on INRI Chain. Power the future by strengthening{' '}
                 <span className="font-black text-cyan-300">iUSD / WINRI</span> liquidity.
               </p>
 
-              <div className="mt-4 rounded-[18px] border border-cyan-300/14 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64 sm:max-w-[690px]">
-                Need iUSD first? Buy iUSD with USDT on Polygon using the official bridge, then mint your country NFT on INRI Chain.
+              <div className="mt-4 max-w-[720px] rounded-[18px] border border-cyan-300/14 bg-cyan-300/[0.045] px-4 py-3 text-sm font-bold leading-6 text-white/64">
+                Need iUSD first? Buy iUSD with USDT on Polygon using the official Bridge, then mint your country NFT on INRI Chain.
               </div>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/bridge/"
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-cyan-300 to-sky-500 px-7 text-sm font-black text-slate-950 shadow-[0_18px_48px_rgba(14,165,233,0.38)] transition hover:-translate-y-0.5 hover:brightness-110"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-cyan-300 to-sky-500 px-7 text-sm font-black text-slate-950 shadow-[0_18px_48px_rgba(14,165,233,0.36)] transition hover:-translate-y-0.5 hover:brightness-110"
                 >
                   <Coins className="h-4 w-4" />
                   Get iUSD First
                 </Link>
                 <a
                   href="#collection"
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-cyan-300/42 bg-cyan-300/[0.08] px-7 text-sm font-black text-white shadow-[0_0_36px_rgba(14,165,233,0.23)] transition hover:-translate-y-0.5 hover:bg-cyan-300/[0.13]"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[16px] border border-cyan-300/42 bg-cyan-300/[0.08] px-7 text-sm font-black text-white shadow-[0_0_36px_rgba(14,165,233,0.22)] transition hover:-translate-y-0.5 hover:bg-cyan-300/[0.13]"
                 >
                   <Zap className="h-4 w-4" />
                   Mint Now
@@ -418,33 +418,33 @@ export function InriCollectiblesClient() {
               </div>
             </div>
 
-            <div className="relative z-20 min-h-[470px] overflow-visible sm:min-h-[590px] lg:min-h-0">
-              <div className="absolute left-1/2 top-0 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/46 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-5 sm:text-[11px]">
+            <div className="relative z-20 min-h-[440px] overflow-visible sm:min-h-[560px] lg:min-h-0">
+              <div className="absolute left-1/2 top-2 z-50 -translate-x-1/2 rounded-full border border-cyan-300/30 bg-black/48 px-4 py-2 text-[10px] font-black uppercase tracking-[0.21em] text-white/84 shadow-[0_0_32px_rgba(14,165,233,0.22)] backdrop-blur-md sm:top-6 sm:text-[11px]">
                 <span className="inline-flex items-center gap-2">
                   <RotateCw className="h-3.5 w-3.5 text-cyan-300" />
                   Live rotating collection
                 </span>
               </div>
 
-              <div className="pointer-events-none absolute left-1/2 top-[8%] h-[520px] w-[980px] -translate-x-1/2 rounded-full bg-cyan-400/12 blur-[90px] lg:top-[10%] lg:h-[620px] lg:w-[1180px]" />
-              <div className="pointer-events-none absolute left-1/2 top-[18%] h-[430px] w-[940px] -translate-x-1/2 rounded-[100%] border border-cyan-300/10 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.16),transparent_66%)] shadow-[inset_0_0_90px_rgba(14,165,233,0.10)]" />
-              <div className="pointer-events-none absolute inset-x-[4%] bottom-[12%] h-[148px] rounded-[100%] border border-cyan-300/30 bg-cyan-300/[0.045] shadow-[0_0_90px_rgba(14,165,233,0.48),inset_0_0_60px_rgba(14,165,233,0.20)] sm:h-[172px]" />
-              <div className="pointer-events-none absolute inset-x-[14%] bottom-[17%] h-[62px] rounded-[100%] bg-cyan-300/20 blur-2xl" />
+              <div className="pointer-events-none absolute left-1/2 top-[8%] h-[500px] w-[960px] -translate-x-1/2 rounded-full bg-cyan-400/12 blur-[88px] lg:top-[10%] lg:h-[620px] lg:w-[1180px]" />
+              <div className="pointer-events-none absolute left-1/2 top-[23%] h-[390px] w-[900px] -translate-x-1/2 rounded-[100%] border border-cyan-300/10 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.15),transparent_65%)] shadow-[inset_0_0_90px_rgba(14,165,233,0.10)]" />
+              <div className="pointer-events-none absolute inset-x-[5%] bottom-[18%] h-[128px] rounded-[100%] border border-cyan-300/30 bg-cyan-300/[0.045] shadow-[0_0_90px_rgba(14,165,233,0.48),inset_0_0_60px_rgba(14,165,233,0.20)] sm:h-[156px]" />
+              <div className="pointer-events-none absolute inset-x-[15%] bottom-[23%] h-[58px] rounded-[100%] bg-cyan-300/20 blur-2xl" />
 
-              <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-6 sm:pt-12 lg:pt-0">
-                <div className="relative h-[430px] w-full max-w-[1160px] overflow-visible sm:h-[560px] lg:h-[650px] xl:h-[700px]">
+              <div className="absolute inset-0 flex items-center justify-center overflow-visible pt-8 sm:pt-14 lg:pt-0">
+                <div className="relative h-[410px] w-full max-w-[1140px] overflow-visible sm:h-[540px] lg:h-[620px] xl:h-[665px]">
                   {heroDisplayCountries.map(({ country, offset }) => {
                     const isCenter = offset === 0
                     const positionClass =
                       offset === -2
-                        ? 'hidden lg:block left-[8%] top-[43%] z-10 w-[31%] -rotate-[9deg] opacity-[0.56]'
+                        ? 'hidden xl:block left-[7%] top-[43%] z-10 w-[30%] -rotate-[9deg] opacity-[0.52]'
                         : offset === -1
-                          ? 'left-[22%] top-[36%] z-20 w-[45%] -rotate-[6deg] opacity-[0.86] sm:left-[25%] sm:top-[32%] sm:w-[39%] lg:left-[26%] lg:w-[37%]'
+                          ? 'left-[22%] top-[37%] z-20 w-[45%] -rotate-[6deg] opacity-[0.86] sm:left-[25%] sm:top-[33%] sm:w-[39%] lg:left-[27%] lg:w-[37%]'
                           : offset === 0
-                            ? 'left-[50%] top-[11%] z-40 w-[94%] opacity-100 sm:top-[9%] sm:w-[70%] lg:w-[64%] xl:w-[61%]'
+                            ? 'left-[50%] top-[12%] z-40 w-[94%] opacity-100 sm:top-[10%] sm:w-[70%] lg:w-[64%] xl:w-[60%]'
                             : offset === 1
-                              ? 'left-[78%] top-[36%] z-20 w-[45%] rotate-[6deg] opacity-[0.86] sm:left-[75%] sm:top-[32%] sm:w-[39%] lg:left-[74%] lg:w-[37%]'
-                              : 'hidden lg:block left-[92%] top-[43%] z-10 w-[31%] rotate-[9deg] opacity-[0.56]'
+                              ? 'left-[78%] top-[37%] z-20 w-[45%] rotate-[6deg] opacity-[0.86] sm:left-[75%] sm:top-[33%] sm:w-[39%] lg:left-[73%] lg:w-[37%]'
+                              : 'hidden xl:block left-[93%] top-[43%] z-10 w-[30%] rotate-[9deg] opacity-[0.52]'
 
                     return (
                       <Link
@@ -465,12 +465,6 @@ export function InriCollectiblesClient() {
                             sizes="(max-width: 640px) 94vw, (max-width: 1024px) 72vw, 720px"
                             priority={isCenter}
                           />
-                          {isCenter ? (
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/88 via-black/32 to-transparent px-4 py-5 text-center">
-                              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200">Featured now</p>
-                              <p className="mt-1 text-xl font-black text-white sm:text-2xl">{country.countryName} · {country.memeName}</p>
-                            </div>
-                          ) : null}
                         </div>
                       </Link>
                     )
@@ -478,7 +472,7 @@ export function InriCollectiblesClient() {
                 </div>
               </div>
 
-              <div className="absolute bottom-[5%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[6%] sm:gap-4">
+              <div className="absolute bottom-[7%] left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 sm:bottom-[8%] sm:gap-4">
                 <button
                   type="button"
                   onClick={() => setActiveHeroIndex((prev) => (prev - 1 + heroCountries.length) % heroCountries.length)}
@@ -568,48 +562,48 @@ export function InriCollectiblesClient() {
         </section>
 
         <div className="mx-auto w-full max-w-[1720px] space-y-6 px-2 py-6 sm:px-4 xl:px-6">
-        <section className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search country, code or meme..."
-                className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
-              />
-            </div>
+          <section className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search country, code or meme..."
+                  className="h-12 w-full rounded-[16px] border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-cyan-400/35"
+                />
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              {regions.map((region) => (
-                <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
-                  className={classNames(
-                    'rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition',
-                    selectedRegion === region
-                      ? 'bg-cyan-400 text-slate-950'
-                      : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
-                  )}
-                >
-                  {region}
-                </button>
-              ))}
-            </div>
+              <div className="flex flex-wrap gap-2">
+                {regions.map((region) => (
+                  <button
+                    key={region}
+                    onClick={() => setSelectedRegion(region)}
+                    className={classNames(
+                      'rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition',
+                      selectedRegion === region
+                        ? 'bg-cyan-400 text-slate-950'
+                        : 'border border-white/10 bg-white/[0.04] text-white/65 hover:border-cyan-400/35 hover:text-white',
+                    )}
+                  >
+                    {region}
+                  </button>
+                ))}
+              </div>
 
-            <button
-              onClick={() => setLiveOnly((prev) => !prev)}
-              className={classNames(
-                'h-12 rounded-[16px] px-4 text-sm font-black transition',
-                liveOnly
-                  ? 'bg-emerald-400 text-slate-950'
-                  : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
-              )}
-            >
-              {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
-            </button>
-          </div>
-        </section>
+              <button
+                onClick={() => setLiveOnly((prev) => !prev)}
+                className={classNames(
+                  'h-12 rounded-[16px] px-4 text-sm font-black transition',
+                  liveOnly
+                    ? 'bg-emerald-400 text-slate-950'
+                    : 'border border-white/10 bg-white/[0.04] text-white/72 hover:border-emerald-400/35 hover:text-white',
+                )}
+              >
+                {liveOnly ? 'Showing Live Only' : 'Show Live Only'}
+              </button>
+            </div>
+          </section>
 
         <section id="collection" className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,#04101b,#02060d)] p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
