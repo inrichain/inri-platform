@@ -432,10 +432,6 @@ export function InriCollectiblesClient() {
               <div className="pointer-events-none absolute left-1/2 top-[55%] h-[44px] w-[620px] -translate-x-1/2 rounded-full bg-cyan-300/34 blur-2xl lg:top-[61%]" />
               <div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[880px] -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent" />
               <div className="pointer-events-none absolute left-1/2 top-[61%] h-px w-[620px] -translate-x-1/2 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
-
-              <div className="pointer-events-none absolute left-[12%] top-[25%] h-28 w-28 rounded-full border border-cyan-300/14 bg-cyan-300/[0.04] shadow-[0_0_42px_rgba(34,211,238,0.10)]" />
-              <div className="pointer-events-none absolute right-[11%] top-[17%] h-20 w-20 rounded-[22px] border border-cyan-300/14 bg-cyan-300/[0.04] shadow-[0_0_42px_rgba(34,211,238,0.10)]" />
-              <div className="pointer-events-none absolute bottom-[30%] right-[18%] h-14 w-14 rounded-full border border-cyan-300/12 bg-cyan-300/[0.035]" />
               <div className="pointer-events-none absolute left-[38%] top-[18%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.66)]" />
               <div className="pointer-events-none absolute right-[31%] top-[11%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_24px_7px_rgba(34,211,238,0.58)]" />
               <div className="pointer-events-none absolute right-[7%] top-[31%] h-1.5 w-1.5 rounded-full bg-cyan-100 shadow-[0_0_20px_5px_rgba(34,211,238,0.50)]" />
@@ -554,9 +550,9 @@ export function InriCollectiblesClient() {
                     <Link
                       href={`/collectibles/${country.slug}/`}
                       key={country.slug}
-                      className="group grid grid-cols-[108px_1fr] gap-3 rounded-[16px] border border-white/9 bg-white/[0.04] p-2 transition hover:-translate-y-0.5 hover:border-cyan-300/34 hover:bg-cyan-300/[0.055] xl:grid-cols-[128px_1fr]"
+                      className="group grid grid-cols-[92px_1fr] gap-3 rounded-[16px] border border-white/9 bg-white/[0.025] p-2 transition hover:-translate-y-0.5 hover:border-cyan-300/34 hover:bg-cyan-300/[0.045] xl:grid-cols-[108px_1fr]"
                     >
-                      <div className="relative aspect-[1.55/1] overflow-hidden rounded-[10px] bg-black shadow-[0_14px_32px_rgba(0,0,0,0.24)]">
+                      <div className="relative aspect-square overflow-hidden rounded-[12px] bg-transparent shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
                         <Image
                           src={imageUrlForCountry(country.slug)}
                           alt={`${country.countryName} ${country.memeName}`}
