@@ -362,14 +362,14 @@ export function InriHeader() {
       </div>
 
       <div className="mx-auto max-w-[1600px] px-3 sm:px-8 xl:px-12 2xl:px-16">
-        <div className="grid min-h-[68px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 py-2 sm:min-h-[78px] sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:py-3 md:gap-4 min-[1500px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[1500px]:min-h-[92px] min-[1500px]:py-0">
+        <div className="grid min-h-[76px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 py-2 sm:min-h-[86px] sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:py-3 md:gap-4 min-[1500px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[1500px]:min-h-[98px] min-[1500px]:py-0">
           <div className="min-w-0 justify-self-start">
             <Link
               href="/"
               aria-label="INRI home"
-              className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-cyan-300/18 bg-cyan-300/[0.035] shadow-[0_0_22px_rgba(19,164,255,0.16)] transition hover:border-cyan-300/42 hover:bg-cyan-300/[0.07] sm:h-16 sm:w-16 min-[1500px]:h-[72px] min-[1500px]:w-[72px]"
+              className="inline-flex h-[66px] w-[66px] items-center justify-center rounded-full bg-transparent transition hover:scale-[1.03] sm:h-[74px] sm:w-[74px] min-[1500px]:h-[82px] min-[1500px]:w-[82px]"
             >
-              <Logo size={46} className="object-contain sm:!h-[52px] sm:!w-[52px] min-[1500px]:!h-[58px] min-[1500px]:!w-[58px]" />
+              <Logo size={60} className="object-contain sm:!h-[66px] sm:!w-[66px] min-[1500px]:!h-[74px] min-[1500px]:!w-[74px]" />
             </Link>
           </div>
 
