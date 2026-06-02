@@ -4,7 +4,7 @@ import path from 'node:path'
 const PLATFORM_URL = 'https://platform.inri.life'
 const CONTRACT = '0xA1DD3d0809501080735543f9F65E2981d5ED9cD6'
 const CREATOR = '0x2bD38c91696aBa907DF9b2D4240F19e30161350C'
-const CACHE_VERSION = '20260531-countries-17-23'
+const CACHE_VERSION = '20260602-countries-31-40'
 
 const countries = [
   [1, 'China', 'CHN', 'Dragon Noodles', 'china-dragon-noodles-v2', 'Asia', 'Street food dragon energy', 'Dragon fire'],
@@ -37,6 +37,16 @@ const countries = [
   [28, 'Slovakia', 'SVK', 'Tatra Wolf', 'slovakia-tatra-wolf', 'Europe', 'Tatra mountain wolf', 'Carpathian ice'],
   [29, 'United Arab Emirates', 'ARE', 'Desert Falcon', 'united-arab-emirates-desert-falcon', 'Middle East', 'Desert falcon collector', 'Emirates gold'],
   [30, 'Philippines', 'PHL', 'Jeepney Star', 'philippines-jeepney-star', 'Asia', 'Jeepney street star', 'Island chrome'],
+  [31, 'Israel', 'ISR', 'Island of Innovation', 'israel-island-of-innovation', 'Middle East', 'Innovation island energy', 'Startup gold'],
+  [32, 'Nigeria', 'NGA', 'Jollof Boss', 'nigeria-jollof-boss', 'Africa', 'Jollof boss culture', 'Naija spice'],
+  [33, 'Canada', 'CAN', 'Maple Moose', 'canada-maple-moose', 'North America', 'Maple moose collector', 'Maple red'],
+  [34, 'Mexico', 'MEX', 'Taco Mariachi', 'mexico-taco-mariachi', 'North America', 'Taco mariachi fiesta', 'Mariachi gold'],
+  [35, 'Ukraine', 'UKR', 'Cossack Borscht', 'ukraine-cossack-borscht', 'Europe', 'Cossack borscht spirit', 'Blue sunflower'],
+  [36, 'Argentina', 'ARG', 'Gaucho Mate', 'argentina-gaucho-mate', 'South America', 'Gaucho mate energy', 'Pampas blue'],
+  [37, 'Ireland', 'IRL', 'Lucky Leprechaun', 'ireland-lucky-leprechaun', 'Europe', 'Lucky leprechaun charm', 'Emerald luck'],
+  [38, 'Egypt', 'EGY', 'Pharaoh Cat', 'egypt-pharaoh-cat', 'Africa', 'Pharaoh cat treasure', 'Pyramid gold'],
+  [39, 'Iceland', 'ISL', 'Lava Puffin', 'iceland-lava-puffin', 'Europe', 'Lava puffin island', 'Volcano ice'],
+  [40, 'North Korea', 'PRK', 'Rocket Kimchi Tiger', 'north-korea-rocket-kimchi-tiger', 'Asia', 'Rocket kimchi tiger', 'Red rocket'],
 ]
 
 function rarity(serial) {
