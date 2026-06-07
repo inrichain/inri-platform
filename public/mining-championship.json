@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-06-07T21:20:17.038Z",
-  "currentBlock": 1372068,
+  "updatedAt": "2026-06-07T22:32:48.497Z",
+  "currentBlock": 1372583,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1372068,
+  "lastScannedBlock": 1372583,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,17 +17,17 @@
     },
     {
       "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 41493,
-      "lastBlock": 1372068,
-      "chainSoloBlocks": 41493,
+      "blocks": 41722,
+      "lastBlock": 1372582,
+      "chainSoloBlocks": 41722,
       "poolSoloBlocks": 0
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 38709,
-      "lastBlock": 1372006,
+      "blocks": 38717,
+      "lastBlock": 1372558,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 38676
+      "poolSoloBlocks": 38684
     },
     {
       "address": "0x2878ad14e2252119ad793df7d54e93914e141414",
@@ -38,10 +38,10 @@
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
-      "blocks": 15069,
-      "lastBlock": 1370561,
+      "blocks": 15273,
+      "lastBlock": 1372562,
       "chainSoloBlocks": 16,
-      "poolSoloBlocks": 15053
+      "poolSoloBlocks": 15257
     },
     {
       "address": "0x85eebfe1b1db893dc90079c785c7c70e78fb3028",
@@ -59,17 +59,17 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 10178,
-      "lastBlock": 1372009,
+      "blocks": 10186,
+      "lastBlock": 1372516,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10178
+      "poolSoloBlocks": 10186
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 10088,
-      "lastBlock": 1372049,
+      "blocks": 10121,
+      "lastBlock": 1372539,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10088
+      "poolSoloBlocks": 10121
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
