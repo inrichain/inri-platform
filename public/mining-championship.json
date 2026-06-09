@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-06-09T22:42:36.371Z",
-  "currentBlock": 1386279,
+  "updatedAt": "2026-06-09T23:58:10.895Z",
+  "currentBlock": 1386601,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1386279,
+  "lastScannedBlock": 1386601,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,17 +17,17 @@
     },
     {
       "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 50523,
-      "lastBlock": 1386279,
-      "chainSoloBlocks": 50523,
+      "blocks": 50738,
+      "lastBlock": 1386601,
+      "chainSoloBlocks": 50738,
       "poolSoloBlocks": 0
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 39055,
-      "lastBlock": 1386260,
+      "blocks": 39059,
+      "lastBlock": 1386521,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 39022
+      "poolSoloBlocks": 39026
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
@@ -59,17 +59,17 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 10735,
-      "lastBlock": 1386244,
+      "blocks": 10748,
+      "lastBlock": 1386541,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10735
+      "poolSoloBlocks": 10748
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 10371,
-      "lastBlock": 1386239,
+      "blocks": 10375,
+      "lastBlock": 1386577,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10371
+      "poolSoloBlocks": 10375
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -80,10 +80,10 @@
     },
     {
       "address": "0x865aba34b67f611e72c11e4aec63bd516f44aacd",
-      "blocks": 2152,
-      "lastBlock": 1386249,
+      "blocks": 2224,
+      "lastBlock": 1386573,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 2152
+      "poolSoloBlocks": 2224
     },
     {
       "address": "0xd01912169bcc853bbb09987b0a0b79c6e36f2195",
