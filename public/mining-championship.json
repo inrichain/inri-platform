@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-06-09T11:49:28.683Z",
-  "currentBlock": 1383106,
+  "updatedAt": "2026-06-09T14:10:02.210Z",
+  "currentBlock": 1383883,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1383106,
+  "lastScannedBlock": 1383883,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,17 +17,17 @@
     },
     {
       "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 48372,
-      "lastBlock": 1383106,
-      "chainSoloBlocks": 48372,
+      "blocks": 48908,
+      "lastBlock": 1383881,
+      "chainSoloBlocks": 48908,
       "poolSoloBlocks": 0
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 38990,
-      "lastBlock": 1383079,
+      "blocks": 39004,
+      "lastBlock": 1383861,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 38957
+      "poolSoloBlocks": 38971
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
@@ -59,17 +59,17 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 10626,
-      "lastBlock": 1383064,
+      "blocks": 10650,
+      "lastBlock": 1383832,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10626
+      "poolSoloBlocks": 10650
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 10340,
-      "lastBlock": 1383048,
+      "blocks": 10347,
+      "lastBlock": 1383833,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10340
+      "poolSoloBlocks": 10347
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -87,10 +87,10 @@
     },
     {
       "address": "0x865aba34b67f611e72c11e4aec63bd516f44aacd",
-      "blocks": 1511,
-      "lastBlock": 1383089,
+      "blocks": 1659,
+      "lastBlock": 1383865,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 1511
+      "poolSoloBlocks": 1659
     },
     {
       "address": "0xcfb18f8bbaa3c4f869ce4c12f87d73b79ad75f5f",
