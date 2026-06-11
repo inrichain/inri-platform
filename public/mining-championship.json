@@ -1,11 +1,11 @@
 {
   "mode": "live",
-  "updatedAt": "2026-06-11T14:48:48.437Z",
-  "currentBlock": 1397263,
+  "updatedAt": "2026-06-11T17:58:50.159Z",
+  "currentBlock": 1398104,
   "startBlock": 1000000,
   "endBlock": 1500000,
   "baseRewardPerBlock": 0.2,
-  "lastScannedBlock": 1397263,
+  "lastScannedBlock": 1398104,
   "backfillComplete": true,
   "participants": [
     {
@@ -17,17 +17,17 @@
     },
     {
       "address": "0xe0a72bf2d3b2cb2376038c34a1305ebe571110f2",
-      "blocks": 57783,
-      "lastBlock": 1397263,
-      "chainSoloBlocks": 57783,
+      "blocks": 58340,
+      "lastBlock": 1398104,
+      "chainSoloBlocks": 58340,
       "poolSoloBlocks": 0
     },
     {
       "address": "0x91cc8af03fd7430ca86355c83ff5a60209ea2911",
-      "blocks": 39291,
-      "lastBlock": 1397218,
+      "blocks": 39309,
+      "lastBlock": 1398083,
       "chainSoloBlocks": 33,
-      "poolSoloBlocks": 39258
+      "poolSoloBlocks": 39276
     },
     {
       "address": "0xba1e5248ccbe84d311698914e81bb39f22fb347a",
@@ -52,10 +52,10 @@
     },
     {
       "address": "0x3d4e2f29e967ebead8dfe578e639089431a6c354",
-      "blocks": 11152,
-      "lastBlock": 1397174,
+      "blocks": 11188,
+      "lastBlock": 1398037,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 11152
+      "poolSoloBlocks": 11188
     },
     {
       "address": "0x3bb3dd38541b29de805cdc6d479d2cc7f5b188e8",
@@ -66,10 +66,10 @@
     },
     {
       "address": "0x76fbba0c04185d5ce5241f93f322a22394045695",
-      "blocks": 10477,
-      "lastBlock": 1396953,
+      "blocks": 10481,
+      "lastBlock": 1397965,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 10477
+      "poolSoloBlocks": 10481
     },
     {
       "address": "0x5369e18e08477650fb53de3a6d7ab6a35cf1f6c6",
@@ -80,10 +80,10 @@
     },
     {
       "address": "0x865aba34b67f611e72c11e4aec63bd516f44aacd",
-      "blocks": 4526,
-      "lastBlock": 1397247,
+      "blocks": 4709,
+      "lastBlock": 1398084,
       "chainSoloBlocks": 0,
-      "poolSoloBlocks": 4526
+      "poolSoloBlocks": 4709
     },
     {
       "address": "0xd01912169bcc853bbb09987b0a0b79c6e36f2195",
