@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { BrowserProvider, Contract, parseUnits } from 'ethers'
+import { BrowserProvider, Contract, JsonRpcProvider, parseUnits } from 'ethers'
 import {
   ArrowLeft,
   Check,
@@ -26,6 +26,7 @@ import {
   imageUrlForCountry,
   INRI_COLLECTIBLES_CONTRACT,
   INRI_EXPLORER_URL,
+  INRI_RPC_URL,
   IUSD_ADDRESS,
   rarityBands,
   rarityForSerial,
@@ -54,6 +55,8 @@ const erc20Abi = [
   'function allowance(address owner, address spender) view returns (uint256)',
   'function approve(address spender, uint256 amount) returns (bool)',
 ]
+
+const COLLECTIBLE_REFRESH_MS = 15000
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -153,6 +156,7 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
   const [minting, setMinting] = useState(false)
   const [status, setStatus] = useState('')
   const [copied, setCopied] = useState(false)
+  const readProvider = useMemo(() => new JsonRpcProvider(INRI_RPC_URL), [])
 
   const imageUrl = imageUrlForCountry(country.slug)
   const live = Boolean(chainInfo?.exists)
@@ -176,15 +180,11 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
   const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(`INRI NFT: ${country.countryName} ${country.memeName}`)}&body=${encodeURIComponent(`${shareText}\n\n${pageUrl}`)}`
 
-  async function loadCountry() {
+  async function loadCountry(silent = false) {
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
 
-      const ethereum = (window as unknown as { ethereum?: unknown }).ethereum
-      if (!ethereum) throw new Error('Wallet provider not available')
-
-      const provider = new BrowserProvider(ethereum as any)
-      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, provider)
+      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, readProvider)
       const info = await contract.countryInfo(country.countryId)
 
       setChainInfo({
@@ -197,6 +197,8 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
         imageURI: info.imageURI,
       })
     } catch {
+      if (silent) return
+
       setChainInfo({
         exists: false,
         active: false,
@@ -207,14 +209,20 @@ export function InriCollectibleDetailClient({ country }: { country: CollectibleC
         imageURI: imageUrl,
       })
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
   useEffect(() => {
     loadCountry()
+
+    const refreshTimer = window.setInterval(() => {
+      loadCountry(true)
+    }, COLLECTIBLE_REFRESH_MS)
+
+    return () => window.clearInterval(refreshTimer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country.countryId])
+  }, [country.countryId, readProvider])
 
   async function handleMint() {
     try {

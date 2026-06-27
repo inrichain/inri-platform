@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { BrowserProvider, Contract, parseUnits } from 'ethers'
+import { BrowserProvider, Contract, JsonRpcProvider, parseUnits } from 'ethers'
 import { ArrowRight, ChevronLeft, ChevronRight, Coins, ExternalLink, Globe2, Loader2, RotateCw, Search, ShieldCheck, Sparkles, Wallet, Zap } from 'lucide-react'
 import {
   collectibleCountries,
   imageUrlForCountry,
   INRI_COLLECTIBLES_CONTRACT,
   INRI_EXPLORER_URL,
+  INRI_RPC_URL,
   IUSD_ADDRESS,
   rarityBands,
   rarityForSerial,
@@ -38,6 +39,8 @@ const erc20Abi = [
   'function allowance(address owner, address spender) view returns (uint256)',
   'function approve(address spender, uint256 amount) returns (bool)',
 ]
+
+const COLLECTIBLES_REFRESH_MS = 15000
 
 const imageScaleBySlug: Record<string, number> = {
   'china-dragon-noodles': 1.08,
@@ -173,6 +176,7 @@ export function InriCollectiblesClient() {
   const [mintingCountryId, setMintingCountryId] = useState<number | null>(null)
   const [status, setStatus] = useState('')
   const [activeHeroIndex, setActiveHeroIndex] = useState(0)
+  const readProvider = useMemo(() => new JsonRpcProvider(INRI_RPC_URL), [])
 
   const regions = useMemo(() => ['All', ...Array.from(new Set(collectibleCountries.map((item) => item.region)))], [])
 
@@ -200,6 +204,7 @@ export function InriCollectiblesClient() {
     return selected.length ? selected : collectibleCountries.slice(0, 7)
   }, [heroSlugs])
 
+  const loadedCountryCount = useMemo(() => Object.keys(chainData).length, [chainData])
   const liveCount = useMemo(() => collectibleCountries.filter((item) => chainData[item.countryId]?.exists).length, [chainData])
 
   const totalPublicMinted = useMemo(
@@ -207,12 +212,9 @@ export function InriCollectiblesClient() {
     [chainData],
   )
 
-  async function loadCountry(country: CollectibleCountry) {
+  async function loadCountry(country: CollectibleCountry, silent = false) {
     try {
-      if (!window.ethereum) throw new Error('Wallet provider not available')
-
-      const provider = new BrowserProvider(window.ethereum as any)
-      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, provider)
+      const contract = new Contract(INRI_COLLECTIBLES_CONTRACT, nftAbi, readProvider)
       const info = await contract.countryInfo(country.countryId)
 
       setChainData((prev) => ({
@@ -228,6 +230,8 @@ export function InriCollectiblesClient() {
         },
       }))
     } catch {
+      if (silent) return
+
       setChainData((prev) => ({
         ...prev,
         [country.countryId]: {
@@ -243,13 +247,20 @@ export function InriCollectiblesClient() {
     }
   }
 
-  async function loadAllCountries() {
-    await Promise.all(collectibleCountries.map((country) => loadCountry(country)))
+  async function loadAllCountries(silent = false) {
+    await Promise.all(collectibleCountries.map((country) => loadCountry(country, silent)))
   }
 
   useEffect(() => {
     loadAllCountries()
-  }, [])
+
+    const refreshTimer = window.setInterval(() => {
+      loadAllCountries(true)
+    }, COLLECTIBLES_REFRESH_MS)
+
+    return () => window.clearInterval(refreshTimer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readProvider])
 
   useEffect(() => {
     if (heroCountries.length <= 1) return
@@ -411,7 +422,7 @@ export function InriCollectiblesClient() {
               </div>
 
               <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-[830px]">
-                <HeroStat icon={<Globe2 className="h-5 w-5" />} value="30" label="Countries Live" />
+                <HeroStat icon={<Globe2 className="h-5 w-5" />} value={loadedCountryCount ? String(liveCount) : '...'} label="Countries Live" />
                 <HeroStat icon={<Coins className="h-5 w-5" />} value="5 iUSD" label="Mint Price" />
                 <HeroStat icon={<Sparkles className="h-5 w-5" />} value="100" label="Country Tokens" />
                 <HeroStat icon={<ShieldCheck className="h-5 w-5" />} value="INRI" label="Chain" />
@@ -625,7 +636,7 @@ export function InriCollectiblesClient() {
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">Live mint board</p>
               <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">Premium collection cards</h2>
-              <p className="mt-1 text-sm text-white/58">30 country pages ready • premium mint access • profile-ready NFTs.</p>
+              <p className="mt-1 text-sm text-white/58">{collectibleCountries.length} country pages ready • premium mint access • profile-ready NFTs.</p>
             </div>
             <div className="rounded-[16px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-bold text-white/72">
               Showing <span className="text-white">{filteredCountries.length}</span> countries • <span className="text-white">{liveCount}</span> live
