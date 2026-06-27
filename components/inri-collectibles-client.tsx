@@ -204,7 +204,6 @@ export function InriCollectiblesClient() {
     return selected.length ? selected : collectibleCountries.slice(0, 7)
   }, [heroSlugs])
 
-  const loadedCountryCount = useMemo(() => Object.keys(chainData).length, [chainData])
   const liveCount = useMemo(() => collectibleCountries.filter((item) => chainData[item.countryId]?.exists).length, [chainData])
 
   const totalPublicMinted = useMemo(
@@ -422,7 +421,7 @@ export function InriCollectiblesClient() {
               </div>
 
               <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-[830px]">
-                <HeroStat icon={<Globe2 className="h-5 w-5" />} value={loadedCountryCount ? String(liveCount) : '...'} label="Countries Live" />
+                <HeroStat icon={<Globe2 className="h-5 w-5" />} value={String(collectibleCountries.length)} label="Countries Live" />
                 <HeroStat icon={<Coins className="h-5 w-5" />} value="5 iUSD" label="Mint Price" />
                 <HeroStat icon={<Sparkles className="h-5 w-5" />} value="100" label="Country Tokens" />
                 <HeroStat icon={<ShieldCheck className="h-5 w-5" />} value="INRI" label="Chain" />
